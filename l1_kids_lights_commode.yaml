@@ -1,0 +1,52 @@
+substitutions:
+  devicename: l1_kids_lights_commode
+  sensorname: Leds in kids commode
+  wifi_ip: "192.168.2.17"
+
+<<: !include t-common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: esp8285
+
+sensor:
+- platform: uptime
+  name: "${devicename}_sensor"
+  filters:
+    - lambda: return x / 3600.0;
+  unit_of_measurement: "hours"
+  accuracy_decimals: 2
+  update_interval: !secret uptime_update_interval
+
+light:
+  - platform: cwww
+    name: "Kids Commode"
+    cold_white: output_bottom_cold
+    warm_white: output_bottom_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+  - platform: cwww
+    name: "Kids Shelves"
+    cold_white: output_top_cold
+    warm_white: output_top_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+
+output:
+  - platform: esp8266_pwm
+    id: output_bottom_cold
+    pin: GPIO05
+    max_power: 100%
+  - platform: esp8266_pwm
+    id: output_bottom_warm
+    pin: GPIO12
+    max_power: 100%
+  - platform: esp8266_pwm
+    id: output_top_warm
+    pin: GPIO13
+    max_power: 100%
+  - platform: esp8266_pwm
+    id: output_top_cold
+    pin: GPIO15
+    max_power: 100%

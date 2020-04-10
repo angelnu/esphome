@@ -1,0 +1,99 @@
+<<: !include t-common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: esp8285
+
+sensor:
+- platform: uptime
+  name: ${sensorname}_uptime
+  filters:
+    - lambda: return x / 3600.0;
+  unit_of_measurement: "hours"
+  accuracy_decimals: 2
+  update_interval: !secret uptime_update_interval
+# Power sensor
+- platform: hlw8012
+  sel_pin:
+    number: GPIO12
+    inverted: true
+  cf_pin: GPIO05
+  cf1_pin: GPIO14
+  current_resistor: 0.001  # default 0.001
+  voltage_divider: 910  # default 2351
+  #change_mode_every: 1  # default 8
+  #update_interval: 3s  # default 60s
+  # Current sensor
+  current:
+    name: ${sensorname}_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    filters:
+    - calibrate_linear:
+      - ${amperage_calibration1}
+      - ${amperage_calibration2}
+    - delta: 0.01 #Only send if current changes 10mA
+  # Voltage sensor
+  voltage:
+    name: ${sensorname}_voltage
+    unit_of_measurement: V
+    accuracy_decimals: 0
+    filters:
+    - calibrate_linear:
+      - ${voltage_calibration1}
+      - ${voltage_calibration2}
+    - delta: 5 #Only send if voltage changes more than 5 volts
+  # Power sensor
+  power:
+    id: power
+    name: ${sensorname}_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    filters:
+    - calibrate_linear:
+      - ${wattage_calibration1}
+      - ${wattage_calibration2}
+    - delta: 1 #Only send if consumption changes 1W
+
+binary_sensor:
+# Binary sensor for the button press
+- platform: gpio
+  id: button
+  pin:
+    number: GPIO13
+    inverted: true
+  on_press:
+    - switch.toggle: relay
+
+switch:
+# Switch to toggle the relay
+- platform: gpio
+  id: relay
+  name: ${sensorname}_switch
+  pin: GPIO15
+  restore_mode: ${restore_mode}
+  on_turn_on:
+    - light.turn_on: led
+  on_turn_off:
+    - light.turn_off: led
+
+output:
+# Relay state led
+- platform: esp8266_pwm
+  id: state_led
+  pin:
+    number: GPIO02
+    inverted: true
+
+light:
+# Relay state light
+- platform: monochromatic
+  output: state_led
+  id: led
+
+# Uses the red LED as a status indicator
+status_led:
+  pin:
+    number: GPIO00
+    inverted: true

@@ -1,0 +1,14 @@
+substitutions:
+  devicename: power_s7_lamp
+  sensorname: guestroom_lamp
+  wifi_ip: "192.168.2.14"
+
+  restore_mode: RESTORE_DEFAULT_OFF
+  wattage_calibration1: "1 -> 1"
+  wattage_calibration2: "2 -> 2"
+  amperage_calibration1: "1 -> 1"
+  amperage_calibration2: "2 -> 2"
+  voltage_calibration1: "1 -> 1"
+  voltage_calibration2: "2 -> 2"
+
+<<: !include t-gosund.yaml

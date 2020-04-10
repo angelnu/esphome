@@ -1,0 +1,35 @@
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Optional manual IP
+  manual_ip:
+    static_ip: ${wifi_ip}
+    gateway: !secret wifi_96_gateway
+    subnet: !secret wifi_96_subnet
+    dns1: !secret wifi_96_dns1
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret wifi_ap_ssid
+    password: !secret wifi_ap_password
+
+# Enable Home Assistant API
+api:
+  reboot_timeout: 0s
+  password: !secret api_password
+
+#mqtt:
+#  broker: !secret mqtt_broker
+#  port: !secret mqtt_port
+#  username: !secret mqtt_user
+#  password: !secret mqtt_password
+  
+ota:
+  password: !secret ota_password
+
+logger:
+
+web_server:
+  #js_url: "https://rss.angelnu.com/scrapping/esphome.js"
+  port: 80

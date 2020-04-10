@@ -1,0 +1,201 @@
+substitutions:
+  devicename: l4_lights_aquarium
+  sensorname: livingroom_lights_aquarium
+  wifi_ip: "192.168.2.20"
+  color_sunday: 0.0, 0.0, 0.0, 1.0
+  color_twinlight: 1.0, 0.0, 0.0, 0.0
+  color_night: 0.0, 0.0, 1.0, 0.0
+
+<<: !include t-common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: esp8285
+
+# GPIO00	Button1
+# GPIO02	Led1i
+
+output:
+  - platform: esp8266_pwm
+    id: output_red
+    pin: GPIO14
+    # max_power: 100%
+  - platform: esp8266_pwm
+    id: output_green
+    pin: GPIO12
+    # max_power: 100%
+  - platform: esp8266_pwm
+    id: output_blue
+    pin: GPIO13
+    # max_power: 100%
+  - platform: esp8266_pwm
+    id: output_white_warm
+    pin: GPIO15
+    # max_power: 100%
+#   - platform: esp8266_pwm
+#     id: output_white_cold
+#     pin: GPIO16
+    # max_power: 100%
+
+sensor:
+- platform: uptime
+  name: "${devicename}_sensor"
+  filters:
+    - lambda: return x / 3600.0;
+  unit_of_measurement: "hours"
+  accuracy_decimals: 2
+  update_interval: !secret uptime_update_interval
+
+text_sensor:
+- platform: homeassistant
+  name: "${devicename}_moon"
+  id: my_sensor
+  entity_id: sensor.moon
+
+light:
+  - platform: rgbw
+    name: "${sensorname}"
+    id: my_light
+    red:   output_red
+    green: output_green
+    blue:  output_blue
+    white: output_white_warm
+    # cold_white: output_white_cold
+    # warm_white: output_white_warm
+    # cold_white_color_temperature: 6536 K
+    # warm_white_color_temperature: 2000 K
+    restore_mode: RESTORE_DEFAULT_OFF
+    effects:
+      - lambda:
+           name: Storm
+           update_interval: 10s #Defaults to 0ms.
+           lambda: |-
+            #define SkyBlue 0.0, 0.0, 1.0, 0.1 
+            #define Lightning 1.0, 1.0, 1.0, 0.1 
+            static int No_lighting = 10;
+            static int state = 0;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            call.set_rgbw(SkyBlue);
+            call.set_brightness(0.5);
+            call.perform();
+            
+            if (rand() % 100 >= No_lighting)
+            {
+              call.set_rgbw(Lightning);
+              call.set_brightness(1.0);
+              call.set_flash_length(4); // in ms
+              call.perform();
+            }
+      - lambda:
+           name: Sunrise
+           update_interval: 5min #Defaults to 0ms.
+           lambda: |-
+            #define Night 0.0, 0.0, 1.0, 0.0
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            static int duration = 5*60*1000;  //in ms
+            static int state = 0;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            
+            if (state == 0) 
+            {
+              call.set_rgbw(${color_night});
+              call.set_brightness(0.5);
+              call.set_transition_length(10000);
+            }
+            else if (state == 1)
+            {
+                call.set_rgbw(${color_sunday});
+                call.set_brightness(0.0);
+                call.set_transition_length(duration); // in ms
+                
+            }
+            else if (state == 2){
+                state = 0;
+                call.set_effect("Sunday");
+            }
+            state ++;
+            call.perform();
+      - lambda:
+           name: Sunset
+           update_interval: 5min #Defaults to 0ms.
+           lambda: |-
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            #define Twinlight 1.0, 0.0, 0.0, 0.0
+            #define Night 0.0, 0.0, 1.0, 0.0
+            static int step_duration = 5*60*1000;  //in ms
+            static int state = 0;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            
+            if (state == 0) 
+            {
+              call.set_rgbw(${color_sunday});
+              //call.set_brightness(0.0);
+              call.set_transition_length(1000);
+              state ++;
+            }
+            else if (state == 1)
+            {
+              call.set_rgbw(${color_twinlight});
+              call.set_brightness(1.0);
+              call.set_transition_length(step_duration);
+              state ++;
+            }
+            else if (state == 2)
+            {
+              call.set_rgbw(${color_night});
+              call.set_brightness(0.5);
+              call.set_transition_length(step_duration);
+              state ++;
+            }
+            else{
+              state = 0;
+              call.set_effect("Night");
+            }
+            call.perform();
+      - lambda:
+           name: Sunday
+           update_interval: 15s #Defaults to 0ms.
+           lambda: |-
+            #define Night 0.0, 0.0, 1.0, 0.0
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            call.set_rgbw(${color_sunday});
+            call.set_brightness(0.0);
+            call.set_transition_length(10000);
+            call.perform();
+      - lambda:
+           name: Night
+           update_interval: 15s #Defaults to 0ms.
+           lambda: |-
+            #define Night 0.0, 0.0, 1.0, 0.0
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            call.set_rgbw(${color_night});
+            // new_moon, waxing_crescent, first_quarter, waxing_gibbous, full_moon, waning_gibbous, last_quarter or waning_crescent
+            std::string moon_phase = id(my_sensor).state;
+            //it.print("Moon Phase: %s", moon_phase.c_str());
+            ESP_LOGI("main", "Value of my sensor Moon Phase: %s", moon_phase.c_str());
+            if (moon_phase == "new_moon") 
+            {
+                call.set_brightness(0.1);
+            }
+            else if (moon_phase == "waxing_crescent" or moon_phase == "waning_crescent") 
+            {
+                call.set_brightness(0.2);
+            }
+            else if (moon_phase == "first_quarter" or moon_phase == "last_quarter") 
+            {
+                call.set_brightness(0.3);
+            }
+            else if (moon_phase == "waxing_gibbous" or moon_phase == "waning_gibbous") 
+            {
+                call.set_brightness(0.4);
+            }
+            else if (moon_phase == "full_moon") 
+            {
+                call.set_brightness(0.5);
+            }
+
+            call.set_transition_length(10000);
+            call.perform();

@@ -1,0 +1,46 @@
+substitutions:
+  devicename: l2_kids_lights_bed
+  sensorname: Leds in kids bed
+  wifi_ip: "192.168.2.18"
+
+<<: !include t-common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: esp8285
+
+sensor:
+- platform: uptime
+  name: "${devicename}_sensor"
+  filters:
+    - lambda: return x / 3600.0;
+  unit_of_measurement: "hours"
+  accuracy_decimals: 2
+  update_interval: !secret uptime_update_interval
+
+light:
+  - platform: rgbw
+    name: "Kids Bed"
+    red:   output_red
+    green: output_green
+    blue:  output_blue
+    white: output_white_cold
+
+output:
+  - platform: esp8266_pwm
+    id: output_red
+    pin: GPIO14
+  - platform: esp8266_pwm
+    id: output_green
+    pin: GPIO12
+  - platform: esp8266_pwm
+    id: output_blue
+    pin: GPIO13
+  - platform: esp8266_pwm
+    id: output_white_warm
+    pin: GPIO16
+  - platform: esp8266_pwm
+    id: output_white_cold
+    pin: GPIO15
+

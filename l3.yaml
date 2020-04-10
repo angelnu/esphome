@@ -1,0 +1,51 @@
+substitutions:
+  devicename: l3_room_lights_algo
+  sensorname: room_lights_algo
+  wifi_ip: "192.168.2.19"
+
+<<: !include t-common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: esp8285
+
+sensor:
+- platform: uptime
+  name: "${devicename}_sensor"
+  filters:
+    - lambda: return x / 3600.0;
+  unit_of_measurement: "hours"
+  accuracy_decimals: 2
+
+light:
+  - platform: rgbww
+    name: "${sensorname}"
+    red:   output_red
+    green: output_green
+    blue:  output_blue
+    #white: output_white_warm
+    cold_white: output_white_cold
+    warm_white: output_white_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+
+# GPIO00	Button1
+# GPIO02	Led1i
+
+output:
+  - platform: esp8266_pwm
+    id: output_red
+    pin: GPIO14
+  - platform: esp8266_pwm
+    id: output_green
+    pin: GPIO12
+  - platform: esp8266_pwm
+    id: output_blue
+    pin: GPIO13
+  - platform: esp8266_pwm
+    id: output_white_warm
+    pin: GPIO15
+  - platform: esp8266_pwm
+    id: output_white_cold
+    pin: GPIO16

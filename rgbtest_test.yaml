@@ -1,0 +1,686 @@
+substitutions:
+  devicename: rgbleds_test
+  sensorname: guestroom_lights_test
+  wifi_ip: "192.168.2.12"
+  color_sunday: 1.0, 1.0, 1.0
+  color_twinlight: 1.0, 0.0, 0.0
+  color_night: 0.0, 0.0, 1.0
+
+<<: !include t-common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: esp8285
+  on_boot:
+    priority: -10
+    # ...
+    then:
+      - light.turn_on: my_light
+
+output:
+  - platform: esp8266_pwm
+    id: output_red
+    pin: GPIO12 #GPIO05
+    max_power: 100%
+  - platform: esp8266_pwm
+    id: output_green
+    pin: GPIO05 #GPIO12
+    max_power: 100%
+  - platform: esp8266_pwm
+    id: output_blue
+    pin: GPIO13
+    max_power: 100%
+
+sensor:
+- platform: uptime
+  name: "${devicename}_sensor"
+  filters:
+    - lambda: return x / 3600.0;
+  unit_of_measurement: "hours"
+  accuracy_decimals: 2
+  update_interval: !secret uptime_update_interval
+
+text_sensor:
+- platform: homeassistant
+  name: "${devicename}_moon"
+  id: my_sensor
+  entity_id: sensor.moon
+
+remote_receiver:
+  pin:
+    number: GPIO04
+    inverted: true
+  dump: nec
+
+# globals:
+#   - id: my_global_int
+#     type: int
+#     restore_value: no
+#     initial_value: '0'
+# Example
+#           id(my_global_int) += 1;
+#         } else {
+#           id(my_global_int) += 10;
+
+light:
+  - platform: rgb
+    name: "${devicename}_light"
+    id: my_light
+    red: output_red
+    green: output_green
+    blue: output_blue
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe: 
+          name: Strobe
+          #colors:
+            #- state: True
+              #brightness: 100%
+              #red: 100%
+              #green: 90%
+              #blue: 0%
+              #duration: 500ms
+            #- state: False
+              #duration: 250ms
+            #- state: True
+              #brightness: 100%
+              #red: 0%
+              #green: 100%
+              #blue: 0%
+              #duration: 500ms
+      - flicker:
+          name: Flicker
+          #alpha: 95%
+          #intensity: 1.5%
+      - lambda:
+           name: MyCustomEffect
+           update_interval: 1s
+           lambda: |-
+            static int state = 0;
+            auto call = id(my_light).turn_on();
+            // Transtion of 1000ms = 1s
+            call.set_transition_length(1000);
+            if (state == 0) {
+              call.set_rgb(1.0, 1.0, 1.0);
+            } else if (state == 1) {
+              call.set_rgb(1.0, 0.0, 1.0);
+            } else if (state == 2) {
+              call.set_rgb(0.0, 0.0, 1.0);
+            } else {
+              call.set_rgb(1.0, 0.0, 0.0);
+            }
+            call.perform();
+            state += 1;
+            if (state == 4)
+              state = 0;
+      - lambda:
+           name: Breathing
+           update_interval: 16s
+           lambda: |-
+            static int state = 0;
+            static int color = 1;
+            auto call = id(my_light).turn_on(); //the id of your light
+            call.set_transition_length(15000);
+            if (state == 0) 
+            {
+             call.set_brightness(1.0);
+            }
+             else if (state == 1)
+            {
+             call.set_brightness(0.01);
+            }
+             call.perform();
+             state ++;
+             if (state == 2){
+                state = 0;
+             }
+      - lambda:
+           name: RGB_Breathing
+           update_interval: 16s #Finetune to your liking with the transition lenght below
+           lambda: |-
+            #define Color1 1.0, 0.0, 0.0 
+            #define Color2 1.0, 0.5, 0.0 
+            #define Color3 1.0, 1.0, 0.0 
+            #define Color4 0.5, 1.0, 0.0
+            #define Color5 0.0, 1.0, 0.0
+            #define Color6 0.0, 1.0, 0.5
+            #define Color7 0.0, 1.0, 1.0
+            #define Color8 0.0, 0.5, 1.0
+            #define Color9 0.0, 0.0, 1.0
+            #define Color10 0.5, 0.0, 1.0
+            #define Color11 0.5, 0.0, 1.0
+            #define Color12 1.0, 0.0, 0.5
+            static int state = 0;
+            static int color = 1;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            call.set_transition_length(15000);
+            if (state == 0) 
+            {
+             call.set_brightness(0.01);
+             
+            }
+             else if (state == 1)
+            {
+               switch(color)
+               {
+                 case 1: call.set_rgb(Color1);
+                         break;
+                 case 2: call.set_rgb(Color2);
+                         break;
+                 case 3: call.set_rgb(Color3);
+                         break;
+                 case 4: call.set_rgb(Color4);
+                         break;
+                 case 5: call.set_rgb(Color5);
+                         break;
+                 case 6: call.set_rgb(Color6);
+                         break;
+                 case 7: call.set_rgb(Color7);
+                         break;
+                 case 8: call.set_rgb(Color8);
+                         break;
+                 case 9: call.set_rgb(Color9);
+                         break;
+                 case 10: call.set_rgb(Color10);
+                          break;
+                 case 11: call.set_rgb(Color11);
+                          break;
+                 case 12: call.set_rgb(Color12);
+                          break;
+               }
+              call.set_brightness(1.0);
+            }
+             
+             state ++;
+             if (state == 2){
+                state = 0;
+             }
+             color++;
+             if(color == 7)
+             {
+               color = 1;
+             }
+             call.perform();
+      - lambda:
+           name: Storm
+           update_interval: 10s #Defaults to 0ms.
+           lambda: |-
+            #define SkyBlue 0.0, 0.0, 1.0 
+            #define Lightning 1.0, 1.0, 1.0 
+            static int No_lighting = 10;
+            static int state = 0;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            
+            call.set_rgb(SkyBlue);
+            call.set_brightness(0.5);
+            call.perform();
+            
+            ESP_LOGI("main", "Intento");
+            if (rand() % 100 >= No_lighting)
+            {
+              ESP_LOGI("main", "Hay rayo");
+              call.set_rgb(Lightning);
+              call.set_brightness(1.0);
+              call.set_flash_length(4); // in ms
+              call.perform();
+            }
+
+      - lambda:
+           name: Sunrise
+           update_interval: 5min #Defaults to 0ms.
+           lambda: |-
+            #define Night 0.0, 0.0, 1.0, 0.0
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            static int duration = 5*60*1000;  //in ms
+            static int state = 0;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            
+            if (state == 0) 
+            {
+              call.set_rgb(${color_night});
+              call.set_brightness(0.5);
+              call.set_transition_length(10000);
+            }
+            else if (state == 1)
+            {
+                call.set_rgb(${color_sunday});
+                call.set_brightness(0.0);
+                call.set_transition_length(duration); // in ms
+                
+            }
+            else if (state == 2){
+                state = 0;
+                call.set_effect("Sunday");
+            }
+            state ++;
+            call.perform();
+      - lambda:
+           name: Sunset
+           update_interval: 10s #5min #Defaults to 0ms.
+           lambda: |-
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            #define Twinlight 1.0, 0.0, 0.0, 0.0
+            #define Night 0.0, 0.0, 1.0, 0.0
+            static int step_duration = 10*1000;//5*60*1000;  //in ms
+            static int state = 0;
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            
+            ESP_LOGI("main", "Value of state: %i", state);
+            if (state == 0) 
+            {
+              ESP_LOGI("main", "State de dia");
+              call.set_rgb(${color_sunday});
+              //call.set_brightness(0.0);
+              call.set_transition_length(1000);
+              call.perform();
+              state ++;
+            }
+            else if (state == 1)
+            {
+              ESP_LOGI("main", "State de crepusculo");
+              call.set_rgb(${color_twinlight});
+              call.set_brightness(1.0);
+              call.set_transition_length(step_duration);
+              call.perform();
+              state ++;
+            }
+            else if (state == 2)
+            {
+              ESP_LOGI("main", "State de noche");
+              call.set_rgb(${color_night});
+              call.set_brightness(0.5);
+              call.set_transition_length(step_duration);
+              call.perform();
+              state ++;
+            }
+            else{
+                ESP_LOGI("main", "State de efecto siguiente");
+                state = 0;
+                call.set_effect("Night");
+                call.perform();
+            }
+      - lambda:
+           name: Sunday
+           update_interval: 15s #Defaults to 0ms.
+           lambda: |-
+            #define Night 0.0, 0.0, 1.0, 0.0
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            call.set_rgb(${color_sunday});
+            call.set_brightness(0.0);
+            call.set_transition_length(10000);
+            call.perform();
+      - lambda:
+           name: Night
+           update_interval: 15s #Defaults to 0ms.
+           lambda: |-
+            #define Night 0.0, 0.0, 1.0, 0.0
+            #define Sunday 0.0, 0.0, 0.0, 1.0
+            auto call = id(my_light).turn_on(); //put the id for your light in here
+            call.set_rgb(${color_night});
+            // new_moon, waxing_crescent, first_quarter, waxing_gibbous, full_moon, waning_gibbous, last_quarter or waning_crescent
+            std::string moon_phase = id(my_sensor).state;
+            //it.print("Moon Phase: %s", moon_phase.c_str());
+            ESP_LOGI("main", "Value of my sensor Moon Phase: %s", moon_phase.c_str());
+            if (moon_phase == "new_moon") 
+            {
+                call.set_brightness(0.1);
+            }
+            else if (moon_phase == "waxing_crescent" or moon_phase == "waning_crescent") 
+            {
+                call.set_brightness(0.2);
+            }
+            else if (moon_phase == "first_quarter" or moon_phase == "last_quarter") 
+            {
+                call.set_brightness(0.3);
+            }
+            else if (moon_phase == "waxing_gibbous" or moon_phase == "waning_gibbous") 
+            {
+                call.set_brightness(0.4);
+            }
+            else if (moon_phase == "full_moon") 
+            {
+                call.set_brightness(0.5);
+            }
+
+            call.set_transition_length(10000);
+            call.perform();
+
+
+binary_sensor:
+- platform: remote_receiver
+  name: "Button UP"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x906F
+  on_press:
+    then:
+      - light.dim_relative:
+          id: my_light
+          relative_brightness: 5% 
+- platform: remote_receiver
+  name: "Button DOWN"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xB847
+  on_press:
+    then:
+      - light.dim_relative:
+          id: my_light
+          relative_brightness: -5%
+- platform: remote_receiver
+  name: "Button OFF"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xF807
+  on_press:
+    then:
+      - light.turn_off: my_light
+- platform: remote_receiver
+  name: "Button ON"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xB04F
+  on_press:
+    then:
+      - light.turn_on: my_light
+      
+- platform: remote_receiver
+  name: "Button Red"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x9867
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 0%
+          blue: 0%
+
+- platform: remote_receiver
+  name: "Button Red->yellow-1"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xE817
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 80%
+          green: 40%
+          blue: 0%
+- platform: remote_receiver
+  name: "Button Red->yellow-2"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x02FD
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 50%
+          blue: 0%
+- platform: remote_receiver
+  name: "Button Red->yellow-3"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x50AF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 70%
+          blue: 40%
+- platform: remote_receiver
+  name: "Button Red->yellow-4"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x38C7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 100%
+          blue: 0%
+      
+- platform: remote_receiver
+  name: "Button Green"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xD827
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 0%
+
+- platform: remote_receiver
+  name: "Button Green->Blue-1"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x48B7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 50%
+          green: 100%
+          blue: 0%
+- platform: remote_receiver
+  name: "Button Green->Blue-2"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x32CD
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 50%
+- platform: remote_receiver
+  name: "Button Green->Blue-3"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x7887
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 80%
+- platform: remote_receiver
+  name: "Button Green->Blue-4"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x28D7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 80%
+          blue: 100%
+      
+- platform: remote_receiver
+  name: "Button Blue"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x8877
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 0%
+          blue: 100%
+
+- platform: remote_receiver
+  name: "Button Blue->Pink-1"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x6897
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 30%
+          green: 0%
+          blue: 100%
+- platform: remote_receiver
+  name: "Button Blue->Pink-2"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x20DF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 50%
+          green: 0%
+          blue: 100%
+- platform: remote_receiver
+  name: "Button Blue->Pink-3"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x708F
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 80%
+          green: 0%
+          blue: 100%
+- platform: remote_receiver
+  name: "Button Blue->Pink-4"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xF00F
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 0%
+          blue: 100%      
+
+- platform: remote_receiver
+  name: "Button White"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xA857
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 100%
+          blue: 100%
+
+- platform: remote_receiver
+  name: "Button Flash"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xB24D
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Flicker 
+          
+- platform: remote_receiver
+  name: "Button Strobe"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x00FF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Sunrise 
+
+- platform: remote_receiver
+  name: "Button Fade"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x58A7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Sunset
+
+- platform: remote_receiver
+  name: "Button Smooth"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x30CF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Storm          

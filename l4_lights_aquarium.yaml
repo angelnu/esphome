@@ -40,7 +40,7 @@ output:
 
 sensor:
 - platform: uptime
-  name: "${devicename}_sensor"
+  name: "${devicename}_uptime"
   filters:
     - lambda: return x / 3600.0;
   unit_of_measurement: "hours"

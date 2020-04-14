@@ -12,13 +12,7 @@ esphome:
   board: d1_mini
 
 sensor:
-- platform: uptime
-  name: "${devicename}_uptime"
-  filters:
-    - lambda: return x / 3600.0;
-  unit_of_measurement: "hours"
-  accuracy_decimals: 2
-  update_interval: !secret uptime_update_interval
+  - <<: !include t-uptime-sensor.yaml
 
 switch:
   - platform: gpio

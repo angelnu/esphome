@@ -39,19 +39,13 @@ output:
     # max_power: 100%
 
 sensor:
-- platform: uptime
-  name: "${devicename}_uptime"
-  filters:
-    - lambda: return x / 3600.0;
-  unit_of_measurement: "hours"
-  accuracy_decimals: 2
-  update_interval: !secret uptime_update_interval
+  - <<: !include t-uptime-sensor.yaml
 
 text_sensor:
-- platform: homeassistant
-  name: "${devicename}_moon"
-  id: my_sensor
-  entity_id: sensor.moon
+  - platform: homeassistant
+    name: "${devicename}_moon"
+    id: my_sensor
+    entity_id: sensor.moon
 
 light:
   - platform: rgbw

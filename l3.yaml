@@ -11,12 +11,7 @@ esphome:
   board: esp8285
 
 sensor:
-- platform: uptime
-  name: "${devicename}_uptime"
-  filters:
-    - lambda: return x / 3600.0;
-  unit_of_measurement: "hours"
-  accuracy_decimals: 2
+  - <<: !include t-uptime-sensor.yaml
 
 light:
   - platform: rgbww

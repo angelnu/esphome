@@ -17,6 +17,7 @@ esphome:
     # ...
     then:
       - light.turn_on: my_light
+  build_path: build/${devicename}
 
 output:
   - platform: esp8266_pwm
@@ -33,7 +34,7 @@ output:
     max_power: 100%
 
 sensor:
-  - <<: !include t-uptime-sensor.yaml
+  - <<: !include devices/includes/uptime-sensor.yaml
 
 text_sensor:
 - platform: homeassistant

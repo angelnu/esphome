@@ -11,4 +11,5 @@ substitutions:
   voltage_calibration1: "1 -> 1"
   voltage_calibration2: "2 -> 2"
 
-<<: !include t-gosund.yaml
+<<: !include t-common.yaml
+<<: !include devices/gosund.yaml

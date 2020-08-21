@@ -12,6 +12,7 @@ esphome:
   name: ${devicename}
   platform: ESP8266
   board: esp8285
+  build_path: build/${devicename}
 
 # GPIO00	Button1
 # GPIO02	Led1i
@@ -39,7 +40,7 @@ output:
     # max_power: 100%
 
 sensor:
-  - <<: !include t-uptime-sensor.yaml
+  - <<: !include devices/includes/uptime-sensor.yaml
 
 text_sensor:
   - platform: homeassistant
@@ -100,7 +101,7 @@ light:
             else if (state == 1)
             {
                 call.set_rgbw(${color_sunday});
-                call.set_brightness(0.0);
+                call.set_brightness(1.0);
                 call.set_transition_length(duration); // in ms
                 
             }
@@ -124,7 +125,7 @@ light:
             if (state == 0) 
             {
               call.set_rgbw(${color_sunday});
-              //call.set_brightness(0.0);
+              //call.set_brightness(0.7);
               call.set_transition_length(1000);
               state ++;
             }
@@ -155,7 +156,7 @@ light:
             #define Sunday 0.0, 0.0, 0.0, 1.0
             auto call = id(my_light).turn_on(); //put the id for your light in here
             call.set_rgbw(${color_sunday});
-            call.set_brightness(0.0);
+            call.set_brightness(1.0);
             call.set_transition_length(10000);
             call.perform();
       - lambda:

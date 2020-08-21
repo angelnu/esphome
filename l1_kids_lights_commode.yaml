@@ -9,9 +9,11 @@ esphome:
   name: ${devicename}
   platform: ESP8266
   board: esp8285
+  arduino_version: 2.4.2
+  build_path: build/${devicename}
 
 sensor:
-  - <<: !include t-uptime-sensor.yaml
+  - <<: !include devices/includes/uptime-sensor.yaml
 
 light:
   - platform: cwww

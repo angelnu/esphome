@@ -9,9 +9,10 @@ esphome:
   name: ${devicename}
   platform: ESP8266
   board: esp8285
+  build_path: build/${devicename}
 
 sensor:
-  - <<: !include t-uptime-sensor.yaml
+  - <<: !include devices/includes/uptime-sensor.yaml
 
 time:
   - platform: sntp

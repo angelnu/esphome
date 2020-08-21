@@ -1,0 +1,13 @@
+substitutions:
+  devicename: t1_buhardilla
+  sensorname: Termostato Buardilla
+  wifi_ip: "192.168.4.75"
+
+  default_target_temperature_low_1: "30"
+  default_target_temperature_high_1: "35"
+  min_temperature: "20"
+  max_temperature: "50"
+  temperature_step: "0.5"
+
+<<: !include t-common-pueblo.yaml
+<<: !include devices/pcb-thermostate-220/v1.yaml

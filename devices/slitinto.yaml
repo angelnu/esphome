@@ -1,12 +1,11 @@
-<<: !include t-common.yaml
-
 esphome:
   name: ${devicename}
   platform: ESP8266
   board: esp8285
+  build_path: build/${devicename}
 
 sensor:
-- <<: !include t-uptime-sensor.yaml
+- <<: !include includes/uptime-sensor.yaml
 
 # Power sensor
 - platform: hlw8012

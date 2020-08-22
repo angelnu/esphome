@@ -2,11 +2,12 @@
 # This is an example and may include too much for your use-case.
 # You can modify this file to suit your needs.
 /.esphome/
-**/.pioenvs/
-**/.piolibdeps/
-**/lib/
-**/src/
-**/platformio.ini
-secrets.yaml
+/secrets.yaml
 .vscode
 build
+#Kicad
+**/KiCad/*-bak
+**/KiCad/*-cache.lib
+**/KiCad/fp-info-cache
+**/KiCad/*.kicad_pcb-bak
+**/KiCad/*.sch-bak

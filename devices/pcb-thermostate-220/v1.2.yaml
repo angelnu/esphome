@@ -1,0 +1,108 @@
+esphome:
+  name: ${devicename}
+  platform: ESP32
+  board: esp32dev
+  build_path: build/${devicename}
+
+dallas:
+  - pin: GPIO15
+    id: dallas_bus_1
+    update_interval: 10s
+  - pin: GPIO04
+    id: dallas_bus_2
+    update_interval: 10s
+
+# Individual sensors
+sensor:
+  - <<: !include ../includes/uptime-sensor.yaml
+  - platform: dallas
+    #index: 0
+    address: ${dallas_sensor_address_1}
+    name: ${sensorname} Temperature 1
+    id: temperature_1
+    dallas_id: dallas_bus_${dallas_sensor_bus_1}
+    filters:
+      delta: 0.5
+  - platform: dallas
+    #index: 0
+    address: ${dallas_sensor_address_2}
+    name: ${sensorname} Temperature 2
+    id: temperature_2
+    dallas_id: dallas_bus_${dallas_sensor_bus_2}
+    filters:
+      delta: 0.5
+
+output:
+  - platform: gpio
+    pin: GPIO33
+    id: relay_1_out
+  - platform: gpio
+    pin: GPIO32
+    id: relay_2_out
+  - platform: gpio
+    pin: GPIO05
+    id: led_out
+    
+switch:
+  - platform: output
+    name: ${sensorname} Relay 1
+    id: relay_1
+    output: relay_1_out
+    on_turn_on:
+    - light.turn_on: led
+    on_turn_off:
+      if:
+        condition:
+          switch.is_off: relay_2
+        then:
+        - light.turn_off: led
+  - platform: output
+    name: ${sensorname} Relay 2
+    id: relay_2
+    output: relay_2_out
+    on_turn_on:
+    - light.turn_on: led
+    on_turn_off:
+      if:
+        condition:
+          switch.is_off: relay_1
+        then:
+        - light.turn_off: led
+
+light:
+  - platform: binary
+    name: ${sensorname} Led
+    id: led
+    output: led_out
+
+climate:
+  - platform: bang_bang
+    sensor: temperature_1
+    name: ${sensorname} 1
+    id: climate_1
+    default_target_temperature_low: ${default_target_temperature_low_1} °C
+    default_target_temperature_high: ${default_target_temperature_high_1} °C
+    visual:
+      min_temperature: ${min_temperature} °C
+      max_temperature: ${max_temperature} °C
+      temperature_step: ${temperature_step} °C
+
+    cool_action:
+      - switch.turn_on: relay_1
+    idle_action:
+      - switch.turn_off: relay_1
+  - platform: bang_bang
+    sensor: temperature_2
+    name: ${sensorname} 2
+    id: climate_2
+    default_target_temperature_low: ${default_target_temperature_low_2} °C
+    default_target_temperature_high: ${default_target_temperature_high_2} °C
+    visual:
+      min_temperature: ${min_temperature} °C
+      max_temperature: ${max_temperature} °C
+      temperature_step: ${temperature_step} °C
+
+    cool_action:
+      - switch.turn_on: relay_2
+    idle_action:
+      - switch.turn_off: relay_2

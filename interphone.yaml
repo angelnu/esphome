@@ -5,4 +5,4 @@ substitutions:
   wifi_ip: "192.168.2.11"
 
 <<: !include t-common.yaml
-<<: !include devices/interphone/v1.yaml
+<<: !include devices/interphone-siedle/v1.yaml

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module fritzingVersion="0.9.4.2019-12-01.CD-498-0-a1ffcea" icon="Search.png" search="rectangle">
+    <title>Search</title>
+    <instances>
+        <instance moduleIdRef="TwoLayerRectanglePCBModuleID" modelIndex="85426659" path=":/resources/parts/core/rectangle_pcb_two_layers.fzp">
+            <views/>
+        </instance>
+        <instance moduleIdRef="RectanglePCBModuleID" modelIndex="85426661" path=":/resources/parts/core/rectangle_pcb.fzp">
+            <views/>
+        </instance>
+    </instances>
+</module>

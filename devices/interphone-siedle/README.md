@@ -17,7 +17,7 @@ The D2 ping controls the solid state relay which opens the door.
   - ![Schematics Preview](pictures/Schematics_schem.png)
 - Components:
   - Interphone: Siedle HT401a
-    - [Siedle HT401a inside](pictures/Photo inside.jpg)
+    - ![Siedle HT401a inside](pictures/Photo inside.jpg)
   - WeMos D1 mini (programmed with esphome)
   - Power Regulator
   - 1x [MOC3041 - 400V 1A Zero-Cross Triac](https://cdn.sos.sk/productdata/61/2a/8c2cd9a7/moc-3041.pdf)

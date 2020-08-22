@@ -12,4 +12,4 @@ substitutions:
   voltage_calibration2: "2 -> 2"
 
 <<: !include t-common.yaml
-<<: !include devices/gosund.yaml
+<<: !include devices/power-gosund/v1.yaml

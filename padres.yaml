@@ -1,7 +1,7 @@
 substitutions:
   devicename: padres_rgbw
   sensorname: padres_rgbw
-  wifi_ip: "192.168.3.12"
+  wifi_ip: "192.168.103.12"
 
 <<: !include t-common-casa128.yaml
 

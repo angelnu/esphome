@@ -4,7 +4,7 @@ substitutions:
   #Sensor name in home assistant and web server
   sensorname: Termostato Buhardilla
   #IP for device
-  wifi_ip: "192.168.4.75"
+  wifi_ip: "192.168.105.101"
 
   #Select bus (1=internal, 2=external) with temp sensor for relay 1
   dallas_sensor_bus_1: "2"

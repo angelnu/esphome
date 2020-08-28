@@ -5,6 +5,7 @@ This PCB allows controlling two relays based on 1 wire Dallas temperature sensor
 - [KiCad schematics](KiCad/esp32-temp.sch)
   - ![Schematics Preview](pictures/esp32-temp_schematics.png)
 - [KiCad PCB](KiCad/esp32-temp.kicad_pcb)
+  - ![Schematics Preview](pictures/esp32-temp_pcb.png)
 - [3D Printed cage](cages):
   - TBD
 - Parts:

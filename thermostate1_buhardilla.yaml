@@ -9,7 +9,7 @@ substitutions:
   #Select bus (1=internal, 2=external) with temp sensor for relay 1
   dallas_sensor_bus_1: "2"
   #Select sensor address for relay 1 (if you check the esplogs it shows what sensors where detected on boot)
-  dallas_sensor_address_1: "0xA03C01B55630CF28"
+  dallas_sensor_address_1: "0x6101193A1E0A1028"
   #Default min target temp for relay 1
   default_target_temperature_low_1: "28"
   #Default max target temp for relay 1

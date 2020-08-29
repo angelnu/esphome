@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "Soil Sensor")(type Legacy)(uri "${KIPRJMOD}/Soil Sensor.lib")(options "")(descr ""))
+)

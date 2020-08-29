@@ -1,0 +1,13 @@
+
+substitutions:
+  #This is the name for device in wifi
+  devicename: w1_test
+  #Sensor name in home assistant and web server
+  sensorname: Watering 1 test
+  #IP for device
+  wifi_ip: "192.168.105.103"
+
+#Include common definitions for home (wifi, web server, etc)
+<<: !include t-common-pueblo.yaml
+#Include device definition
+<<: !include devices/pcb-pot-watering/v1.yaml

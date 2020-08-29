@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name Sonde)(type KiCad)(uri ${KIPRJMOD}/Sonde.pretty)(options "")(descr ""))
+)

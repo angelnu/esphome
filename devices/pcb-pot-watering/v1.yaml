@@ -1,0 +1,45 @@
+
+esphome:
+  name: ${devicename}
+  platform: ESP32
+  board: esp32dev
+  build_path: build/${devicename}
+  includes:
+    - devices/pcb-pot-watering/controller/lib/plant_sensor/plant_sensor.h
+    - devices/pcb-pot-watering/controller/lib/plant_sensor/plant_sensor.cpp
+    - devices/pcb-pot-watering/controller/plant_sensor_esphome.h
+  libraries:
+    - "SPI"
+    - "CRC32"
+
+switch:
+  - platform: restart
+    name: "Living Room Restart"
+
+spi:
+  clk_pin: 18
+  mosi_pin: 23
+  miso_pin: 19
+
+custom_component:
+- lambda: |-
+    return {new Plant_sensor_esphome(App, 5, "my GPIO5")};
+
+sensor:
+# - platform: custom
+#   lambda: |-
+#     auto my_sensor = new Plant_sensor_esphome();
+#     App.register_component(my_sensor);
+#     return {my_sensor->version_sensor};
+#   sensors:
+#     - name: "${sensorname} Version"
+#       unit_of_measurement: "version"
+binary_sensor:
+text_sensor:
+# - platform: custom
+#   lambda: |-
+#     auto my_sensor = new Plant_sensor_esphome();
+#     App.register_component(my_sensor);
+#     return {my_sensor->build_date_sensor};
+#   text_sensors:
+#     - name: "${sensorname} Build data"

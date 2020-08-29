@@ -1,0 +1,18 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# SoilSonde
+#
+DEF SoilSonde U 0 40 Y Y 1 F N
+F0 "U" 0 0 50 H V C CNN
+F1 "SoilSonde" 0 -100 50 H V C CNN
+F2 "Sonde:soilSonde" 0 150 50 H V C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+S 250 100 -250 -300 0 1 0 N
+X GND 1 -350 -200 100 R 50 50 1 1 W
+X Sonde 2 350 -200 100 L 50 50 1 1 O
+ENDDRAW
+ENDDEF
+#
+#End Library

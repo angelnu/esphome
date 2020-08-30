@@ -39,6 +39,10 @@ void read_external_data(size_t block);
 void write_external_data(size_t block);
 crc_t get_external_data_crc(size_t block);
 
+#ifndef DEBUG
+  #define DEBUG 0
+#endif
+
 //Serial port
 #define serialPortSpeed 115200
 #define log_flush Serial.flush

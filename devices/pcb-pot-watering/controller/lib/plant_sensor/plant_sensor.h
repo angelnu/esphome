@@ -10,11 +10,11 @@
 static const auto PLANT_NAME_MAX_LENGTH = 80;
 static const auto PLANT_DESCRIPTION_MAX_LENGTH = 250;
 static const auto PLANT_BLOCK_SIZE = 0x100;
-static const auto TRANFER_RETRIES = 2;
+static const auto TRANFER_RETRIES = 1;
 
 class Plant_sensor {
     public:
-        Plant_sensor(SPIClass& spi, int8_t ss, std::string default_name = "new plant");
+        Plant_sensor(SPIClass& spi, int8_t ss);
 
         int refresh_sensors();
         int refresh_all();
@@ -72,7 +72,6 @@ class Plant_sensor {
     private:
         SPIClass& iv_spi;
         int8_t iv_ss;
-        std::string iv_default_name;
 
         bool iv_is_error;
 

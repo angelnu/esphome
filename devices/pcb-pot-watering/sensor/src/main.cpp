@@ -17,8 +17,8 @@ static void send_command_response(uint8_t* data, uint8_t size);
 static void command_received();
 static void received_config();
 static void end_command() {
-  log_info(F("<< End command: "));
-  log_info_ln(command.main);
+  log_debug(F("<< End command: "));
+  log_debug_ln(command.main);
   command = {};
   spi.end();
 }

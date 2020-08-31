@@ -1,4 +1,4 @@
-# Box for Temp Actor
+# Box for pot watering sensor
 There are 2 files for each pot sensor, box and lid.
 
 ![Pieces Preview](Pot_Watering_Sensor_3D_Printed_box.png)

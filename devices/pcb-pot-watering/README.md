@@ -40,6 +40,8 @@ TBD: more explanations
   - ![Schematics Preview](TBD)
 - [KiCad PCB](sensor/KiCad/SoilSensor_spi.kicad_pcb)
   - ![Schematics Preview](TBD)
+  - ![PCB front Preview](pictures/Pot_Watering_v1_PCB_close_view_front.jpg)
+  - ![PCB rear Preview](pictures/Pot_Watering_v1_PCB_close_view_rear.jpg)
 - Parts:
   - TBD
 - PINs:
@@ -50,7 +52,8 @@ TBD: more explanations
   2. connect your sensor board via [STLink](https://www.st.com/en/development-tools/st-link-v2.html) to your computer
   3. run `pio upload`
 - [3D Printed cage](cages):
-  - TBD
+  - ![Cage view](pictures/Pot_Watering_Sensor_v1_cage.jpg)
+  - ![Pot watering Sensor PCB Mount](pictures/Pot_Watering_Sensor_v1_PCB_mount.jpg)
 
 ### Changelog
 

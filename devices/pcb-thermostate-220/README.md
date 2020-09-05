@@ -9,6 +9,7 @@ This PCB allows controlling two relays based on 1 wire Dallas temperature sensor
   - ![Schematics Preview](pictures/esp32-temp_pcb.png)
   - ![PCB front Preview](pictures/Temp_Actor_v1_PCB_close_view_front.jpg)
   - ![PCB rear Preview](pictures/Temp_Actor_v1_PCB_close_view_rear.jpg)
+
 - Parts:
   - 1x [ESP32-WROOM-32](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
   - nx [Temperature Sensors - DS18B20](http://datasheets.maximintegrated.com/en/ds/DS18B20.pdf)

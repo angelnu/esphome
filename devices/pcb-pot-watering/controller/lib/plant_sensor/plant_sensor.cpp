@@ -24,10 +24,10 @@ SPISettings spi_settings = SPISettings(spiClk, MSBFIRST, SPI_MODE0);
 #endif
 
 
-Plant_sensor::Plant_sensor(SPIClass& spi, int8_t ss, std::string default_name):
+Plant_sensor::Plant_sensor(SPIClass& spi, int8_t ss):
     iv_spi(spi),
     iv_ss(ss),
-    iv_default_name(default_name) {
+    iv_is_error(false) {
 
     pinMode(iv_ss, OUTPUT); //VSPI SS
 
@@ -40,12 +40,11 @@ Plant_sensor::Plant_sensor(SPIClass& spi, int8_t ss, std::string default_name):
 
 int Plant_sensor::refresh_all() {
 
-    bool is_error = false;
     //Get UID
     auto command_out = read_command(COMMAND_GET_DEVICE_UID);
     if (command_out.size() == 0) {
         log_error_ln(F("Cannot fetch UID"));
-        is_error = true;
+        goto error;
     } else {
         char uid_c[2*command_out.size()+1] = {0};;
         for (size_t i=0; i<command_out.size(); i++) {
@@ -58,7 +57,7 @@ int Plant_sensor::refresh_all() {
     command_out = read_command(COMMAND_GET_BUILD_DATE);
     if (command_out.size() == 0) {
         log_error_ln(F("Cannot fetch build date"));
-        is_error = true;
+        goto error;
     } else {
         iv_build_date = (char*)command_out.data();
     }
@@ -67,7 +66,7 @@ int Plant_sensor::refresh_all() {
     command_out = read_command(COMMAND_GET_BUILD_TIME);
     if (command_out.size() == 0) {
         log_error_ln(F("Cannot fetch build time"));
-        is_error = true;
+        goto error;
     } else {
         iv_build_time= (char*)command_out.data();
     }
@@ -76,37 +75,42 @@ int Plant_sensor::refresh_all() {
     command_out = read_command(COMMAND_GET_GIT_COMMIT_ID);
     if (command_out.size() == 0) {
         log_error_ln(F("Cannot fetch build commit id"));
-        is_error = true;
+        goto error;
     } else {
         iv_build_commit = (char*)command_out.data();
     }
 
     //Get Blocks
-    if (receive_block_0() !=0) is_error = true;
-    if (receive_block_1() !=0) is_error = true;
-    //receive_block_2();
+    if (receive_block_0() !=0) goto error;
+    if (receive_block_1() !=0) goto error;
+    //if (receive_block_2() !=0) goto error;
 
     //Get sensors
-    if (refresh_sensors() !=0) is_error = true;
+    if (refresh_sensors() !=0) goto error;
 
+    //After a full refreh set to OK
+    iv_is_error = false;
+    return 0;
+
+error:
     //Remember last
-    iv_is_error = is_error;
-    return is_error;
+    iv_is_error = true;
+    return -1;
 }
 
 int Plant_sensor::refresh_sensors() {
-    bool is_error = false;
     
     auto command_out = read_command(COMMAND_REFRESH_SENSOR_DATA);
     delay(50);
     command_out = read_command(COMMAND_GET_SENSOR_DATA);
     if (command_out.size() == 0) {
         log_error_ln(F("Cannot fetch sensor data"));
-        is_error = true;
+        iv_is_error = true;
+        return -1;
     } else {
         iv_sensor_values = *((sensor_values_t*)command_out.data());
+        return 0;
     }
-    return is_error;
 }
 
 int Plant_sensor::init_block_0(uint8_t* old_data_p) {
@@ -124,7 +128,7 @@ int Plant_sensor::init_block_1(uint8_t* old_data_p) {
     iv_block_1.min_humidity_percentage = BLOCK_1_DEFAULT_MIN_HUMIDITY_PERCENTAGE;
     iv_block_1.max_humidity_percentage = BLOCK_1_DEFAULT_MAX_HUMIDITY_PERCENTAGE;
     iv_block_1.watering_step_s = BLOCK_1_DEFAULT_WATERING_STEP_S;
-    strncpy(iv_block_1.name, (std::string("New plant")+std::string(iv_default_name)).c_str(), sizeof(iv_block_1.name));
+    strncpy(iv_block_1.name, (std::string("plant ")+iv_uid).c_str(), sizeof(iv_block_1.name));
     return send_block_1();
 
 }
@@ -206,9 +210,12 @@ Plant_sensor::command_out_t Plant_sensor::read_command(Plant_sensor::command_t c
     }
 
     //Retries
-    if (retriesLeft--) {
+    if (is_error()) {
+        log_warning_ln("No retries - device in error");
+        return command_out_t(0);
+    } else if (retriesLeft--) {
         log_warning_ln("Retry transaction");
-        return read_command(command, retriesLeft);
+        return read_command(command, extension, retriesLeft);
     } else {
         log_error_ln("Aborting: no more reties");
         return command_out_t(0);
@@ -295,12 +302,15 @@ int Plant_sensor::_receive_block(uint8_t block_index, uint8_t* data, uint8_t siz
     }
 
     //Retries
-    if (retriesLeft--) {
+    if (is_error()) {
+        log_warning_ln("No retries - device in error");
+        return -1;
+    } else if (retriesLeft--) {
         log_warning_ln("Retry transaction");
         return _receive_block(block_index, data, size, version, init_block, retriesLeft);
     } else {
         log_error_ln("Aborting: no more retries");
-        return -1;
+        return -2;
     }
 }
 
@@ -365,11 +375,14 @@ int Plant_sensor::send_block(uint8_t block_index, uint8_t* data, uint8_t size, s
     }
 
     //Retries
-    if (retriesLeft--) {
+    if (is_error()) {
+        log_warning_ln("No retries - device in error");
+        return -1;
+    } else if (retriesLeft--) {
         log_warning_ln("Retry transaction");
         return send_block(block_index, data, size, retriesLeft);
     } else {
         log_error_ln("Aborting: no more retries");
-        return -1;
+        return -2;
     }
 }

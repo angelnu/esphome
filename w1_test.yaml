@@ -10,4 +10,4 @@ substitutions:
 #Include common definitions for home (wifi, web server, etc)
 <<: !include t-common-pueblo.yaml
 #Include device definition
-<<: !include devices/pcb-pot-watering/v1.yaml
+<<: !include devices/pcb-pot-watering/controller/v1.yaml

@@ -5,16 +5,28 @@ TBD: more explanations
 
 ## Controller
 
-- [Aisler PCB project](TBD)
-- [KiCad schematics](TBD)
-  - ![Schematics Preview](TBD)
-- [KiCad PCB](TBD)
-  - ![Schematics Preview](TBD)
+- [Aisler PCB project](https://aisler.net/p/DESISEWY)
+- [KiCad schematics](controller/KiCad/pot_watering_controller_v1.sch)
+  - ![Schematics Preview](pictures/controller_schematics_v1.png)
+- [KiCad PCB](controller/KiCad/pot_watering_controller_v1.kicad_pcb)
+  - ![PCB Bottom](pictures/controller_pcb_bottom.png)
+  - ![PCB sensor pins](pictures/controller_pcb_sensor_pins.png)
 - Parts:
   - 1x [ESP32-WROOM-32](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
-  - TBD
+  - 2x pression sensors [LPS33HWTR](https://www.st.com/resource/en/datasheet/lps33hw.pdf)
+  - 1x accelerometer [LIS3DH](https://www.st.com/resource/en/datasheet/cd00274221.pdf)
+  - 1x IC power switch [MCZ33996EK](https://www.nxp.com/docs/en/data-sheet/MC33996.pdf)
+  - 6 or 10 [RJ-45 Modular Jack - 98435-111LF](https://www.amphenol-icc.com/modular-jack-98435111lf.html)
+  - 6 or 10 connectors
 - PINs:
-  - TBD
+  - Serial programmer:
+    1. VCC
+    2. RX
+    3. TX
+    4. GND
+ - Power
+ - 6 or 10 pumpe power ports
+ - 6 or 10 ethernet ports
 - Firmwares:
   - [esphome](esphome.io)
     - You need to modify/create your own esphome definition and include the yaml in this folder matching your PCB

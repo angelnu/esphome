@@ -1,11 +1,15 @@
 # Thermostate for 220v
 This PCB allows controlling two relays based on 1 wire Dallas temperature sensors. The board has two 1-wire buses - one for the in-board sensor and one for the external sensor(s).
+- ![Thermostate_PCB_full_view](pictures/Temp_Actor_v1_full_view.jpg)
 
 - [Aisler PCB project](https://aisler.net/p/ORVQXQHK)
 - [KiCad schematics](KiCad/esp32-temp.sch)
   - ![Schematics Preview](pictures/esp32-temp_schematics.png)
 - [KiCad PCB](KiCad/esp32-temp.kicad_pcb)
   - ![Schematics Preview](pictures/esp32-temp_pcb.png)
+  - ![PCB front Preview](pictures/Temp_Actor_v1_PCB_close_view_front.jpg)
+  - ![PCB rear Preview](pictures/Temp_Actor_v1_PCB_close_view_rear.jpg)
+
 - Parts:
   - 1x [ESP32-WROOM-32](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
   - nx [Temperature Sensors - DS18B20](http://datasheets.maximintegrated.com/en/ds/DS18B20.pdf)
@@ -33,8 +37,10 @@ This PCB allows controlling two relays based on 1 wire Dallas temperature sensor
 - Firmware: [esphome](esphome.io)
   - You need to modify/create your own esphome definition and include the yaml in this folder matching your PCB
   - [Example for v1.1](../../thermostate1_buhardilla.yaml)
-- [3D Printed cage](cages):
-  - TBD
+- [3D Printed cage](cage):
+  - ![Cage Mount](pictures/Temp_Actor_v1_overview.jpg)
+  - ![Cage view](pictures/Temp_Actor_v1_cage.jpg)
+  - ![Temp Sensor Mount](pictures/Temp_Actor_v1_Temp_Sensor_mount.jpg)
 
 # Changelog
 

@@ -6,7 +6,11 @@ substitutions:
   color_twinlight: 1.0, 0.0, 0.0, 0.0
   color_night: 0.0, 0.0, 1.0, 0.0
 
-<<: !include t-common.yaml
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
 
 esphome:
   name: ${devicename}
@@ -38,9 +42,6 @@ output:
 #     id: output_white_cold
 #     pin: GPIO16
     # max_power: 100%
-
-sensor:
-  - <<: !include devices/includes/uptime-sensor.yaml
 
 text_sensor:
   - platform: homeassistant

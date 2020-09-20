@@ -5,7 +5,6 @@ esphome:
   build_path: build/${devicename}
 
 sensor:
-- <<: !include ../includes/uptime-sensor.yaml
 
 # Power sensor
 - platform: hlw8012

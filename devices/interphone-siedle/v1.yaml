@@ -4,9 +4,6 @@ esphome:
   board: d1_mini
   build_path: build/${devicename}
 
-sensor:
-  - <<: !include ../includes/uptime-sensor.yaml
-
 switch:
   - platform: gpio
     pin: D2

@@ -14,7 +14,6 @@ dallas:
 
 # Individual sensors
 sensor:
-  - <<: !include ../includes/uptime-sensor.yaml
   - platform: dallas
     #index: 0
     address: ${dallas_sensor_address_1}

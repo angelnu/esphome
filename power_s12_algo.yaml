@@ -11,5 +11,10 @@ substitutions:
   voltage_calibration1: "1 -> 1"
   voltage_calibration2: "2 -> 2"
 
-<<: !include t-common.yaml
-<<: !include devices/power-gosund/v1.yaml
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/power-gosund/v1.yaml

@@ -3,7 +3,11 @@ substitutions:
   sensorname: Leds in kids commode
   wifi_ip: "192.168.2.17"
 
-<<: !include t-common.yaml
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
 
 esphome:
   name: ${devicename}
@@ -11,9 +15,6 @@ esphome:
   board: esp8285
   #arduino_version: 2.4.2
   build_path: build/${devicename}
-
-sensor:
-  - <<: !include devices/includes/uptime-sensor.yaml
 
 light:
   - platform: cwww

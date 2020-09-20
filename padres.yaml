@@ -3,16 +3,17 @@ substitutions:
   sensorname: padres_rgbw
   wifi_ip: "192.168.103.12"
 
-<<: !include t-common-casa128.yaml
+packages:
+  #Include location specific settings
+  location: !include locations/casa128.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
 
 esphome:
   name: ${devicename}
   platform: ESP8266
   board: esp8285
   build_path: build/${devicename}
-
-sensor:
-  - <<: !include devices/includes/uptime-sensor.yaml
 
 time:
   - platform: sntp

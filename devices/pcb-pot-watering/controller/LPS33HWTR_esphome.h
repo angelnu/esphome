@@ -137,7 +137,7 @@ void LPS33HWTR_component::update() {
             lps33hw_pressure_raw_get(&dev_ctx, data_raw_pressure.u8bit);
             float pressure_hPa = lps33hw_from_lsb_to_hpa( data_raw_pressure.i32bit);
             
-            ESP_LOGD(TAG, "Got pression from %#04x: %.2f hPA", address_, pressure_hPa);
+            ESP_LOGV(TAG, "Got pression from %#04x: %.2f hPA", address_, pressure_hPa);
             this->pression_sensor->publish_state(pressure_hPa);
         } else {
             ESP_LOGW(TAG, "Could not read presion: %#04x", reg.byte);
@@ -154,7 +154,7 @@ void LPS33HWTR_component::update() {
             lps33hw_temperature_raw_get(&dev_ctx, data_raw_temperature.u8bit);
             float temperature_degC = lps33hw_from_lsb_to_degc( data_raw_temperature.i16bit );
             
-            ESP_LOGD(TAG, "Got temperature from %#04x: %.2f °C", address_, temperature_degC);
+            ESP_LOGV(TAG, "Got temperature from %#04x: %.2f °C", address_, temperature_degC);
             this->temperature_sensor->publish_state(temperature_degC);
         } else {
             ESP_LOGW(TAG, "Could not read temperature");

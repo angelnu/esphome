@@ -1,22 +1,25 @@
-#ifndef PLANT_SENSOR_ESPHOME_H
-#define PLANT_SENSOR_ESPHOME_H
+#pragma once
 
 #include "esphome.h"
+namespace esphome {
+
+namespace PlantSensor {
+
 #include <plant_sensor.h>
 
 static const auto DEFAULT_PLANT_UPDATE_RANGE = 60; 
 
 
-class Plant_sensor_esphome : public PollingComponent {
+class PlantSensorComponent : public PollingComponent {
     public:
 
-        static Plant_sensor_esphome& get(Application& App, int8_t ss, size_t update_s=DEFAULT_PLANT_UPDATE_RANGE) {
-            static std::map<int8_t, Plant_sensor_esphome*> iv_instances;
-            if (iv_instances.find(ss) == iv_instances.end()) iv_instances[ss] = new Plant_sensor_esphome(App, ss, update_s);
+        static PlantSensorComponent& get(Application& App, int8_t ss, size_t update_s=DEFAULT_PLANT_UPDATE_RANGE) {
+            static std::map<int8_t, PlantSensorComponent*> iv_instances;
+            if (iv_instances.find(ss) == iv_instances.end()) iv_instances[ss] = new PlantSensorComponent(App, ss, update_s);
             return *iv_instances.find(ss)->second;
         };
 
-        static Plant_sensor_esphome& registerRange(Application& App, int8_t min_ss, int8_t max_ss, size_t update_s=DEFAULT_PLANT_UPDATE_RANGE) {
+        static PlantSensorComponent& registerRange(Application& App, int8_t min_ss, int8_t max_ss, size_t update_s=DEFAULT_PLANT_UPDATE_RANGE) {
             for (int8_t ss = min_ss; ss < max_ss; ss++) get(App, ss, update_s);
             return get(App, min_ss, update_s);
         }
@@ -65,7 +68,7 @@ class Plant_sensor_esphome : public PollingComponent {
         std::string iv_name;
         bool iv_registered_sensors = false;
 
-        Plant_sensor_esphome(Application& App, int8_t ss, size_t update_s) :
+        PlantSensorComponent(Application& App, int8_t ss, size_t update_s) :
             PollingComponent(update_s * 1000),
             App(App),
             iv_ss(ss)
@@ -188,4 +191,5 @@ class Plant_sensor_esphome : public PollingComponent {
 
 };
 
-#endif //PLANT_SENSOR_ESPHOME_H
+}
+}

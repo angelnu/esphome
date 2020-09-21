@@ -33,13 +33,13 @@ i2c:
 
 custom_component:
 - lambda: |-
-    return {&Plant_sensor_esphome::get(App, 32),
-            &Plant_sensor_esphome::get(App, 4)};
+    return {&PlantSensor::PlantSensorComponent::get(App, 32),
+            &PlantSensor::PlantSensorComponent::get(App, 4)};
 
 sensor:
 - platform: custom
   lambda: |-
-    return {&Plant_sensor_esphome::get(App, 5).iv_sensor_version};
+    return {&PlantSensor::PlantSensorComponent::get(App, 5).iv_sensor_version};
   sensors:
     - name: version
 - platform: custom

@@ -1366,12 +1366,12 @@ $EndComp
 $Comp
 L Device:C C4
 U 1 1 5F851BD4
-P 4700 3800
-F 0 "C4" V 4952 3800 50  0000 C CNN
-F 1 "100nF" V 4861 3800 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 4738 3650 50  0001 C CNN
-F 3 "~" H 4700 3800 50  0001 C CNN
-	1    4700 3800
+P 4700 3700
+F 0 "C4" V 4952 3700 50  0000 C CNN
+F 1 "100nF" V 4861 3700 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 4738 3550 50  0001 C CNN
+F 3 "~" H 4700 3700 50  0001 C CNN
+	1    4700 3700
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -1430,22 +1430,6 @@ Text GLabel 8300 3200 2    50   Input ~ 0
 NS_sensor_00
 Text GLabel 8300 1600 2    50   Input ~ 0
 NS_sensor_01
-Wire Wire Line
-	4850 3700 4850 3800
-Connection ~ 4850 3800
-Wire Wire Line
-	4850 3800 4850 3900
-$Comp
-L Regulator_Linear:XC6206PxxxMR U7
-U 1 1 5F959F7A
-P 6950 5950
-F 0 "U7" H 6950 6192 50  0000 C CNN
-F 1 "XC6206PxxxMR" H 6950 6101 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-223" H 6950 6175 50  0001 C CIN
-F 3 "https://www.torexsemi.com/file/xc6206/XC6206.pdf" H 6950 5950 50  0001 C CNN
-	1    6950 5950
-	1    0    0    -1  
-$EndComp
 $Comp
 L power:GND #PWR0163
 U 1 1 5F967A51
@@ -1538,4 +1522,43 @@ Wire Wire Line
 Connection ~ 7300 5950
 Wire Wire Line
 	7300 5950 7350 5950
+$Comp
+L power:VCC #PWR0159
+U 1 1 5F67E237
+P 4850 3900
+F 0 "#PWR0159" H 4850 3750 50  0001 C CNN
+F 1 "VCC" V 4868 4027 50  0000 L CNN
+F 2 "" H 4850 3900 50  0001 C CNN
+F 3 "" H 4850 3900 50  0001 C CNN
+	1    4850 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C5
+U 1 1 5F67F518
+P 4700 3900
+F 0 "C5" V 4750 4000 50  0000 C CNN
+F 1 "100nF" V 4600 3900 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 4738 3750 50  0001 C CNN
+F 3 "~" H 4700 3900 50  0001 C CNN
+	1    4700 3900
+	0    -1   -1   0   
+$EndComp
+Connection ~ 4850 3900
+Wire Wire Line
+	4550 3900 4550 3800
+Connection ~ 4550 3800
+Wire Wire Line
+	4550 3800 4550 3700
+$Comp
+L Regulator_Linear:AMS1117-3.3 U6
+U 1 1 5F6BA28B
+P 6950 5950
+F 0 "U6" H 6950 6192 50  0000 C CNN
+F 1 "AMS1117-3.3" H 6950 6101 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-223-3_TabPin2" H 6950 6150 50  0001 C CNN
+F 3 "http://www.advanced-monolithic.com/pdf/ds1117.pdf" H 7050 5700 50  0001 C CNN
+	1    6950 5950
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

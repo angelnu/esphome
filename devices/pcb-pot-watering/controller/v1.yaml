@@ -13,13 +13,13 @@ esphome:
     - devices/pcb-pot-watering/controller/lib/pression/lps33hw_reg.h
     - devices/pcb-pot-watering/controller/lib/pression/lps33hw_reg.c
     - devices/pcb-pot-watering/controller/LPS33HWTR_esphome.h
+    #switches
+    - devices/pcb-pot-watering/controller/MC33996_esphome.h
   libraries:
     - "SPI"
     - "CRC32"
 
-switch:
-  - platform: restart
-    name: "${sensorname} Restart"
+
 
 spi:
   clk_pin: 18
@@ -33,8 +33,8 @@ i2c:
 
 custom_component:
 - lambda: |-
-    return {&Plant_sensor_esphome::get(App, 5),
-            &Plant_sensor_esphome::get(App, 7)};
+    return {&Plant_sensor_esphome::get(App, 32),
+            &Plant_sensor_esphome::get(App, 4)};
 
 sensor:
 - platform: custom
@@ -44,7 +44,7 @@ sensor:
     - name: version
 - platform: custom
   lambda: |-   
-    auto my_sensor = new LPS33HWTR_component();
+    auto my_sensor = new LPS33HWTR::AcceleratorComponent();
     my_sensor->set_i2c_parent(i2c_i2ccomponent);
     my_sensor->set_i2c_address(0x5C);
     App.register_component(my_sensor);
@@ -64,7 +64,7 @@ sensor:
     - delta: 0.1
 - platform: custom
   lambda: |-   
-    auto my_sensor = new LPS33HWTR_component();
+    auto my_sensor = new LPS33HWTR::AcceleratorComponent();
     my_sensor->set_i2c_parent(i2c_i2ccomponent);
     my_sensor->set_i2c_address(0x5D);
     App.register_component(my_sensor);
@@ -91,3 +91,15 @@ text_sensor:
 #     return {my_sensor->build_date_sensor};
 #   text_sensors:
 #     - name: "${sensorname} Build data"
+
+switch:
+- platform: restart
+  name: "${sensorname} Restart"
+- platform: custom
+  lambda: |-
+    auto my_custom_switch = new MC33996::ICComponent(SPI, 5);
+    App.register_component(my_custom_switch);
+    return {&my_custom_switch->get_switch(0)};
+
+  switches:
+  - name: "Pumpe 0"

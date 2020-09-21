@@ -1,13 +1,17 @@
-#ifndef LPS33HWTR_ESPHOME_H
-#define LPS33HWTR_ESPHOME_H
+#pragma once
 
 #include "esphome.h"
+namespace esphome {
+
+namespace LPS33HWTR {
+
+
 #include "lps33hw_reg.h"
 
-class LPS33HWTR_component: public PollingComponent, public i2c::I2CDevice {
+class AcceleratorComponent: public PollingComponent, public i2c::I2CDevice {
     public:
         
-        LPS33HWTR_component() : PollingComponent(2000) {};
+        AcceleratorComponent() : PollingComponent(2000) {};
         void setup() override;
         void dump_config() override;
         float get_setup_priority() const override;
@@ -33,7 +37,7 @@ static const char *TAG = "LPS33HWTR";
 static const auto LPS33HWTR_I2C_ADD = 0x5D;
 
 static int32_t platform_write(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len){
-    LPS33HWTR_component* parent = (LPS33HWTR_component*)(handle);
+    AcceleratorComponent* parent = (AcceleratorComponent*)(handle);
     return !parent->write_bytes(reg, bufp, len);
 
     //reg |= 0x80; //turn auto-increment bit on, bit 7 for I2C
@@ -44,7 +48,7 @@ static int32_t platform_write(void *handle, uint8_t reg, uint8_t *bufp, uint16_t
     return 0;
 }
 static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len){
-    LPS33HWTR_component* parent = (LPS33HWTR_component*)handle;
+    AcceleratorComponent* parent = (AcceleratorComponent*)handle;
     return !parent->read_bytes(reg, bufp, len, 2);
     
     Wire.beginTransmission(LPS33HWTR_I2C_ADD);
@@ -74,7 +78,7 @@ static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t 
 //  static const uint16_t SHTCX_COMMAND_SOFT_RESET = 0x805D;
 //  static const uint16_t SHTCX_COMMAND_POLLING_H = 0x7866;
  
-void LPS33HWTR_component::setup() {
+void AcceleratorComponent::setup() {
     ESP_LOGCONFIG(TAG, "Setting up LPS33HWTR...");
 
     //this->set_i2c_address(LPS33HWTR_I2C_ADD);
@@ -92,7 +96,7 @@ void LPS33HWTR_component::setup() {
     ESP_LOGCONFIG(TAG, "Setting up LPS33HWTR done");
 }
 
-void LPS33HWTR_component::dump_config() {
+void AcceleratorComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "LPS33HWTR:");
     //ESP_LOGCONFIG(TAG, " Model: %s", to_string(this->type_));
     LOG_I2C_DEVICE(this);
@@ -106,8 +110,8 @@ void LPS33HWTR_component::dump_config() {
     LOG_SENSOR(" ", "Pression", this->pression_sensor);
  }
 
-float LPS33HWTR_component::get_setup_priority() const { return setup_priority::DATA; }
-void LPS33HWTR_component::update() {
+float AcceleratorComponent::get_setup_priority() const { return setup_priority::DATA; }
+void AcceleratorComponent::update() {
     if (this->status_has_warning()) {
         ESP_LOGW(TAG, "Retrying to reconnect the sensor.");
         this->soft_reset();
@@ -165,7 +169,7 @@ void LPS33HWTR_component::update() {
     });
 }
 
-void LPS33HWTR_component::soft_reset() {
+void AcceleratorComponent::soft_reset() {
     /*
     *  Check device ID
     */
@@ -198,13 +202,13 @@ void LPS33HWTR_component::soft_reset() {
     });
 
 }
-void LPS33HWTR_component::sleep() {
+void AcceleratorComponent::sleep() {
 
 }
-void LPS33HWTR_component::wake_up() {
+void AcceleratorComponent::wake_up() {
 
 }
 
+}
 
-
-#endif //LPS33HWTR_ESPHOME_H
+}

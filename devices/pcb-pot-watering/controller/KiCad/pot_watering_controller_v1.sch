@@ -295,9 +295,9 @@ Wire Wire Line
 Connection ~ 5950 5500
 Wire Wire Line
 	5950 5400 5950 5500
-Text GLabel 4850 4500 0    50   Input ~ 0
-MISO
 Text GLabel 4850 4700 0    50   Input ~ 0
+MISO
+Text GLabel 4850 4500 0    50   Input ~ 0
 MOSI
 Text GLabel 4850 4300 0    50   Input ~ 0
 NS_pumpes
@@ -871,8 +871,8 @@ $Comp
 L Sensor_Motion:LIS3DH U5
 U 1 1 5F60ECC1
 P 7400 4900
-F 0 "U5" H 7400 4211 50  0000 C CNN
-F 1 "LIS3DH" H 7400 4120 50  0000 C CNN
+F 0 "U5" H 7650 4550 50  0000 C CNN
+F 1 "LIS3DH" H 7650 4450 50  0000 C CNN
 F 2 "Package_LGA:LGA-16_3x3mm_P0.5mm_LayoutBorder3x5y" H 7500 3850 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/cd00274221.pdf" H 7200 4800 50  0001 C CNN
 	1    7400 4900

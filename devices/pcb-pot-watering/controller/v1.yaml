@@ -8,13 +8,17 @@ esphome:
     # soil
     - devices/pcb-pot-watering/controller/lib/plant_sensor/plant_sensor.h
     - devices/pcb-pot-watering/controller/lib/plant_sensor/plant_sensor.cpp
-    - devices/pcb-pot-watering/controller/plant_sensor_esphome.h
+    - devices/pcb-pot-watering/controller/plantSensor.h
     # pression
     - devices/pcb-pot-watering/controller/lib/pression/lps33hw_reg.h
     - devices/pcb-pot-watering/controller/lib/pression/lps33hw_reg.c
-    - devices/pcb-pot-watering/controller/LPS33HWTR_esphome.h
+    - devices/pcb-pot-watering/controller/pression_LPS33HW.h
+    # accelerometer
+    - devices/pcb-pot-watering/controller/lib/accelerometer/lis3dh_reg.h
+    - devices/pcb-pot-watering/controller/lib/accelerometer/lis3dh_reg.c
+    - devices/pcb-pot-watering/controller/accelerometer_LIS3DH.h
     #switches
-    - devices/pcb-pot-watering/controller/MC33996_esphome.h
+    - devices/pcb-pot-watering/controller/ICSSwitch_MC33996.h 
   libraries:
     - "SPI"
     - "CRC32"
@@ -34,17 +38,27 @@ i2c:
 custom_component:
 - lambda: |-
     return {&PlantSensor::PlantSensorComponent::get(App, 32),
-            &PlantSensor::PlantSensorComponent::get(App, 4)};
+            &PlantSensor::PlantSensorComponent::get(App, 04),
+            &PlantSensor::PlantSensorComponent::get(App, 33),
+            &PlantSensor::PlantSensorComponent::get(App, 02),
+            &PlantSensor::PlantSensorComponent::get(App, 14),
+            &PlantSensor::PlantSensorComponent::get(App, 15),
+            &PlantSensor::PlantSensorComponent::get(App, 26),
+            &PlantSensor::PlantSensorComponent::get(App, 16),
+            &PlantSensor::PlantSensorComponent::get(App, 27),
+            &PlantSensor::PlantSensorComponent::get(App, 17),
+            &PlantSensor::PlantSensorComponent::get(App, 33)
+            };
 
 sensor:
-- platform: custom
-  lambda: |-
-    return {&PlantSensor::PlantSensorComponent::get(App, 5).iv_sensor_version};
-  sensors:
-    - name: version
+#- platform: custom
+#  lambda: |-
+#    return {&PlantSensor::PlantSensorComponent::get(App, 5).iv_sensor_version};
+#  sensors:
+#    - name: version
 - platform: custom
   lambda: |-   
-    auto my_sensor = new LPS33HWTR::AcceleratorComponent();
+    auto my_sensor = new LPS33HW::PressionComponent();
     my_sensor->set_i2c_parent(i2c_i2ccomponent);
     my_sensor->set_i2c_address(0x5C);
     App.register_component(my_sensor);
@@ -54,17 +68,19 @@ sensor:
     unit_of_measurement: °C
     accuracy_decimals: 2
     filters:
-    - heartbeat: 1h
-    - delta: 0.5
+    - sliding_window_moving_average:
+        window_size: 30
+        send_every: 30
   - name: "Tank Pressure"
     unit_of_measurement: hPa
     accuracy_decimals: 2
     filters:
-    - heartbeat: 1h
-    - delta: 0.1
+    - sliding_window_moving_average:
+        window_size: 30
+        send_every: 30
 - platform: custom
   lambda: |-   
-    auto my_sensor = new LPS33HWTR::AcceleratorComponent();
+    auto my_sensor = new LPS33HW::PressionComponent();
     my_sensor->set_i2c_parent(i2c_i2ccomponent);
     my_sensor->set_i2c_address(0x5D);
     App.register_component(my_sensor);
@@ -74,14 +90,65 @@ sensor:
     unit_of_measurement: °C
     accuracy_decimals: 2
     filters:
-    - heartbeat: 1h
-    - delta: 0.5
+    - sliding_window_moving_average:
+        window_size: 30
+        send_every: 30
   - name: "Air Pressure"
     unit_of_measurement: hPa
     accuracy_decimals: 2
     filters:
-    - heartbeat: 1h
-    - delta: 0.1
+    - sliding_window_moving_average:
+        window_size: 30
+        send_every: 30
+- platform: custom
+  lambda: |-   
+    auto my_sensor = new LIS3DH::AcceleratorComponent();
+    my_sensor->set_i2c_parent(i2c_i2ccomponent);
+    my_sensor->set_i2c_address(0x19);
+    App.register_component(my_sensor);
+    return {my_sensor->g_x, my_sensor->g_y, my_sensor->g_z, my_sensor->temperature};
+  sensors:
+  - name: "x-axis"
+    id: x_axis
+    unit_of_measurement: g
+    accuracy_decimals: 2
+    filters:
+    - sliding_window_moving_average:
+        window_size: 5
+        send_every: 1
+  - name: "y-axis"
+    id: y_axis
+    unit_of_measurement: g
+    accuracy_decimals: 2
+    filters:
+    - sliding_window_moving_average:
+        window_size: 5
+        send_every: 1
+  - name: "z-axis"
+    id: z_axis
+    unit_of_measurement: g
+    accuracy_decimals: 2
+    filters:
+    - sliding_window_moving_average:
+        window_size: 5
+        send_every: 1
+  - name: "Accelerometer Temperature"
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    filters:
+    - sliding_window_moving_average:
+        window_size: 5
+        send_every: 1
+- platform: template
+  name: "Angle"
+  lambda: |-
+    constexpr double pi = std::acos(-1);
+    return atan2(sqrt(pow(id(x_axis).state, 2) + pow(id(y_axis).state, 2)), -id(z_axis).state)*180/pi;
+  update_interval: 2s
+  filters:
+  - sliding_window_moving_average:
+      window_size: 5
+      send_every: 1
 binary_sensor:
 text_sensor:
 # - platform: custom
@@ -99,7 +166,28 @@ switch:
   lambda: |-
     auto my_custom_switch = new MC33996::ICComponent(SPI, 5);
     App.register_component(my_custom_switch);
-    return {&my_custom_switch->get_switch(0)};
+    return {&my_custom_switch->get_switch(0),
+            &my_custom_switch->get_switch(1),
+            &my_custom_switch->get_switch(2),
+            &my_custom_switch->get_switch(3),
+            &my_custom_switch->get_switch(4),
+            &my_custom_switch->get_switch(5),
+            &my_custom_switch->get_switch(6),
+            &my_custom_switch->get_switch(7),
+            &my_custom_switch->get_switch(8),
+            &my_custom_switch->get_switch(9),
+            &my_custom_switch->get_switch(10)
+            };
 
   switches:
   - name: "Pumpe 0"
+  - name: "Pumpe 1"
+  - name: "Pumpe 2"
+  - name: "Pumpe 3"
+  - name: "Pumpe 4"
+  - name: "Pumpe 5"
+  - name: "Pumpe 6"
+  - name: "Pumpe 7"
+  - name: "Pumpe 8"
+  - name: "Pumpe 9"
+  - name: "Pumpe 10"

@@ -3,15 +3,15 @@
 #include "esphome.h"
 namespace esphome {
 
-namespace LPS33HWTR {
+namespace LPS33HW {
 
 
 #include "lps33hw_reg.h"
 
-class AcceleratorComponent: public PollingComponent, public i2c::I2CDevice {
+class PressionComponent: public PollingComponent, public i2c::I2CDevice {
     public:
         
-        AcceleratorComponent() : PollingComponent(2000) {};
+        PressionComponent() : PollingComponent(2000) {};
         void setup() override;
         void dump_config() override;
         float get_setup_priority() const override;
@@ -37,48 +37,15 @@ static const char *TAG = "LPS33HWTR";
 static const auto LPS33HWTR_I2C_ADD = 0x5D;
 
 static int32_t platform_write(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len){
-    AcceleratorComponent* parent = (AcceleratorComponent*)(handle);
+    PressionComponent* parent = (PressionComponent*)(handle);
     return !parent->write_bytes(reg, bufp, len);
-
-    //reg |= 0x80; //turn auto-increment bit on, bit 7 for I2C
-    Wire.beginTransmission(LPS33HWTR_I2C_ADD);
-    Wire.write(reg);                   // sends instruction byte  
-    Wire.write(bufp, len);             // sends buffer  
-    return Wire.endTransmission();
-    return 0;
 }
 static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len){
-    AcceleratorComponent* parent = (AcceleratorComponent*)handle;
-    return !parent->read_bytes(reg, bufp, len, 2);
-    
-    Wire.beginTransmission(LPS33HWTR_I2C_ADD);
-    //reg |= 0x80; //turn auto-increment bit on, bit 7 for I2C
-    Wire.write(reg);
-    if( Wire.endTransmission() != 0 )
-    {
-        ESP_LOGE(TAG, "Couldn not end transmission");
-        return -1;
-    }
-    else  //OK, all worked, keep going
-    {
-        Wire.requestFrom((uint8_t)LPS33HWTR_I2C_ADD, (uint8_t)len);
-        for (size_t i=0; i< len && Wire.available(); i++)
-        {
-            bufp[i] = Wire.read(); // receive a byte as character
-        }
-    }
-    uint8_t rc=Wire.endTransmission();
-    ESP_LOGD(TAG, "read done %d", rc);
-    return rc;
+    PressionComponent* parent = (PressionComponent*)handle;
+    return !parent->read_bytes(reg, bufp, len);
 }
  
-//  static const uint16_t SHTCX_COMMAND_SLEEP = 0xB098;
-//  static const uint16_t SHTCX_COMMAND_WAKEUP = 0x3517;
-//  static const uint16_t SHTCX_COMMAND_READ_ID_REGISTER = 0xEFC8;
-//  static const uint16_t SHTCX_COMMAND_SOFT_RESET = 0x805D;
-//  static const uint16_t SHTCX_COMMAND_POLLING_H = 0x7866;
- 
-void AcceleratorComponent::setup() {
+void PressionComponent::setup() {
     ESP_LOGCONFIG(TAG, "Setting up LPS33HWTR...");
 
     //this->set_i2c_address(LPS33HWTR_I2C_ADD);
@@ -96,7 +63,7 @@ void AcceleratorComponent::setup() {
     ESP_LOGCONFIG(TAG, "Setting up LPS33HWTR done");
 }
 
-void AcceleratorComponent::dump_config() {
+void PressionComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "LPS33HWTR:");
     //ESP_LOGCONFIG(TAG, " Model: %s", to_string(this->type_));
     LOG_I2C_DEVICE(this);
@@ -110,8 +77,8 @@ void AcceleratorComponent::dump_config() {
     LOG_SENSOR(" ", "Pression", this->pression_sensor);
  }
 
-float AcceleratorComponent::get_setup_priority() const { return setup_priority::DATA; }
-void AcceleratorComponent::update() {
+float PressionComponent::get_setup_priority() const { return setup_priority::DATA; }
+void PressionComponent::update() {
     if (this->status_has_warning()) {
         ESP_LOGW(TAG, "Retrying to reconnect the sensor.");
         this->soft_reset();
@@ -169,7 +136,7 @@ void AcceleratorComponent::update() {
     });
 }
 
-void AcceleratorComponent::soft_reset() {
+void PressionComponent::soft_reset() {
     /*
     *  Check device ID
     */
@@ -202,10 +169,10 @@ void AcceleratorComponent::soft_reset() {
     });
 
 }
-void AcceleratorComponent::sleep() {
+void PressionComponent::sleep() {
 
 }
-void AcceleratorComponent::wake_up() {
+void PressionComponent::wake_up() {
 
 }
 

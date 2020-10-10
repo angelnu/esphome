@@ -1,7 +1,9 @@
 substitutions:
-  devicename: l2_kids_lights_bed
-  sensorname: Kids Bed
-  wifi_ip: "192.168.2.18"
+  devicename: l3_workroom_1
+  sensorname: lights workroom
+  light_1: computers
+  light_2: window
+  wifi_ip: "192.168.0.2"
 
 packages:
   #Include location specific settings
@@ -9,4 +11,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/lights-LEDEnet/rgbw.yaml
+  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml

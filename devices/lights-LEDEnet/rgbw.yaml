@@ -1,0 +1,11 @@
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v1.yaml
+
+light:
+  - platform: rgbw
+    name: "${sensorname}"
+    red:   output_red
+    green: output_green
+    blue:  output_blue
+    white: output_white_cold

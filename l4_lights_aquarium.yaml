@@ -40,7 +40,7 @@ output:
     # max_power: 100%
 #   - platform: esp8266_pwm
 #     id: output_white_cold
-#     pin: GPIO16
+#     pin: GPIO05
     # max_power: 100%
 
 text_sensor:

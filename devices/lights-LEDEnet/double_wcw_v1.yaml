@@ -1,0 +1,17 @@
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v1.yaml
+
+light:
+  - platform: cwww
+    name: "${sensorname} ${light_1}"
+    cold_white: output_green
+    warm_white: output_red
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+  - platform: cwww
+    name: "${sensorname} ${light_2}"
+    cold_white: output_white_cold
+    warm_white: output_white_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K

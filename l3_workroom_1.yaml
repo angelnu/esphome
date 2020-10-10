@@ -1,6 +1,6 @@
 substitutions:
   devicename: l3_workroom_1
-  sensorname: lights workroom
+  sensorname: leds workroom
   light_1: computers
   light_2: window
   wifi_ip: "192.168.0.2"

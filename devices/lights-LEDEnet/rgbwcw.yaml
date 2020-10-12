@@ -3,10 +3,12 @@ packages:
   base_ledenet: !include base_v1.yaml
 
 light:
-  - platform: rgbw
+  - platform: rgbww
     name: "${sensorname}"
     red:   output_red
     green: output_green
     blue:  output_blue
-    white: output_white_cold
+    cold_white: output_white_cold
     warm_white: output_white_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K

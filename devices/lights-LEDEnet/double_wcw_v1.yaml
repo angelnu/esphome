@@ -5,7 +5,7 @@ packages:
 light:
   - platform: cwww
     name: "${sensorname} ${light_1}"
-    cold_white: output_green
+    cold_white: output_blue
     warm_white: output_red
     cold_white_color_temperature: 6536 K
     warm_white_color_temperature: 2000 K

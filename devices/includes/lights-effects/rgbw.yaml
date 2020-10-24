@@ -1,0 +1,15 @@
+text_sensor:
+  - platform: homeassistant
+    name: "${sensorname}_moon"
+    id: moon_sensor
+    entity_id: sensor.moon
+
+esphome:
+  includes:
+    # effects
+    - devices/includes/lights-effects/src/colors.h
+    - devices/includes/lights-effects/src/night.h
+    - devices/includes/lights-effects/src/sunday.h
+    - devices/includes/lights-effects/src/sunrise.h
+    - devices/includes/lights-effects/src/sunset.h
+    - devices/includes/lights-effects/src/storm.h

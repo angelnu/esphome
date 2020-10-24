@@ -1,0 +1,20 @@
+- lambda:
+    name: Storm
+    update_interval: 10s #Defaults to 0ms.
+    lambda: light_effect_storm();
+- lambda:
+    name: Sunrise
+    update_interval: 5min #Defaults to 0ms.
+    lambda: light_effect_sunrise();
+- lambda:
+    name: Sunset
+    update_interval: 5min #Defaults to 0ms.
+    lambda: light_effect_sunset();
+- lambda:
+    name: Sunday
+    update_interval: 15s #Defaults to 0ms.
+    lambda: light_effect_night();
+- lambda:
+    name: Night
+    update_interval: 15s #Defaults to 0ms.
+    lambda: light_effect_night();

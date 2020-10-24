@@ -1,10 +1,13 @@
 packages:
   #Include base device definition
   base_ledenet: !include base_v1.yaml
+  #Light effects
+  lights-effects: !include ../includes/lights-effects/rgbw.yaml
 
 light:
   - platform: rgbww
     name: "${sensorname}"
+    id: my_light
     red:   output_red
     green: output_green
     blue:  output_blue
@@ -12,3 +15,5 @@ light:
     warm_white: output_white_warm
     cold_white_color_temperature: 6536 K
     warm_white_color_temperature: 2000 K
+    effects:
+      !include ../includes/lights-effects/rgbw_effects.yaml

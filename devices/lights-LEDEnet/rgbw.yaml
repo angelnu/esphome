@@ -1,11 +1,16 @@
 packages:
   #Include base device definition
   base_ledenet: !include base_v1.yaml
+  #Light effects
+  lights-effects: !include ../includes/lights-effects/rgbw.yaml
 
 light:
   - platform: rgbw
     name: "${sensorname}"
+    id: my_light
     red:   output_red
     green: output_green
     blue:  output_blue
-    white: output_white_cold
+    white: output_white_warm
+    effects:
+      !include ../includes/lights-effects/rgbw_effects.yaml

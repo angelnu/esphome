@@ -13,3 +13,4 @@ esphome:
     - devices/includes/lights-effects/src/sunrise.h
     - devices/includes/lights-effects/src/sunset.h
     - devices/includes/lights-effects/src/storm.h
+    - devices/includes/lights-effects/src/rgb_breathing.h

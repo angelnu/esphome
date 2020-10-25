@@ -1,3 +1,10 @@
+
+- strobe: 
+    name: Strobe
+- flicker:
+    name: Flicker
+    #alpha: 95%
+    #intensity: 1.5%
 - lambda:
     name: Storm
     update_interval: 10s #Defaults to 0ms.
@@ -18,3 +25,7 @@
     name: Night
     update_interval: 15s #Defaults to 0ms.
     lambda: light_effect_night();
+- lambda:
+    name: Breathing
+    update_interval: 15s #Defaults to 0ms.
+    lambda: light_effect_rgb_breathing();

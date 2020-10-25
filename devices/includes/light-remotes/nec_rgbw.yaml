@@ -1,0 +1,353 @@
+binary_sensor:
+- platform: remote_receiver
+  name: "Button UP"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x906F
+  on_press:
+    then:
+      - light.dim_relative:
+          id: my_light
+          relative_brightness: 10% 
+- platform: remote_receiver
+  name: "Button DOWN"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xB847
+  on_press:
+    then:
+      - light.dim_relative:
+          id: my_light
+          relative_brightness: -10%
+- platform: remote_receiver
+  name: "Button OFF"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xF807
+  on_press:
+    then:
+      - light.turn_off: my_light
+- platform: remote_receiver
+  name: "Button ON"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xB04F
+  on_press:
+    then:
+      - light.turn_on: my_light
+      
+- platform: remote_receiver
+  name: "Button Red"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x9867
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 0%
+          blue: 0%
+          white: 0%
+
+- platform: remote_receiver
+  name: "Button Red->yellow-1"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xE817
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 80%
+          green: 40%
+          blue: 0%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Red->yellow-2"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x02FD
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 50%
+          blue: 0%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Red->yellow-3"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x50AF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 70%
+          blue: 40%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Red->yellow-4"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x38C7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 100%
+          blue: 0%
+          white: 0%
+      
+- platform: remote_receiver
+  name: "Button Green"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xD827
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 0%
+          white: 0%
+
+- platform: remote_receiver
+  name: "Button Green->Blue-1"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x48B7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 50%
+          green: 100%
+          blue: 0%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Green->Blue-2"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x32CD
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 50%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Green->Blue-3"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x7887
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 80%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Green->Blue-4"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x28D7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 80%
+          blue: 100%
+          white: 0%
+      
+- platform: remote_receiver
+  name: "Button Blue"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x8877
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 0%
+          green: 0%
+          blue: 100%
+          white: 0%
+
+- platform: remote_receiver
+  name: "Button Blue->Pink-1"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x6897
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 30%
+          green: 0%
+          blue: 100%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Blue->Pink-2"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x20DF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 50%
+          green: 0%
+          blue: 100%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Blue->Pink-3"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x708F
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 80%
+          green: 0%
+          blue: 100%
+          white: 0%
+- platform: remote_receiver
+  name: "Button Blue->Pink-4"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xF00F
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 0%
+          blue: 100%  
+          white: 0%    
+
+- platform: remote_receiver
+  name: "Button White"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xA857
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: none
+          #brightness: 100%
+          red: 100%
+          green: 100%
+          blue: 100%
+          white: 100%
+
+- platform: remote_receiver
+  name: "Button Flash"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0xB24D
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Flicker 
+          
+- platform: remote_receiver
+  name: "Button Strobe"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x00FF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Strobe 
+
+- platform: remote_receiver
+  name: "Button Fade"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x58A7
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: Breathing
+
+- platform: remote_receiver
+  name: "Button Smooth"
+  internal: True
+  nec:
+    address: 0x00FF
+    command: 0x30CF
+  on_press:
+    then:
+      - light.turn_on:
+          id: my_light
+          effect: RGB_Breathing          
+

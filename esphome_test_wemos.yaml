@@ -1,0 +1,16 @@
+substitutions:
+  devicename: esphome_minimal
+  sensorname: esphome_minimal
+  wifi_ip: "192.168.0.12"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: d1_mini
+  build_path: build/${devicename}

@@ -1,10 +1,9 @@
 substitutions:
-  devicename: l10_guestroom_leds_3
-  sensorname: guestroom leds
-  light_1: unused
-  light_2: back
-  wifi_ip: "192.168.0.8"
-  pwm_frequency: "100 Hz"
+  devicename: l03_workroom_1
+  sensorname: leds workroom
+  light_1: computers
+  light_2: window
+  wifi_ip: "192.168.0.2"
 
 packages:
   #Include location specific settings

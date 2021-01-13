@@ -4,6 +4,7 @@ substitutions:
   light_1: left
   light_2: front
   wifi_ip: "192.168.0.6"
+  pwm_frequency: "100 Hz"
 
 packages:
   #Include location specific settings

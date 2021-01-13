@@ -1,9 +1,9 @@
 substitutions:
-  devicename: l5_workroom_2
-  sensorname: leds workroom
-  light_1: door
-  light_2: shelves
-  wifi_ip: "192.168.0.3"
+  devicename: l13_bedroom_leds_3
+  sensorname: bedroom leds
+  light_1: back
+  light_2: unused
+  wifi_ip: 192.168.0.11
 
 packages:
   #Include location specific settings

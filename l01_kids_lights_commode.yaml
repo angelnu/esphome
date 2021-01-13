@@ -1,5 +1,5 @@
 substitutions:
-  devicename: l1_kids_lights_commode
+  devicename: l01_dani_lights_commode
   sensorname: Leds in kids commode
   wifi_ip: "192.168.2.17"
 
@@ -18,13 +18,13 @@ esphome:
 
 light:
   - platform: cwww
-    name: "Kids Commode"
+    name: "Dani Commode"
     cold_white: output_bottom_cold
     warm_white: output_bottom_warm
     cold_white_color_temperature: 6536 K
     warm_white_color_temperature: 2000 K
   - platform: cwww
-    name: "Kids Shelves"
+    name: "Dani Shelves"
     cold_white: output_top_cold
     warm_white: output_top_warm
     cold_white_color_temperature: 6536 K

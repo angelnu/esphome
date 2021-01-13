@@ -1,10 +1,7 @@
 substitutions:
-  devicename: l10_guestroom_leds_3
-  sensorname: guestroom leds
-  light_1: unused
-  light_2: back
-  wifi_ip: "192.168.0.8"
-  pwm_frequency: "100 Hz"
+  devicename: l06_large_flur_leds
+  sensorname: leds large flur
+  wifi_ip: "192.168.0.4"
 
 packages:
   #Include location specific settings
@@ -12,4 +9,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml
+  device: !include devices/lights-LEDEnet/rgbwcw.yaml

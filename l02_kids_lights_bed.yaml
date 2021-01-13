@@ -1,7 +1,7 @@
 substitutions:
-  devicename: l4_lights_aquarium
-  sensorname: livingroom_lights_aquarium
-  wifi_ip: "192.168.2.20"
+  devicename: l02_alicia_lights_bed
+  sensorname: Alicia Bed
+  wifi_ip: "192.168.2.18"
 
 packages:
   #Include location specific settings

@@ -20,7 +20,7 @@
 - lambda:
     name: Sunday
     update_interval: 15s #Defaults to 0ms.
-    lambda: light_effect_night();
+    lambda: light_effect_sunday();
 - lambda:
     name: Night
     update_interval: 15s #Defaults to 0ms.

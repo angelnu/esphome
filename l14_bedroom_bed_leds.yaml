@@ -1,7 +1,9 @@
 substitutions:
-  devicename: esphome_minimal
-  sensorname: esphome_minimal
-  wifi_ip: "192.168.2.2"
+  devicename: l14_bedroom_leds
+  sensorname: bedroom leds
+  light_1: back
+  light_2: unused
+  wifi_ip: 192.168.0.12
 
 packages:
   #Include location specific settings
@@ -14,23 +16,24 @@ esphome:
   platform: ESP32
   board: nodemcu-32s
   build_path: build/${devicename}
-
+  platformio_options:
+    # Circumvention for https://github.com/esphome/issues/issues/1481
+    lib_deps:
+    - NeoPixelBus@2.6.2
+    - ArduinoJson-esphomelib@5.13.3
+    - AsyncTCP
+    - ESPAsyncWebServer-esphome
 light:
-  - platform: neopixelbus
+  - name: "${sensorname} long"
+    id: light_long
+    platform: neopixelbus
     type: GRBW
     variant: SK6812
-    method: ESP32_RMT_0
-    pin: GPIO22
-    num_leds: 42
-    name: "NeoPixel Light 0"
-  - platform: neopixelbus
-    type: GRBW
-    variant: SK6812
-    method: ESP32_RMT_1
-    pin: GPIO23
-    num_leds: 300
-    name: "NeoPixel Light 1"
-    effects:
+    #method: ESP32_RMT_1
+    pin: GPIO21
+    num_leds: 197
+  
+    effects: &effects
       - addressable_rainbow:
       - addressable_rainbow:
           name: Rainbow Effect With Custom Values
@@ -111,3 +114,49 @@ light:
               // optionally do a return so nothing happens until the next update_interval
               return;
             }
+  - name: "${sensorname} Mireille"
+    platform: partition
+    segments:
+      - id: light_long
+        from: 0
+        to: 105
+    effects: *effects
+
+  - name: "${sensorname} Angel"
+    platform: partition
+    segments:
+      - id: light_long
+        from: 106
+        to: 196
+    effects: *effects
+
+  - name: "${sensorname} Angel Night"
+    platform: partition
+    segments:
+      - id: light_long
+        from: 140
+        to: 160
+    effects: *effects
+  - name: "${sensorname} Mireille Night"
+    platform: partition
+    segments:
+      - id: light_long
+        from: 70
+        to: 90
+    effects: *effects
+  - name: "${sensorname} Mireille Table"
+    platform: neopixelbus
+    type: GRBW
+    variant: SK6812
+    method: ESP32_RMT_0
+    pin: GPIO22
+    num_leds: 45
+    effects: *effects
+  - name: "${sensorname} Angel Table"
+    platform: neopixelbus
+    type: GRBW
+    variant: SK6812
+    method: ESP32_RMT_1
+    pin: GPIO23
+    num_leds: 31
+    effects: *effects

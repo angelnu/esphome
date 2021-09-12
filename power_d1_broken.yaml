@@ -1,6 +1,8 @@
 substitutions:
   devicename: power_d1_algo
-  sensorname: room_switch_algo
+  sensorname: room switch algo
+  switch1: switch1
+  switch2: switch2
   wifi_ip: "192.168.2.8"
 
   restore_mode: RESTORE_DEFAULT_ON

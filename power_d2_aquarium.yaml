@@ -1,6 +1,8 @@
 substitutions:
-  devicename: power_d2_algo
-  sensorname: room_switch_algo
+  devicename: power_d2_aquarium
+  sensorname: switch aquarium
+  switch1: ultraviolet
+  switch2: filter
   wifi_ip: "192.168.2.9"
 
   restore_mode: RESTORE_DEFAULT_ON

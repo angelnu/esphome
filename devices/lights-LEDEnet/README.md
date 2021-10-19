@@ -1,1 +1,2 @@
-https://templates.blakadder.com/ledenet.html
+- https://www.esphome-devices.com/devices/LEDENET-Smart-WiFi-RGB-WW-CW
+- https://templates.blakadder.com/ledenet.html

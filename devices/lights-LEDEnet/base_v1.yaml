@@ -1,5 +1,5 @@
 substitutions:
-  pwm_frequency: "1000 Hz"
+  pwm_frequency: "100 Hz"
 esphome:
   name: ${devicename}
   platform: ESP8266
@@ -28,6 +28,20 @@ output:
     frequency: ${pwm_frequency}
     pin: GPIO05
 
+status_led:
+  pin:
+    number: GPIO2 #Led1i
+    inverted: true
 
-# GPIO00	Button1
-# GPIO02	Led1i
+binary_sensor:
+- platform: gpio
+  name: "${sensorname} Reset Button"
+  id: button
+  pin:
+    number: GPIO0
+    inverted: true
+  filters:
+  - delayed_off: 10ms
+  on_press:
+    then:
+    - script.execute: toggle_light

@@ -39,9 +39,11 @@ binary_sensor:
   id: button
   pin:
     number: GPIO0
+    mode: INPUT_PULLUP
     inverted: true
   filters:
-  - delayed_off: 10ms
+  - delayed_on: 100ms
+  - delayed_off: 100ms
   on_press:
     then:
     - script.execute: toggle_light

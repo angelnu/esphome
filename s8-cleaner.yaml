@@ -1,9 +1,9 @@
 substitutions:
-  devicename: power_s2_nas
-  sensorname: Living Room Nas
-  wifi_ip: "192.168.2.22"
+  devicename: s8-cleaner
+  sensorname: guestroom_cleaner
+  wifi_ip: "192.168.2.13"
 
-  restore_mode: RESTORE_DEFAULT_ON
+  restore_mode: RESTORE_DEFAULT_OFF
   wattage_calibration1: "1 -> 1"
   wattage_calibration2: "2 -> 2"
   amperage_calibration1: "1 -> 1"

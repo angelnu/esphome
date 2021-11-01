@@ -1,9 +1,11 @@
 substitutions:
-  devicename: power_s1_server
-  sensorname: Living Room Server
-  wifi_ip: "192.168.2.21"
-  
-  restore_mode: RESTORE_DEFAULT_ON 
+  devicename: d2-aquarium
+  sensorname: switch aquarium
+  switch1: ultraviolet
+  switch2: filter
+  wifi_ip: "192.168.2.9"
+
+  restore_mode: RESTORE_DEFAULT_ON
   wattage_calibration1: "1 -> 1"
   wattage_calibration2: "2 -> 2"
   amperage_calibration1: "1 -> 1"
@@ -17,4 +19,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/power-gosund/v1.yaml
+  device: !include devices/power-slitinto/v1.yaml

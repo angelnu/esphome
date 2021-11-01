@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l20-ledscontroler-rgbww
+  sensorname: leds controler rgbww
+  light_1: back
+  light_2: unused
+  wifi_ip: 192.168.0.18
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml

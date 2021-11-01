@@ -1,9 +1,7 @@
 substitutions:
-  devicename: power_d2_aquarium
-  sensorname: switch aquarium
-  switch1: ultraviolet
-  switch2: filter
-  wifi_ip: "192.168.2.9"
+  devicename: s10-algo
+  sensorname: room_switch_algo
+  wifi_ip: "192.168.2.210"
 
   restore_mode: RESTORE_DEFAULT_ON
   wattage_calibration1: "1 -> 1"
@@ -19,4 +17,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/power-slitinto/v1.yaml
+  device: !include devices/power-gosund/v1.yaml

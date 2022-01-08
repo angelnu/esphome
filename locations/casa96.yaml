@@ -1,2 +1,7 @@
-#It must not be empty
-logger:
+wifi:  
+  # Optional manual IP
+  manual_ip:
+    static_ip: ${wifi_ip}
+    gateway: !secret wifi_gateway
+    subnet: !secret wifi_subnet
+    dns1: !secret wifi_dns1

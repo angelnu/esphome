@@ -13,4 +13,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/trashcan/v1.yaml
+  device: !include devices/pcb-trashcan/v1.yaml

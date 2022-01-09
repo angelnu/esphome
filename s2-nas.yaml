@@ -1,5 +1,5 @@
 substitutions:
-  devicename: power_s2_nas
+  devicename: s2_nas
   sensorname: Living Room Nas
   wifi_ip: "192.168.2.22"
 

@@ -1,7 +1,7 @@
 substitutions:
-  devicename: power_d2_algo
+  devicename: s12_algo
   sensorname: room_switch_algo
-  wifi_ip: "192.168.2.9"
+  wifi_ip: "192.168.2.212"
 
   restore_mode: RESTORE_DEFAULT_ON
   wattage_calibration1: "1 -> 1"
@@ -17,4 +17,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/power-slitinto/v1.yaml
+  device: !include devices/power-gosund/v1.yaml

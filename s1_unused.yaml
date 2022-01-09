@@ -1,7 +1,7 @@
 substitutions:
-  devicename: power_s3_cluster
-  sensorname: Living Room Cluster
-  wifi_ip: "192.168.2.23"
+  devicename: power_s1_unused
+  sensorname: unused
+  wifi_ip: "192.168.2.21"
   
   restore_mode: RESTORE_DEFAULT_ON 
   wattage_calibration1: "1 -> 1"

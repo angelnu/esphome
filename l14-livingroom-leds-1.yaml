@@ -1,9 +1,7 @@
 substitutions:
-  devicename: l12_bedroom_leds_2
-  sensorname: bedroom leds
-  light_1: right
-  light_2: left
-  wifi_ip: 192.168.0.10
+  devicename: l14-livingroom-leds-1
+  sensorname: livingroom leds right
+  wifi_ip: 192.168.0.13
   pwm_frequency: "1000 Hz"
 
 packages:
@@ -12,4 +10,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml
+  device: !include devices/lights-LEDEnet/rgbwcw.yaml

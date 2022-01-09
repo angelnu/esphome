@@ -1,5 +1,5 @@
 substitutions:
-  devicename: power_s5_heater
+  devicename: s5-heater
   sensorname: guestroom_heater
   wifi_ip: "192.168.2.16"
   

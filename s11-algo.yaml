@@ -1,7 +1,7 @@
 substitutions:
-  devicename: power_s10_algo
+  devicename: s11_algo
   sensorname: room_switch_algo
-  wifi_ip: "192.168.2.210"
+  wifi_ip: "192.168.2.211"
 
   restore_mode: RESTORE_DEFAULT_ON
   wattage_calibration1: "1 -> 1"

@@ -1,9 +1,9 @@
 substitutions:
-  devicename: power_s7_lamp
-  sensorname: guestroom_lamp
-  wifi_ip: "192.168.2.14"
+  devicename: s10-algo
+  sensorname: room_switch_algo
+  wifi_ip: "192.168.2.210"
 
-  restore_mode: RESTORE_DEFAULT_OFF
+  restore_mode: RESTORE_DEFAULT_ON
   wattage_calibration1: "1 -> 1"
   wattage_calibration2: "2 -> 2"
   amperage_calibration1: "1 -> 1"

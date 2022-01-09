@@ -1,7 +1,7 @@
 substitutions:
   devicename: rgbleds_test
   sensorname: guestroom_lights_test
-  wifi_ip: "192.168.2.12"
+  #wifi_ip: "192.168.2.12"
   color_sunday: 1.0, 1.0, 1.0
   color_twinlight: 1.0, 0.0, 0.0
   color_night: 0.0, 0.0, 1.0

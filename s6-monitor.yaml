@@ -1,5 +1,5 @@
 substitutions:
-  devicename: power_s6_monitor
+  devicename: s6-monitor
   sensorname: guestroom_monitor
   wifi_ip: "192.168.2.15"
 

@@ -1,5 +1,5 @@
 substitutions:
-  devicename: l14_bedroom_leds
+  devicename: l19_bedroom_bed_leds
   sensorname: bedroom leds
   light_1: back
   light_2: unused
@@ -16,13 +16,13 @@ esphome:
   platform: ESP32
   board: nodemcu-32s
   build_path: build/${devicename}
-  platformio_options:
-    # Circumvention for https://github.com/esphome/issues/issues/1481
-    lib_deps:
-    - NeoPixelBus@2.6.2
-    - ArduinoJson-esphomelib@5.13.3
-    - AsyncTCP
-    - ESPAsyncWebServer-esphome
+  # platformio_options:
+  #   # Circumvention for https://github.com/esphome/issues/issues/1481
+  #   lib_deps:
+  #   - NeoPixelBus@2.6.2
+  #   - ArduinoJson-esphomelib@5.13.3
+  #   - AsyncTCP
+  #   - ESPAsyncWebServer-esphome
 light:
   - name: "${sensorname} long"
     id: light_long

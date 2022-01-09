@@ -1,10 +1,11 @@
+
 substitutions:
-  devicename: l12_bedroom_leds_2
-  sensorname: bedroom leds
-  light_1: right
-  light_2: left
-  wifi_ip: 192.168.0.10
-  pwm_frequency: "1000 Hz"
+  #This is the name for device in wifi
+  devicename: trashcan
+  #Sensor name in home assistant and web server
+  sensorname: trashcan
+  #IP for device
+  wifi_ip: "192.168.0.23"
 
 packages:
   #Include location specific settings
@@ -12,4 +13,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml
+  device: !include devices/trashcan/v1.yaml

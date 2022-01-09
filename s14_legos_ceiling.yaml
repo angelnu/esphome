@@ -1,0 +1,23 @@
+substitutions:
+  devicename: s13_legos_ceiling
+  sensorname: legos ceiling
+  wifi_ip: "192.168.0.25"
+
+  restore_mode: RESTORE_DEFAULT_ON
+
+  switch_1: s1
+  switch_2: s2
+  switch_3: s3
+  switch_4: s4
+  switch_5: s5
+  switch_6: s6
+  switch_7: s7
+  switch_8: s8
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/pcb-power-usb/v1.yaml

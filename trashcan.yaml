@@ -1,0 +1,16 @@
+
+substitutions:
+  #This is the name for device in wifi
+  devicename: trashcan
+  #Sensor name in home assistant and web server
+  sensorname: trashcan
+  #IP for device
+  wifi_ip: "192.168.0.23"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/pcb-trashcan/v1.yaml

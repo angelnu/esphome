@@ -4,6 +4,7 @@ substitutions:
   light_1: back
   light_2: unused
   wifi_ip: 192.168.0.11
+  pwm_frequency: "1000 Hz"
 
 packages:
   #Include location specific settings

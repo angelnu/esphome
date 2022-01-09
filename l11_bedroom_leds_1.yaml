@@ -2,7 +2,7 @@ substitutions:
   devicename: l11_bedroom_leds_1
   sensorname: bedroom leds front
   wifi_ip: 192.168.0.9
-  pwm_frequency: "100 Hz"
+  pwm_frequency: "1000 Hz"
 
 packages:
   #Include location specific settings

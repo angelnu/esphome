@@ -70,12 +70,12 @@ switch:
 # Switch to toggle the relay
 - platform: gpio
   id: relay1
-  name: ${sensorname}_switch1
+  name: ${sensorname} ${switch1}
   pin: GPIO15
   restore_mode: ${restore_mode}
 - platform: gpio
   id: relay2
-  name: ${sensorname}_switch2
+  name: ${sensorname} ${switch2}
   pin: GPIO14
   restore_mode: ${restore_mode}
   # on_turn_on:

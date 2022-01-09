@@ -1,0 +1,13 @@
+substitutions:
+  devicename: l14-livingroom-leds-1
+  sensorname: livingroom leds right
+  wifi_ip: 192.168.0.13
+  pwm_frequency: "1000 Hz"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/rgbwcw.yaml

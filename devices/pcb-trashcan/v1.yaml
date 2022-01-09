@@ -1,0 +1,152 @@
+
+substitutions:
+  stepper_max_speed: "700" # In steps/s (200 steps: 1 rotation. 40 steps ca 1 cm)
+  stepper_max_acceleration: "100" # In steps/s
+  stepper_stall_threshold: "20" # Higher value makes stall detection more sensible
+  door_open_distance: "500" #In mm
+  door_close_distance: "200" #In mm
+  trashcan_speed_min_delta: "0.05" # Min delta (in m/s) before we consider it moving
+  trashcan_acceleration_min_delta: "0.2" # in m/s²
+  trashcan_distance_min_delta: "5" # Min delta in mm before publishing
+  trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
+
+esphome:
+  name: ${devicename}
+  platform: ESP32
+  board: esp32dev
+  build_path: build/${devicename}
+
+external_components:
+# use all components from a local folder
+- source:
+    type: local
+    path: components
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+stepper:
+- platform: tmc2209
+  # stepper has 200 steps per revolution
+  id: my_stepper
+  max_speed: ${stepper_max_speed}
+  acceleration: ${stepper_max_acceleration}
+  freewheeling_mode: freewheeling
+  r_sense: 0.11
+  inverted: true #steps in
+  enable_pin: GPIO19
+  index_pin: GPIO23 #not used
+  diag_pin: GPIO27 #not used
+  step_pin: GPIO18
+  dir_pin: GPIO5
+  stall_threshold: ${stepper_stall_threshold}
+  cover:
+    name: "${sensorname} cover"
+    id: my_cover
+
+i2c:
+- id: bus_door
+  sda: GPIO21
+  scl: GPIO22
+  frequency: 10kHz
+- id: bus_trashcan
+  sda: GPIO32
+  scl: GPIO33
+
+sensor:
+- platform: vl53l1x
+  name: "${sensorname} distance door"
+  i2c_id: bus_door
+  address: 0x29
+  enable_pin: GPIO25
+  interrupt_pin: GPIO34
+  update_interval: 200ms
+  long_range: false
+  filters:  
+  - lambda: if (x >= ${door_open_distance}) return ${door_open_distance}; if (x >= ${door_close_distance}) return ${door_close_distance}; else return 0;
+  - filter_out: ${door_close_distance}
+  - delta: 1
+  on_value:
+    then:
+    - if:
+        condition:
+          and:
+          - lambda: return x == ${door_open_distance};
+          - lambda: return (id(my_stepper).current_position == id(my_stepper).get_min_step()); #Fully closed
+          - lambda: return !id(my_stepper).is_calibrating();
+        then:
+        - logger.log: "Door opened and trashcan inside -> get it out!" 
+        - stepper.set_target:
+            id: my_stepper
+            target: !lambda return id(my_stepper).get_max_step();
+  # on_value_range:
+  #   above: 100
+  #   then:
+  #   - if:
+  #       condition:
+  #         and:
+  #         - lambda: 'return (id(my_stepper).current_position == id(my_stepper).get_min_step);' #Fully closed
+  #         - lambda: 'return !id(my_stepper).is_calibrating();'
+  #       then:
+  #       - logger.log: "Door opened and trashcan inside -> get it out!" 
+  #       - stepper.set_target:
+  #           id: my_stepper
+  #           target: !lambda return id(my_stepper).get_max_step();
+- platform: vl53l1x
+  name: "${sensorname} distance trashcan"
+  i2c_id: bus_trashcan
+  address: 0x29
+  enable_pin: GPIO26
+  interrupt_pin: GPIO35
+  update_interval: 200 ms
+  long_range: false
+  speed:
+    name: "${sensorname} speed trashcan"
+    filters:
+    - delta: ${trashcan_speed_min_delta}
+    on_raw_value:
+      then:
+      - if:
+          condition:
+            and:
+            - lambda: 'return (x > ${trashcan_speed_min_delta});'
+            - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
+            - lambda: 'return !id(my_stepper).is_calibrating();'
+          then:
+          - logger.log: "Helping to open" 
+          - stepper.set_target:
+              id: my_stepper
+              target: !lambda return id(my_stepper).get_max_step();
+      - if:
+          condition:
+            and:
+            - lambda: 'return (x < -${trashcan_speed_min_delta});'
+            - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
+            - lambda: 'return !id(my_stepper).is_calibrating();'
+          then:
+          - logger.log: "Helping to close" 
+          - stepper.set_target:
+              id: my_stepper
+              target: !lambda return id(my_stepper).get_min_step();
+  acceleration:
+    name: "${sensorname} acceleration trashcan"
+    filters:
+    - delta: ${trashcan_acceleration_min_delta}
+  filters:
+  - throttle: ${trashcan_distance_throttle}
+  - delta: ${trashcan_distance_min_delta}
+
+  # Example configuration entry
+button:
+  - platform: template
+    name: "${sensorname} calibrate"
+    on_press:
+      - stepper.calibrate: my_stepper
+  - platform: template
+    name: "${sensorname} stop"
+    on_press:
+      - cover.stop: my_cover
+  - platform: restart
+    name: "${sensorname} restart"

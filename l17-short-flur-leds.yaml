@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l17-short-flur-leds
+  sensorname: leds short flur
+  light_1: unused
+  light_2: ceiling
+  wifi_ip: 192.168.0.16
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml

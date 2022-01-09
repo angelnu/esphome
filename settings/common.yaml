@@ -6,13 +6,6 @@ wifi:
   #power_save_mode: light #NEVER enable this! IT does NOT stay ON
   #fast_connect: true
   #output_power: 18dB
-  
-  # Optional manual IP
-  manual_ip:
-    static_ip: ${wifi_ip}
-    gateway: !secret wifi_gateway
-    subnet: !secret wifi_subnet
-    dns1: !secret wifi_dns1
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -35,6 +28,7 @@ ota:
 
 logger:
   #level: VERY_VERBOSE
+  #level: INFO
 
 web_server:
   #js_url: "https://rss.angelnu.com/scrapping/esphome.js"

@@ -30,7 +30,7 @@ This PCB allows controlling two relays based on 1 wire Dallas temperature sensor
     - GND
 - Firmware: [esphome](esphome.io)
   - You need to modify/create your own esphome definition and include the yaml in this folder matching your PCB
-  - [Example for v1.0](../../s13_legos_shelves.yaml)
+  - [Example for v1.0](../../s13-legos-shelves.yaml)
 
 # Changelog
 

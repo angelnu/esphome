@@ -1,7 +1,7 @@
 substitutions:
-  devicename: s13_legos_ceiling
-  sensorname: legos ceiling
-  wifi_ip: "192.168.0.25"
+  devicename: s13-legos-shelves
+  sensorname: legos shelves
+  wifi_ip: "192.168.0.24"
 
   restore_mode: RESTORE_DEFAULT_ON
 

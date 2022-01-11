@@ -28,8 +28,10 @@ class VL53L1XSensor : public sensor::Sensor, public PollingComponent, public i2c
   void set_long_range(bool long_range) { long_range_ = long_range; }
   void set_enable_pin(GPIOPin *enable) { this->enable_pin_ = enable; }
   void set_interrupt_pin(GPIOPin *interrupt) { this->interrupt_pin_ = interrupt; }
+
   void set_speed_sensor(sensor::Sensor *speed_sensor) { speed_sensor_ = speed_sensor; }
   void set_acceleration_sensor(sensor::Sensor *acceleration_sensor) { acceleration_sensor_ = acceleration_sensor; }
+  void set_error_sensor(sensor::Sensor *error_sensor) { error_sensor_ = error_sensor; }
 
  protected:
 
@@ -39,6 +41,7 @@ class VL53L1XSensor : public sensor::Sensor, public PollingComponent, public i2c
   GPIOPin *interrupt_pin_{nullptr};
   sensor::Sensor *speed_sensor_{nullptr};
   sensor::Sensor *acceleration_sensor_{nullptr};
+  sensor::Sensor *error_sensor_{nullptr};
 
   uint8_t handle;
   uint16_t distance_{0};

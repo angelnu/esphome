@@ -107,7 +107,8 @@ void VL53L1XSensor::setup_ranging() {
 
   //Set the timing budget in ms.
   // Predefined values = 15, 20, 33, 50, 100(default), 200, 500.
-  status |= VL53L1X_SetTimingBudgetInMs(handle, this->get_update_interval());
+  //TBD - set the closest but <=N get_update_interval()
+  status |= VL53L1X_SetTimingBudgetInMs(handle, 200);
 
   // Intermeasurement period must be >= timing budget. Default = 100 ms.
   status |= VL53L1X_SetInterMeasurementInMs(handle, this->get_update_interval());
@@ -136,14 +137,25 @@ void VL53L1XSensor::update() {
   uint16_t new_distance;
   uint8_t result;
   result = VL53L1X_CheckForDataReady(handle, &data_ready);
-  if (!data_ready) {
+  if (result || !data_ready) {
+    //quick retry
+    delay(1);
+    result = VL53L1X_CheckForDataReady(handle, &data_ready);
+  }
+  if (result || !data_ready) {
     ESP_LOGW(TAG, "'%s' - No data ready!", this->name_.c_str());
-    if (!this->waitsForData--) {
+    if (this->waitsForData-- == 0) {
       this->setup_ranging();
-    }
+    } 
+    if (this->error_sensor_ != nullptr)  this->error_sensor_->publish_state(WAITS_FOR_DATA - this->waitsForData);
     return;
   }
-  this->waitsForData = WAITS_FOR_DATA;
+
+  //Reset wait counter
+  if (this->waitsForData != WAITS_FOR_DATA) {
+    this->waitsForData = WAITS_FOR_DATA;
+    if (this->error_sensor_ != nullptr)  this->error_sensor_->publish_state(0);
+  }
 
   result = VL53L1X_GetDistance(handle, &new_distance);
   result |= VL53L1X_ClearInterrupt(handle);

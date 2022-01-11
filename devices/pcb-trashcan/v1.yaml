@@ -3,6 +3,8 @@ substitutions:
   stepper_max_speed: "700" # In steps/s (200 steps: 1 rotation. 40 steps ca 1 cm)
   stepper_max_acceleration: "100" # In steps/s
   stepper_stall_threshold: "20" # Higher value makes stall detection more sensible
+  door_distance_throttle: 1s # Avoids sending too frequently while door is moving
+  door_distance_min_delta: "10" #In mm
   door_open_distance: "500" #In mm
   door_close_distance: "200" #In mm
   trashcan_speed_min_delta: "0.05" # Min delta (in m/s) before we consider it moving
@@ -42,9 +44,9 @@ stepper:
   step_pin: GPIO18
   dir_pin: GPIO5
   stall_threshold: ${stepper_stall_threshold}
-  cover:
-    name: "${sensorname} cover"
-    id: my_cover
+  #cover:
+  #  name: "${sensorname} cover"
+  #  id: my_cover
 
 i2c:
 - id: bus_door
@@ -58,12 +60,23 @@ i2c:
 sensor:
 - platform: vl53l1x
   name: "${sensorname} distance door"
+  id: door_distance
   i2c_id: bus_door
   address: 0x29
   enable_pin: GPIO25
   interrupt_pin: GPIO34
-  update_interval: 200ms
+  update_interval: 210ms
   long_range: false
+  errors:
+    name: "${sensorname} door errors"
+  filters:
+  - throttle: ${door_distance_throttle}
+  - delta: ${door_distance_min_delta}
+    
+- platform: template
+  name: "${sensorname} filtered distance door"
+  lambda: return id(door_distance).raw_state;
+  update_interval: 210ms
   filters:  
   - lambda: if (x >= ${door_open_distance}) return ${door_open_distance}; if (x >= ${door_close_distance}) return ${door_close_distance}; else return 0;
   - filter_out: ${door_close_distance}
@@ -78,6 +91,14 @@ sensor:
           - lambda: return !id(my_stepper).is_calibrating();
         then:
         - logger.log: "Door opened and trashcan inside -> get it out!" 
+        # Write to logbook
+        - homeassistant.service:
+            service: logbook.log
+            data:
+              name: "${devicename}_open_door"
+              message: "Door opened and trashcan inside -> get it out!" 
+              entity_id: sensor.${sensorname}_distance_door
+              domain: logbook
         - stepper.set_target:
             id: my_stepper
             target: !lambda return id(my_stepper).get_max_step();
@@ -100,33 +121,57 @@ sensor:
   address: 0x29
   enable_pin: GPIO26
   interrupt_pin: GPIO35
-  update_interval: 200 ms
+  update_interval: 210 ms
   long_range: false
+  errors:
+    name: "${sensorname} errors"
   speed:
     name: "${sensorname} speed trashcan"
     filters:
     - delta: ${trashcan_speed_min_delta}
     on_raw_value:
       then:
+      # - if:
+      #     condition:
+      #       and:
+      #       - lambda: 'return (x >= ${trashcan_speed_min_delta});'
+      #       - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
+      #       - lambda: 'return !id(my_stepper).is_calibrating();'
+      #     then:
+      #     - logger.log: "Helping to open" 
+      #     # Write to logbook
+      #     - homeassistant.service:
+      #         service: logbook.log
+      #         data:
+      #           name: "${devicename}_helping_open"
+      #           entity_id: sensor.${sensorname}_speed_trashcan
+      #           domain: logbook
+      #         data_template:
+      #           message: Helping to open. Speed is {{ my_speed }}.
+      #         variables:
+      #           my_speed: return x;
+      #     - stepper.set_target:
+      #         id: my_stepper
+      #         target: !lambda return id(my_stepper).get_max_step();
       - if:
           condition:
             and:
-            - lambda: 'return (x > ${trashcan_speed_min_delta});'
-            - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
-            - lambda: 'return !id(my_stepper).is_calibrating();'
-          then:
-          - logger.log: "Helping to open" 
-          - stepper.set_target:
-              id: my_stepper
-              target: !lambda return id(my_stepper).get_max_step();
-      - if:
-          condition:
-            and:
-            - lambda: 'return (x < -${trashcan_speed_min_delta});'
+            - lambda: 'return (x <= -${trashcan_speed_min_delta});'
             - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
             - lambda: 'return !id(my_stepper).is_calibrating();'
           then:
           - logger.log: "Helping to close" 
+          # Write to logbook
+          - homeassistant.service:
+              service: logbook.log
+              data:
+                name: "${devicename}_helping_close"
+                entity_id: sensor.${sensorname}_speed_trashcan
+                domain: logbook
+              data_template:
+                message: Helping to close. Speed is {{ my_speed }}.
+              variables:
+                my_speed: return x;
           - stepper.set_target:
               id: my_stepper
               target: !lambda return id(my_stepper).get_min_step();
@@ -144,9 +189,9 @@ button:
     name: "${sensorname} calibrate"
     on_press:
       - stepper.calibrate: my_stepper
-  - platform: template
-    name: "${sensorname} stop"
-    on_press:
-      - cover.stop: my_cover
-  - platform: restart
-    name: "${sensorname} restart"
+  #- platform: template
+  #  name: "${sensorname} stop"
+  #  on_press:
+  #    - cover.stop: my_cover
+  #- platform: restart
+  #  name: "${sensorname} restart"

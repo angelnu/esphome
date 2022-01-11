@@ -1,0 +1,39 @@
+esphome:
+  name: ${devicename}
+  platform: ESP32
+  board: esp32dev
+  build_path: build/${devicename}
+    
+switch:
+  - name: ${sensorname} {switch_1}
+    platform: gpio
+    pin: GPIO5
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_2}
+    platform: gpio
+    pin: GPIO14
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_3}
+    platform: gpio
+    pin: GPIO15
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_4}
+    platform: gpio
+    pin: GPIO16
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_5}
+    platform: gpio
+    pin: GPIO17
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_6}
+    platform: gpio
+    pin: GPIO18
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_7}
+    platform: gpio
+    pin: GPIO19
+    restore_mode: {restore_mode}
+  - name: ${sensorname} {switch_8}
+    platform: gpio
+    pin: GPIO23
+    restore_mode: {restore_mode}

@@ -6,8 +6,9 @@
 .vscode
 build
 #Kicad
-**/KiCad/*-bak
-**/KiCad/*-cache.lib
-**/KiCad/fp-info-cache
-**/KiCad/*.kicad_pcb-bak
-**/KiCad/*.sch-bak
+**/KiCad/**/*-bak
+**/KiCad/**/*-cache.lib
+**/KiCad/**/fp-info-cache
+**/KiCad/**/*.kicad_pcb-bak
+**/KiCad/**/*.sch-bak
+**/KiCad/**/*-backups/*.zip

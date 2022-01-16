@@ -12,3 +12,6 @@ build
 **/KiCad/**/*.kicad_pcb-bak
 **/KiCad/**/*.sch-bak
 **/KiCad/**/*-backups/*.zip
+# Python Byte-compiled / optimized / DLL files
+**/__pycache__/
+*.py[cod]

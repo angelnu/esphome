@@ -28,6 +28,7 @@ UNIT_MILIMETER = "mm"
 ICON_LIDAR_DISTANCE = "mdi:signal-distance-variant"
 CONF_INTERRUPT_PIN = "interrupt_pin"
 CONF_LONG_RANGE = "long_range"
+CONF_ERROR = "errors"
 ICON_SPEED ="mdi:speedometer"
 UNIT_METER_PER_SECOND = "m/s"
 
@@ -66,6 +67,12 @@ CONFIG_SCHEMA = cv.All(
                 accuracy_decimals=2,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
+            cv.Optional(CONF_ERROR): sensor.sensor_schema(
+                #unit_of_measurement=UNIT_METER_PER_SECOND_SQUARED ,
+                #icon=ICON_ACCELERATION,
+                accuracy_decimals=0,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
         }
     )
     .extend(cv.polling_component_schema("1s"))
@@ -97,3 +104,7 @@ async def to_code(config):
     if CONF_ACCELERATION in config:
         sens = await sensor.new_sensor(config[CONF_ACCELERATION])
         cg.add(var.set_acceleration_sensor(sens))
+
+    if CONF_ERROR in config:
+        sens = await sensor.new_sensor(config[CONF_ERROR])
+        cg.add(var.set_error_sensor(sens))

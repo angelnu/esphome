@@ -1,0 +1,54 @@
+# Example configuration entry
+globals:
+  - id: meter_${id}_total
+    type: int
+    restore_value: yes
+
+sensor:
+  - platform: pulse_meter
+    pin:
+      number: ${pin_number}
+      inverted: ${pin_inverted}
+      mode: ${pin_mode}
+    unit_of_measurement: ${unit_of_measurement}
+    name: ${meter_sensor_name} usage
+    id: meter_${id}
+    internal_filter: ${internal_filter}
+    internal_filter_mode: PULSE
+    accuracy_decimals: 3
+    filters:
+      - lambda: return x * ${pulses_per_minute_to_unit};
+    total:
+      name: ${meter_sensor_name} total
+      id: meter_${id}_total_sensor
+      unit_of_measurement: ${total_unit_of_measurement}
+      accuracy_decimals: 3
+      state_class: "total_increasing"
+      icon: ${icon}
+      device_class: ${device_class}
+      filters:
+      - lambda: |-
+          id(meter_${id}_total) = x;
+          return (x * 1.0) / ${pulses_per_unit};
+
+esphome:
+  on_boot:
+    then:
+    - pulse_meter.set_total_pulses:
+        id: meter_${id}
+        value: !lambda "return id(meter_${id}_total);"
+  on_shutdown:
+    then:
+    - globals.set:
+        id: meter_${id}_total
+        value: !lambda "return id(meter_${id}_total_sensor).raw_state;"
+
+api:
+  services:
+  - service: set_${meter_sensor_name}_total
+    variables:
+      ${total_unit_of_measurement_service}: float
+    then:
+    - pulse_meter.set_total_pulses:
+        id: meter_${id}
+        value: !lambda return ${total_unit_of_measurement_service} * ${pulses_per_unit};

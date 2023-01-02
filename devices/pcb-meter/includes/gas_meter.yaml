@@ -1,0 +1,19 @@
+packages:
+  gas_sensor_${id}: !include
+    file: common_meter.yaml
+    vars:
+      id: ${id}
+      meter_sensor_name: ${meter_sensor_name}
+      
+      pin_number: ${pin_number}
+      pin_inverted: true
+      pin_mode: INPUT_PULLUP
+      internal_filter: 10ms
+
+      unit_of_measurement: m³/hour
+      pulses_per_minute_to_unit: (60.0 / 100)
+      total_unit_of_measurement: m³
+      total_unit_of_measurement_service: m3 # Service variable must be in ascii
+      pulses_per_unit: 100
+      icon: "mdi:fire"
+      device_class: gas

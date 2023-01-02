@@ -1,0 +1,37 @@
+esphome:
+  name: ${devicename}
+  build_path: build/${devicename}
+  platform: ESP32
+  board: esp32dev
+
+packages:
+  sensor_1: !include
+    file: includes/electricity_meter.yaml
+    vars:
+      id: 1
+      meter_sensor_name: ${sensorname}_right_electricity      
+      pin_number: 19
+
+  sensor_2: !include
+    file: includes/gas_meter.yaml
+    vars:
+      id: 2
+      meter_sensor_name: ${sensorname}_right_gas
+      pin_number: 18
+
+  sensor_3: !include
+    file: includes/electricity_meter.yaml
+    vars:
+      id: 3
+      meter_sensor_name: ${sensorname}_center_electricity      
+      pin_number: 5
+
+  sensor_4: !include
+    file: includes/gas_meter.yaml
+    vars:
+      id: 4
+      meter_sensor_name: ${sensorname}_center_gas
+      pin_number: 17
+
+preferences:
+  flash_write_interval: 1 hours

@@ -1,0 +1,19 @@
+packages:
+  electricity_sensor_${id}: !include
+    file: common_meter.yaml
+    vars:
+      id: ${id}
+      meter_sensor_name: ${meter_sensor_name}
+      
+      pin_number: ${pin_number}
+      pin_inverted: true
+      pin_mode: INPUT
+      internal_filter: 50ms
+
+      unit_of_measurement: kW
+      pulses_per_minute_to_unit: (60.0 / 375)
+      total_unit_of_measurement: kWh
+      total_unit_of_measurement_service: kWh # Service variable must be in ascii
+      pulses_per_unit: 375
+      icon: "mdi:power-plug"
+      device_class: energy

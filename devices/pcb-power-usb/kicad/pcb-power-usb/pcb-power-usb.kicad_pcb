@@ -2250,7 +2250,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2311,6 +2311,11 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPST_B3U-1000P.wrl"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
   )
 
   (footprint "Button_Switch_SMD:SW_SPST_PTS810" (layer "B.Cu")
@@ -2363,6 +2368,11 @@
     (pad "2" smd rect (at 2.075 -1.075 180) (size 1.05 0.65) (layers "B.Cu" "B.Paste" "B.Mask")
       (net 3 "RESET") (pinfunction "2") (pintype "passive") (tstamp 79d32902-2c8a-4cef-bd53-c58f0916856e))
     (model "${KICAD6_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPST_PTS810.wrl"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPST_B3U-1000P.wrl"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2448,7 +2458,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2534,7 +2544,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2620,7 +2630,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2757,7 +2767,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2843,7 +2853,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2929,7 +2939,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -3015,7 +3025,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "/Users/anunez/Downloads/femaleThruHoleUSB.stp"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_A_Stewart_SS-52100-001_Horizontal.step"
       (offset (xyz 3.5 -12.5 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))

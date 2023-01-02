@@ -1,16 +1,17 @@
-# Thermostate for 220v
-This PCB allows controlling two relays based on 1 wire Dallas temperature sensors. The board has two 1-wire buses - one for the in-board sensor and one for the external sensor(s).
-- ![Thermostate_PCB_full_view](pictures/Temp_Actor_v1_full_view.jpg)
+# USB Power controller
+
+This PCB allows providing 5 V for up to 8 USB devices. Each of them can be disabled via esphome. Each USB has an LED to indicate if power is provided.
+
+- ![Thermostate_PCB_full_view](pictures/pcb-power-usb-overview.png)
 
 - [Aisler PCB project](https://aisler.net/p/BQLUSDIS)
 - [KiCad PCB](kicad/pcb-power-usb/pcb-power-usb.kicad_pro)
-  - ![Schematics Preview](pictures/TBD.png)
-  - ![PCB Preview](pictures/TBD.png)
-  - ![PCB front Preview](pictures/TBD.jpg)
-  - ![PCB rear Preview](pictures/TBD.jpg)
+  - ![Schematics Preview](pictures/schematics-power-usb.svg)
+  - ![PCB front Preview](pictures/pcb-power-usb-top.png)
+  - ![PCB rear Preview](pictures/pcb-power-usb-bottom.png)
 - [3D Printed cage](cage):
   - [Fusion 360 online view](https://a360.co/3qWptNk)
-  - [Fusion 360 archive](TBD)
+  - [Fusion 360 archive](cage/pcb-power-usb.f3z)
 
 - Parts:
   - 1x [ESP32-WROOM-32](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)

@@ -7,6 +7,12 @@ wifi:
   #fast_connect: true
   #output_power: 18dB
 
+  # This requires the esp32 esp-idf framework - most devices are older
+  # # BSS Transition Management (802.11v) -  makes it possible for one BSS to steer clients to other BSSes
+  # enable_btm: true
+  # # Radio Resource Management (802.11k) -  enable clients to make better roaming decisions
+  # enable_rrm: true
+
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: !secret wifi_ap_ssid
@@ -36,8 +42,26 @@ web_server:
 
 time:
   - platform: homeassistant
+    timezone: Europe/Berlin
   #- platform: sntp
   #  timezone: Europe/Berlin
+    on_time:
+      # Every 30 minutes
+      - seconds: 0
+        minutes: /30
+        #hours: 4-6
+        then:
+          - lambda: |-
+              if (wifi::global_wifi_component->wifi_rssi() < -70) {
+                // PATCH: Reset old priorities for known networks
+                for (auto &scan : wifi::global_wifi_component->get_scan_result()) {
+                  if (wifi::global_wifi_component->has_sta_priority(scan.get_bssid())) {
+                    wifi::global_wifi_component->set_sta_priority(scan.get_bssid(), 0);
+                  }
+                }
+                // Rescan
+                wifi::global_wifi_component->start_scanning();
+              }
 
 sensor:
   - platform: uptime

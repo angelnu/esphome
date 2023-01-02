@@ -2,6 +2,7 @@ wifi:
 
   # Optional manual IP
   manual_ip:
+    static_ip: ${wifi_ip}
     gateway: !secret wifi_pueblo_gateway
     subnet: !secret wifi_pueblo_subnet
     dns1: !secret wifi_pueblo_dns1

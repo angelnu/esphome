@@ -1,8 +1,6 @@
 substitutions:
-  devicename: l19_bedroom_bed_leds
-  sensorname: bedroom leds
-  light_1: back
-  light_2: unused
+  devicename: l19-bedroom-bed-leds
+  sensorname: bedroom bed leds
   wifi_ip: 192.168.0.12
 
 packages:

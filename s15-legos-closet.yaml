@@ -1,14 +1,14 @@
 substitutions:
-  # Blue
-  devicename: s14-legos-ceiling
-  sensorname: legos ceiling
-  wifi_ip: "192.168.0.25"
+  # Red
+  devicename: s15-legos-closet
+  sensorname: legos closet
+  wifi_ip: "192.168.0.26"
 
   restore_mode: RESTORE_DEFAULT_ON
 
-  switch_1: millennium falcon
-  switch_2: tie right
-  switch_3: tie left
+  switch_1: grievous
+  switch_2: s2
+  switch_3: s3
   switch_4: s4
   switch_5: s5
   switch_6: s6

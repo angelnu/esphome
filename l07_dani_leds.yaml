@@ -1,5 +1,5 @@
 substitutions:
-  devicename: l7_dani_leds
+  devicename: l07_dani_leds
   sensorname: Dani leds
   light_1: back_left
   light_2: front_right

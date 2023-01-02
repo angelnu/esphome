@@ -1,13 +1,14 @@
 substitutions:
+  # Green
   devicename: s13-legos-shelves
   sensorname: legos shelves
   wifi_ip: "192.168.0.24"
 
   restore_mode: RESTORE_DEFAULT_ON
 
-  switch_1: s1
-  switch_2: s2
-  switch_3: s3
+  switch_1: castle
+  switch_2: AT-AT
+  switch_3: tree
   switch_4: s4
   switch_5: s5
   switch_6: s6

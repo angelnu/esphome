@@ -1,0 +1,250 @@
+substitutions:
+  max_temp: "80"
+
+# For PCB v0.1.9 with dual core ESP32
+esphome:
+  name: "${devicename}"
+  build_path: build/${devicename}
+  on_boot:
+    priority: 600
+    # ...
+    then:
+      - output.turn_off: devices_reset      
+      - switch.turn_on: display_backlight
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
+
+spi:
+  - id: spi_bus_1
+    clk_pin: GPIO32
+    mosi_pin: GPIO33
+    miso_pin: GPIO39
+  - id: spi_bus_2
+    clk_pin: GPIO15
+    mosi_pin: GPIO13
+    #miso_pin: GPIO39
+
+mcp23s17:
+  - id: 'mcp23s17_hub'
+    spi_id: spi_bus_1
+    cs_pin: GPIO16
+    #irq_pin: GPIO16
+    deviceaddress: 0
+
+# bit 0 = input, inverted - Switch3
+# bit 1 = input, inverted - Switch2
+# bit 2 = input - Button Down
+# bit 3 = input - Button OK
+# bit 4 = output - Reset, display, ADE7953
+# bit 5 = input - Button Up
+# bit 6 = input, inverted - Switch1
+# bit 7
+# bit 8 = output - Relay O1
+# bit 9
+# bit 10
+# bit 11
+# bit 12 = output - Relay O4
+# bit 13 = output - Relay O2
+# bit 14 = output - Relay O3
+# bit 15 = input, inverted - Switch4
+
+output:
+  - platform: gpio
+    id: devices_reset
+    pin:
+      mcp23xxx: mcp23s17_hub
+      # Use pin number 0
+      number: 4
+      mode:
+        output: true
+      inverted: true
+    
+# Individual outputs
+switch:
+  - platform: gpio
+    name: ${sensorname} display backlight
+    id: display_backlight
+    pin: GPIO12
+  - platform: gpio
+    name: "${sensorname} Relay 01"
+    id: relay_1
+    pin:
+      mcp23xxx: mcp23s17_hub
+      # Use pin number 0
+      number: 8
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "${sensorname} Relay 04"
+    id: relay_4
+    pin:
+      mcp23xxx: mcp23s17_hub
+      # Use pin number 0
+      number: 12
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "${sensorname} Relay 02"
+    id: relay_2
+    pin:
+      mcp23xxx: mcp23s17_hub
+      # Use pin number 0
+      number: 13
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "${sensorname} Relay 03"
+    id: relay_3
+    pin:
+      mcp23xxx: mcp23s17_hub
+      # Use pin number 0
+      number: 14
+      mode:
+        output: true
+      inverted: false
+
+# Individual inputs
+binary_sensor:
+  - platform: gpio
+    name: "${sensorname} switch 3"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 0
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "${sensorname} switch 2"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 1
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "${sensorname} down"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 2
+      mode:
+        input: true
+      inverted: true
+  - platform: gpio
+    name: "${sensorname} ok"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 3
+      mode:
+        input: true
+      inverted: true
+  - platform: gpio
+    name: "${sensorname} up"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 5
+      mode:
+        input: true
+      inverted: true
+  - platform: gpio
+    name: "${sensorname} switch 1"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 6
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "${sensorname} switch 4"
+    pin:
+      mcp23xxx: mcp23s17_hub
+      interrupt: CHANGE
+      number: 15
+      mode:
+        input: true
+      inverted: false
+
+
+
+
+
+sensor:
+  #temperature sensor
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: "${sensorname} Temperature"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    icon: "mdi:thermometer"
+    entity_category: 'diagnostic'
+    calibration:
+      #These default values don't seem accurate
+      b_constant: 3350
+      reference_resistance: 4700
+      reference_temperature: 25C
+    on_value_range:
+      - above: ${max_temp}
+        then:
+          - switch.turn_off: "relay_1"
+          - switch.turn_off: "relay_2"
+          - switch.turn_off: "relay_3"
+          - switch.turn_off: "relay_4"
+          - homeassistant.service:
+                service: persistent_notification.create
+                data:
+                  title: "Message from ${sensorname}"
+                data_template:
+                  message: "${sensorname} turned off because temperature exceeded ${max_temp}°C"
+
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 5600
+
+  - platform: adc
+    id: temp_analog_reading
+    pin: GPIO36
+    attenuation: 11db
+    update_interval: 60s
+
+display:
+  - platform: st7735
+    spi_id: spi_bus_2
+    model: "INITR_BLACKTAB"
+    #reset_pin: D4
+    cs_pin: GPIO0
+    dc_pin: GPIO2
+    rotation: 270
+    device_width: 128
+    device_height: 160
+    col_start: 0
+    row_start: 0
+    eight_bit_color: true
+    update_interval: 5s
+    lambda: |-
+      auto red = Color(255, 0, 0);
+      auto green = Color(0, 255, 0);
+      auto blue = Color(0, 0, 255);
+      auto white = Color(255, 255, 255);
+      it.filled_rectangle(0                 , 0                  , it.get_width() / 2, it.get_height() / 2, red);
+      it.filled_rectangle(it.get_width()/2-1, 0                  , it.get_width() / 2, it.get_height() / 2, green);
+      it.filled_rectangle(it.get_width()/2-1, it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, blue);
+      it.filled_rectangle(0                 , it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, white);
+      //it.rectangle(20, 50, 30, 30, white);
+      //it.rectangle(25, 55, 30, 30, red);
+      //it.rectangle(30, 60, 30, 30, green);
+      //it.rectangle(35, 65, 30, 30, blue);
+
+

@@ -1,0 +1,42 @@
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v1.yaml
+
+#Shelly Switch Output
+switch:
+  - platform: gpio
+    id: "relay_1"
+    pin: GPIO13
+    name: "${sensorname} ${switch_1}"
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    id: "relay_2"
+    pin: GPIO12
+    name: "${sensorname} ${switch_2}"
+    restore_mode: RESTORE_DEFAULT_OFF
+
+binary_sensor:
+  #Shelly Switch Input 1
+  - platform: gpio
+    name: "${sensorname} ${switch_1} Input"
+    pin: GPIO5
+    #small delay to prevent debouncing
+    filters:
+      - delayed_on_off: 50ms
+    # config for state change of input button
+    on_state:
+      then:
+      - switch.toggle: "relay_1"
+
+  #Shelly Switch Input 2
+  - platform: gpio
+    name: "${sensorname} ${switch_2} Input"
+    pin: GPIO18
+    #small delay to prevent debouncing
+    filters:
+      - delayed_on_off: 50ms
+    # config for state change of input button
+    on_state:
+      then:
+      - switch.toggle: "relay_2"

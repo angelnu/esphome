@@ -1,0 +1,53 @@
+substitutions:
+  switch_1: up
+  switch_2: down
+
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v1.yaml
+
+#Shelly Switch Output
+switch:
+  - platform: gpio
+    id: "relay_1"
+    pin: GPIO13
+    name: "${sensorname} ${switch_1}"
+    restore_mode: RESTORE_DEFAULT_OFF
+    interlock: &interlock [relay_1, relay_2]
+    interlock_wait_time: 200ms
+
+  - platform: gpio
+    id: "relay_2"
+    pin: GPIO12
+    name: "${sensorname} ${switch_2}"
+    restore_mode: RESTORE_DEFAULT_OFF
+    interlock: *interlock
+    interlock_wait_time: 200ms
+
+# Example configuration entry
+cover:
+  - platform: current_based
+    name: Blind
+    id: blind
+
+    open_sensor: current_1
+    open_moving_current_threshold: 0.5
+    open_obstacle_current_threshold: 20
+    open_duration: 20.3s
+    open_action:
+      - switch.turn_on: relay_1
+    close_sensor: current_2
+    close_moving_current_threshold: 0.5
+    close_obstacle_current_threshold: 20
+    close_duration: 18.9s
+    close_action:
+      - switch.turn_on: relay_2
+    stop_action:
+      - switch.turn_off: relay_1
+      - switch.turn_off: relay_2
+    obstacle_rollback: 30%
+    start_sensing_delay: 0.8s
+    malfunction_detection: true
+    malfunction_action:
+      then:
+        - logger.log: "Malfunction detected. Relay welded."

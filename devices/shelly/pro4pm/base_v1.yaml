@@ -1,6 +1,10 @@
 substitutions:
   max_temp: "80"
 
+  single_click_min_length: 50ms
+  single_click_max_length: 350ms
+  CHANNEL_HIGHT: "25"
+
 # For PCB v0.1.9 with dual core ESP32
 esphome:
   name: "${devicename}"
@@ -9,13 +13,23 @@ esphome:
     priority: 600
     # ...
     then:
-      - output.turn_off: devices_reset      
-      - switch.turn_on: display_backlight
+      - output.turn_off: devices_reset
 
 esp32:
   board: esp32doit-devkit-v1
   framework:
     type: arduino
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+# ethernet:
+#   type: LAN8720
+#   mdc_pin: GPIO23
+#   mdio_pin: GPIO18
+#   clk_mode: GPIO17_OUT
 
 spi:
   - id: spi_bus_1
@@ -31,7 +45,7 @@ mcp23s17:
   - id: 'mcp23s17_hub'
     spi_id: spi_bus_1
     cs_pin: GPIO16
-    #irq_pin: GPIO16
+    #irq_pin: GPIO35
     deviceaddress: 0
 
 # bit 0 = input, inverted - Switch3
@@ -61,16 +75,22 @@ output:
       mode:
         output: true
       inverted: true
+  - platform: ledc
+    pin: GPIO12
+    id: display_backlight_output
+
+light:
+  - platform: monochromatic
+    output: display_backlight_output
+    name: ${sensorname} display backlight
+    restore_mode: RESTORE_DEFAULT_ON
     
 # Individual outputs
 switch:
   - platform: gpio
-    name: ${sensorname} display backlight
-    id: display_backlight
-    pin: GPIO12
-  - platform: gpio
-    name: "${sensorname} Relay 01"
+    name: "${sensorname} ${relay_1}"
     id: relay_1
+    restore_mode: ${restore_mode}
     pin:
       mcp23xxx: mcp23s17_hub
       # Use pin number 0
@@ -79,8 +99,9 @@ switch:
         output: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} Relay 04"
+    name: "${sensorname} ${relay_4}"
     id: relay_4
+    restore_mode: ${restore_mode}
     pin:
       mcp23xxx: mcp23s17_hub
       # Use pin number 0
@@ -89,8 +110,9 @@ switch:
         output: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} Relay 02"
+    name: "${sensorname} ${relay_2}"
     id: relay_2
+    restore_mode: ${restore_mode}
     pin:
       mcp23xxx: mcp23s17_hub
       # Use pin number 0
@@ -99,8 +121,9 @@ switch:
         output: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} Relay 03"
+    name: "${sensorname} ${relay_3}"
     id: relay_3
+    restore_mode: ${restore_mode}
     pin:
       mcp23xxx: mcp23s17_hub
       # Use pin number 0
@@ -113,6 +136,7 @@ switch:
 binary_sensor:
   - platform: gpio
     name: "${sensorname} switch 3"
+    id: switch_3
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -122,6 +146,7 @@ binary_sensor:
       inverted: false
   - platform: gpio
     name: "${sensorname} switch 2"
+    id: switch_2
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -138,6 +163,18 @@ binary_sensor:
       mode:
         input: true
       inverted: true
+    on_click:
+      min_length: ${single_click_min_length}
+      max_length: ${single_click_max_length}
+      then:
+        if:
+          condition:
+            lambda: |-
+              return id(selected_display_line) < id(max_display_line);
+          then:
+            - lambda: |-
+                id(selected_display_line)++;
+            - component.update: my_display
   - platform: gpio
     name: "${sensorname} ok"
     pin:
@@ -147,6 +184,13 @@ binary_sensor:
       mode:
         input: true
       inverted: true
+    on_click:
+      min_length: ${single_click_min_length}
+      max_length: ${single_click_max_length}
+      then:
+        - lambda: |-
+            id(relays)[id(selected_display_line)]->toggle();
+        - component.update: my_display
   - platform: gpio
     name: "${sensorname} up"
     pin:
@@ -156,8 +200,21 @@ binary_sensor:
       mode:
         input: true
       inverted: true
+    on_click:
+      min_length: ${single_click_min_length}
+      max_length: ${single_click_max_length}
+      then:
+        if:
+          condition:
+            lambda: |-
+              return id(selected_display_line) > 0;
+          then:
+            - lambda: |-
+                id(selected_display_line)--;
+            - component.update: my_display
   - platform: gpio
     name: "${sensorname} switch 1"
+    id: switch_1
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -167,6 +224,7 @@ binary_sensor:
       inverted: false
   - platform: gpio
     name: "${sensorname} switch 4"
+    id: switch_4
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -175,15 +233,77 @@ binary_sensor:
         input: true
       inverted: false
 
-
-
-
-
 sensor:
+  - platform: ade7953_spi
+    id: ade7953_1
+    spi_id: spi_bus_1
+    cs_pin: GPIO04
+    irq_pin: GPIO35
+    voltage:
+      name: "${sensorname} Voltage 1"
+      filters:
+      - delta: 1
+    current_a:
+      name: "${sensorname} ${relay_1} Current"
+      filters:
+      - delta: 0.01
+    current_b:
+      name: "${sensorname} ${relay_2} Current"
+      filters:
+      - delta: 0.01
+    active_power_a:
+      name: "${sensorname} ${relay_1} Power"
+      id: active_power_1
+      # active_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    active_power_b:
+      name: "${sensorname} ${relay_2} Power"
+      id: active_power_2
+      # active_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    update_interval: 1s
+  - platform: ade7953_spi
+    id: ade7953_2
+    spi_id: spi_bus_1
+    cs_pin: GPIO14
+    irq_pin: GPIO35
+    voltage:
+      name: "${sensorname} Voltage 2"
+      filters:
+      - delta: 1
+    current_a:
+      name: "${sensorname} ${relay_3} Current"
+      filters:
+      - delta: 0.01
+    current_b:
+      name: "${sensorname} ${relay_4} Current"
+      filters:
+      - delta: 0.01
+    active_power_a:
+      name: "${sensorname} ${relay_3} Power"
+      id: active_power_3
+      # active_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    active_power_b:
+      name: "${sensorname} ${relay_4} Power"
+      id: active_power_4
+      # active_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    update_interval: 10s
+
   #temperature sensor
   - platform: ntc
     sensor: temp_resistance_reading
     name: "${sensorname} Temperature"
+    id: temp_id
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     icon: "mdi:thermometer"
@@ -219,8 +339,44 @@ sensor:
     attenuation: 11db
     update_interval: 60s
 
+globals:
+  - id: selected_display_line
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: max_display_line
+    type: uint8_t
+    restore_value: no
+    initial_value: '3'
+  - id: relays
+    type: "esphome::gpio::GPIOSwitch *[4]"
+    restore_value: no
+    initial_value: '{relay_1, relay_2, relay_3, relay_4}'
+  - id: relay_names
+    type: "const char *[4]"
+    restore_value: no
+    initial_value: '{"${relay_1}", "${relay_2}", "${relay_3}", "${relay_4}"}'
+  - id: active_powers
+    type: "esphome::sensor::Sensor *[4]"
+    restore_value: no
+    initial_value: '{active_power_1, active_power_2, active_power_3, active_power_4}'
+
+font:
+  - file: "gfonts://Roboto"
+    id: my_font
+    size: 15
+
+image:
+  - file: mdi:wifi
+    id: wifi_icon
+    resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
+  - file: mdi:home-assistant
+    id: home_assistant_icon
+    resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
+
 display:
   - platform: st7735
+    id: my_display
     spi_id: spi_bus_2
     model: "INITR_BLACKTAB"
     #reset_pin: D4
@@ -234,14 +390,74 @@ display:
     eight_bit_color: true
     update_interval: 5s
     lambda: |-
-      auto red = Color(255, 0, 0);
-      auto green = Color(0, 255, 0);
-      auto blue = Color(0, 0, 255);
-      auto white = Color(255, 255, 255);
-      it.filled_rectangle(0                 , 0                  , it.get_width() / 2, it.get_height() / 2, red);
-      it.filled_rectangle(it.get_width()/2-1, 0                  , it.get_width() / 2, it.get_height() / 2, green);
-      it.filled_rectangle(it.get_width()/2-1, it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, blue);
-      it.filled_rectangle(0                 , it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, white);
+      const auto RED = Color(255, 0, 0);
+      const auto GREEN = Color(0, 255, 0);
+      const auto BLUE = Color(0, 0, 255);
+      const auto YELLOW = Color(255,255,0);
+      const auto WHITE = Color(255, 255, 255);
+
+      const auto HEADER_SEPARATOR_HEIGHT = 4;
+      const auto HEADER_HIGHT = ${CHANNEL_HIGHT} + HEADER_SEPARATOR_HEIGHT;
+
+      // Clean screen
+      it.fill(COLOR_OFF);
+
+      // Temperature
+      it.printf(0,
+                ${CHANNEL_HIGHT}/2,
+                id(my_font),
+                WHITE,
+                TextAlign::CENTER_LEFT,
+                "%.1f °C", id(temp_id).state);
+
+      // Wifi connected
+      it.image (it.get_width(),
+                ${CHANNEL_HIGHT}/2,
+                id(wifi_icon),
+                ImageAlign::CENTER_RIGHT,
+                id(wifi_id).is_connected() ? GREEN : RED);
+
+      // API connected
+      it.image (it.get_width() - ${CHANNEL_HIGHT},
+                ${CHANNEL_HIGHT}/2,
+                id(home_assistant_icon),
+                ImageAlign::CENTER_RIGHT,
+                id(api_id).is_connected() ? GREEN : RED);
+
+      // Separator
+      it.filled_rectangle(0, ${CHANNEL_HIGHT}, it.get_width(), HEADER_SEPARATOR_HEIGHT, WHITE);
+
+      // Draw channels
+      for (uint8_t channel=0; channel < 4; channel++) {
+        
+        auto channel_text_color = id(relays)[channel]->state ? YELLOW : BLUE;
+
+        if (channel == id(selected_display_line)) {
+          // Fill rectangle for selected channel
+          it.filled_rectangle(0, HEADER_HIGHT + channel * ${CHANNEL_HIGHT}, it.get_width(), ${CHANNEL_HIGHT}, channel_text_color);
+
+          // black color
+          channel_text_color = COLOR_OFF;
+        }
+        it.printf(0,
+                  HEADER_HIGHT + channel * ${CHANNEL_HIGHT} + ${CHANNEL_HIGHT}/2,
+                  id(my_font),
+                  channel_text_color,
+                  TextAlign::CENTER_LEFT,
+                  "%s", id(relay_names)[channel]);
+        it.printf(it.get_width(),
+                  HEADER_HIGHT + channel * ${CHANNEL_HIGHT} + ${CHANNEL_HIGHT}/2,
+                  id(my_font),
+                  channel_text_color,
+                  TextAlign::CENTER_RIGHT,
+                  "%4.1fW ", id(active_powers)[channel]->state);
+      }
+
+      //it.filled_rectangle(0                 , 0                  , it.get_width() / 2, it.get_height() / 2, red);
+      //it.filled_rectangle(it.get_width()/2-1, 0                  , it.get_width() / 2, it.get_height() / 2, green);
+      //it.filled_rectangle(it.get_width()/2-1, it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, blue);
+      //it.filled_rectangle(0                 , it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, white);
+      
       //it.rectangle(20, 50, 30, 30, white);
       //it.rectangle(25, 55, 30, 30, red);
       //it.rectangle(30, 60, 30, 30, green);

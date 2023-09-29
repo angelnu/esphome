@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor, spi, ade7953_base
+from esphome.components import spi, ade7953_base
 from esphome.const import CONF_ID
 
 
@@ -8,7 +8,7 @@ DEPENDENCIES = ["spi"]
 AUTO_LOAD = ["ade7953_base"]
 
 ade7953_ns = cg.esphome_ns.namespace("ade7953_spi")
-ADE7953 = ade7953_ns.class_("ADE7953_spi", cg.PollingComponent, spi.SPIDevice)
+ADE7953 = ade7953_ns.class_("AdE7953Spi", cg.PollingComponent, spi.SPIDevice)
 
 CONFIG_SCHEMA = (
     cv.Schema(

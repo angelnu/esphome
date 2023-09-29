@@ -11,22 +11,19 @@
 namespace esphome {
 namespace ade7953_spi {
 
-class ADE7953_spi : public ade7953_base::ADE7953, 
-                 public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_HIGH, spi::CLOCK_PHASE_LEADING,
-                                       spi::DATA_RATE_4MHZ> {  
-
-public:
+class AdE7953Spi : public ade7953_base::ADE7953,
+                   public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_HIGH, spi::CLOCK_PHASE_LEADING,
+                                         spi::DATA_RATE_4MHZ> {
+ public:
   void setup() override {
-    
     this->spi_setup();
     ade7953_base::ADE7953::setup();
-
   }
 
   void dump_config() override;
 
-protected:
-  bool ade_write_8_(uint16_t reg, uint8_t value) override {
+ protected:
+  bool ade_write_8(uint16_t reg, uint8_t value) override {
     this->enable();
     this->write_byte16(reg);
     this->transfer_byte(0);
@@ -34,7 +31,7 @@ protected:
     this->disable();
     return false;
   }
-  bool ade_write_16_(uint16_t reg, uint16_t value) override {
+  bool ade_write_16(uint16_t reg, uint16_t value) override {
     this->enable();
     this->write_byte16(reg);
     this->transfer_byte(0);
@@ -42,7 +39,7 @@ protected:
     this->disable();
     return false;
   }
-  bool ade_write_32_(uint16_t reg, uint32_t value) override {
+  bool ade_write_32(uint16_t reg, uint32_t value) override {
     this->enable();
     this->write_byte16(reg);
     this->transfer_byte(0);
@@ -51,11 +48,21 @@ protected:
     this->disable();
     return false;
   }
-  bool ade_read_32_(uint16_t reg, uint32_t *value) override {
+  bool ade_read_16(uint16_t reg, uint16_t *value) override {
     this->enable();
     this->write_byte16(reg);
     this->transfer_byte(0x80);
     *value  = 0;
+    *value |= this->read_byte() << 8;
+    *value |= this->read_byte();
+    this->disable();
+    return false;
+  }
+  bool ade_read_32(uint16_t reg, uint32_t *value) override {
+    this->enable();
+    this->write_byte16(reg);
+    this->transfer_byte(0x80);
+    *value = 0;
     *value |= this->read_byte() << 24;
     *value |= this->read_byte() << 16;
     *value |= this->read_byte() << 8;

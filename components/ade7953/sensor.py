@@ -1,6 +1,4 @@
-import sys
-from esphome.components.ade7953_i2c import sensor as ade7953_i2c
-sys.path.insert(0,"..") 
+from ..ade7953_i2c import sensor as ade7953_i2c
 
 # ade7953 is an alias of ade7953_i2c. ade7953 was used before
 # support for spi was added

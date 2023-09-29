@@ -36,6 +36,7 @@ spi:
     clk_pin: GPIO32
     mosi_pin: GPIO33
     miso_pin: GPIO39
+    # Circumvention: the second SPI in HW does not compile. Use HW SPI for display
   - id: spi_bus_2
     clk_pin: GPIO15
     mosi_pin: GPIO13
@@ -83,7 +84,21 @@ light:
   - platform: monochromatic
     output: display_backlight_output
     name: ${sensorname} display backlight
+    id: display_backlight
     restore_mode: RESTORE_DEFAULT_ON
+
+script:
+  - id: backlight_script
+    mode: restart     # Light will be kept on during 1 minute since
+                      # the latest time the script is executed
+    then:
+      - light.turn_on:
+          id: display_backlight
+          brightness: 100%
+      - delay: 10 min
+      - light.turn_on:
+          id: display_backlight
+          brightness: 50%
     
 # Individual outputs
 switch:
@@ -167,14 +182,15 @@ binary_sensor:
       min_length: ${single_click_min_length}
       max_length: ${single_click_max_length}
       then:
-        if:
-          condition:
-            lambda: |-
-              return id(selected_display_line) < id(max_display_line);
-          then:
-            - lambda: |-
-                id(selected_display_line)++;
-            - component.update: my_display
+        - if:
+            condition:
+              lambda: |-
+                return id(selected_display_line) < id(max_display_line);
+            then:
+              - lambda: |-
+                  id(selected_display_line)++;
+              - component.update: my_display
+        - script.execute: backlight_script
   - platform: gpio
     name: "${sensorname} ok"
     pin:
@@ -191,6 +207,7 @@ binary_sensor:
         - lambda: |-
             id(relays)[id(selected_display_line)]->toggle();
         - component.update: my_display
+        - script.execute: backlight_script
   - platform: gpio
     name: "${sensorname} up"
     pin:
@@ -204,14 +221,15 @@ binary_sensor:
       min_length: ${single_click_min_length}
       max_length: ${single_click_max_length}
       then:
-        if:
-          condition:
-            lambda: |-
-              return id(selected_display_line) > 0;
-          then:
-            - lambda: |-
-                id(selected_display_line)--;
-            - component.update: my_display
+        - if:
+            condition:
+              lambda: |-
+                return id(selected_display_line) > 0;
+            then:
+              - lambda: |-
+                  id(selected_display_line)--;
+              - component.update: my_display
+        - script.execute: backlight_script
   - platform: gpio
     name: "${sensorname} switch 1"
     id: switch_1
@@ -251,17 +269,51 @@ sensor:
       name: "${sensorname} ${relay_2} Current"
       filters:
       - delta: 0.01
+    power_factor_a:
+      name: "${sensorname} ${relay_1} Power Factor"
+      filters:
+      - delta: 5
+    power_factor_b:
+      name: "${sensorname} ${relay_2} Power Factor"
+      filters:
+      - delta: 5
+    apparent_power_a:
+      name: "${sensorname} ${relay_1} Apparent Power"
+      filters:
+      - delta: 1
+    apparent_power_b:
+      name: "${sensorname} ${relay_2} Apparent Power"
+      filters:
+      - delta: 1
     active_power_a:
       name: "${sensorname} ${relay_1} Power"
-      id: active_power_1
+      id: active_power_id_1
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
+      on_value:
+        then:
+          - component.update: my_display
     active_power_b:
       name: "${sensorname} ${relay_2} Power"
-      id: active_power_2
+      id: active_power_id_2
       # active_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+      on_value:
+        then:
+          - component.update: my_display
+    reactive_power_a:
+      name: "${sensorname} ${relay_1} Reactive Power"
+      # reactive_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    reactive_power_b:
+      name: "${sensorname} ${relay_2} Reactive Power"
+      # reactive_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
@@ -283,21 +335,55 @@ sensor:
       name: "${sensorname} ${relay_4} Current"
       filters:
       - delta: 0.01
+    power_factor_a:
+      name: "${sensorname} ${relay_3} Power Factor"
+      filters:
+      - delta: 5
+    power_factor_b:
+      name: "${sensorname} ${relay_4} Power Factor"
+      filters:
+      - delta: 5
+    apparent_power_a:
+      name: "${sensorname} ${relay_3} Apparent Power"
+      filters:
+      - delta: 1
+    apparent_power_b:
+      name: "${sensorname} ${relay_4} Apparent Power"
+      filters:
+      - delta: 1
     active_power_a:
       name: "${sensorname} ${relay_3} Power"
-      id: active_power_3
+      id: active_power_id_3
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
+      on_value:
+        then:
+          - component.update: my_display
     active_power_b:
       name: "${sensorname} ${relay_4} Power"
-      id: active_power_4
+      id: active_power_id_4
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
-    update_interval: 10s
+      on_value:
+        then:
+          - component.update: my_display
+    reactive_power_a:
+      name: "${sensorname} ${relay_3} Reactive Power"
+      # reactive_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    reactive_power_b:
+      name: "${sensorname} ${relay_4} Reactive Power"
+      # reactive_power is inverted, so multiply by -1
+      filters:
+      - multiply: -1
+      - delta: 1
+    update_interval: 1s
 
   #temperature sensor
   - platform: ntc
@@ -359,7 +445,7 @@ globals:
   - id: active_powers
     type: "esphome::sensor::Sensor *[4]"
     restore_value: no
-    initial_value: '{active_power_1, active_power_2, active_power_3, active_power_4}'
+    initial_value: '{active_power_id_1, active_power_id_2, active_power_id_3, active_power_id_4}'
 
 font:
   - file: "gfonts://Roboto"

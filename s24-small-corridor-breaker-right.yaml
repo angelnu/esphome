@@ -1,0 +1,19 @@
+substitutions:
+  # Red
+  devicename: s24-smallcorridor-breaker-right
+  sensorname: small corridor breaker right
+  wifi_ip: "192.168.10.175"
+
+  relay_1: Unused_1
+  relay_2: n2
+  relay_3: n3
+  relay_4: n4
+  restore_mode: RESTORE_DEFAULT_ON
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/shelly/pro4pm/base_v1.yaml

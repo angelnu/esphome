@@ -1,9 +1,9 @@
 substitutions:
-  devicename: s9-pve4
-  sensorname: livingroom_server2
-  wifi_ip: "192.168.2.209"
+  devicename: s06-monitor
+  sensorname: guestroom_monitor
+  wifi_ip: "192.168.2.15"
 
-  restore_mode: RESTORE_DEFAULT_ON
+  restore_mode: RESTORE_DEFAULT_OFF
   wattage_calibration1: "1 -> 1"
   wattage_calibration2: "2 -> 2"
   amperage_calibration1: "1 -> 1"

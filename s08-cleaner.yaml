@@ -1,7 +1,7 @@
 substitutions:
-  devicename: s7-lamp
-  sensorname: guestroom_lamp
-  wifi_ip: "192.168.2.14"
+  devicename: s08-cleaner
+  sensorname: guestroom_cleaner
+  wifi_ip: "192.168.2.13"
 
   restore_mode: RESTORE_DEFAULT_OFF
   wattage_calibration1: "1 -> 1"

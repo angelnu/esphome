@@ -1,9 +1,9 @@
 substitutions:
-  devicename: s2_nas
-  sensorname: Living Room Nas
-  wifi_ip: "192.168.2.22"
-
-  restore_mode: RESTORE_DEFAULT_ON
+  devicename: s05-heater
+  sensorname: guestroom_heater
+  wifi_ip: "192.168.2.16"
+  
+  restore_mode: RESTORE_DEFAULT_OFF 
   wattage_calibration1: "1 -> 1"
   wattage_calibration2: "2 -> 2"
   amperage_calibration1: "1 -> 1"

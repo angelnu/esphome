@@ -1,7 +1,7 @@
 substitutions:
-  devicename: s4-firetv
-  sensorname: Living Room FireTV
-  wifi_ip: "192.168.2.24"
+  devicename: s09-pve4
+  sensorname: livingroom_server2
+  wifi_ip: "192.168.2.209"
 
   restore_mode: RESTORE_DEFAULT_ON
   wattage_calibration1: "1 -> 1"

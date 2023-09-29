@@ -1,4 +1,7 @@
-wifi:
+substitutions:
+  api_reboot_timeout: 0s
+
+api_reboot_timeoutwifi:
 
   # Optional manual IP
   manual_ip:

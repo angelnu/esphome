@@ -1,3 +1,6 @@
+substitutions:
+  api_reboot_timeout: 0s
+
 wifi:
 
   # Optional manual IP

@@ -1,4 +1,10 @@
+esphome:
+  name: ${devicename}
+  friendly_name: ${sensorname}
+  build_path: build/${devicename}
+
 wifi:
+  id: wifi_id
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
@@ -15,13 +21,16 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: !secret wifi_ap_ssid
+    ssid: ${devicename}
     password: !secret wifi_ap_password
 
 # Enable Home Assistant API
 api:
-  reboot_timeout: 0s
-  password: !secret api_password
+  id: api_id
+  reboot_timeout: ${api_reboot_timeout}
+  #password: !secret api_password
+  encryption:
+    key: !secret api_key
 
 #mqtt:
 #  broker: !secret mqtt_broker
@@ -71,3 +80,17 @@ sensor:
     unit_of_measurement: "hours"
     accuracy_decimals: 2
     update_interval: !secret uptime_update_interval
+    entity_category: 'diagnostic'
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: "${devicename} WiFi Signal"
+    update_interval: !secret uptime_update_interval
+    entity_category: 'diagnostic'
+
+# Restart Button
+button:
+  - platform: restart
+    id: "restart_device"
+    name: "${devicename} Restart"
+    entity_category: 'diagnostic'

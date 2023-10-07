@@ -1,13 +1,9 @@
 substitutions:
   # Red
-  devicename: s24-smallcorridor-breaker-right
-  friendly_name: Short corridor right breaker
-  wifi_ip: 192.168.0.39
+  devicename: s20-shelly-unused
+  friendly_name: s20 shelly unused
+  wifi_ip: 192.168.0.34
 
-  relay_1: Bathroom
-  relay_2: Unknown
-  relay_3: Guestroom
-  relay_4: Terrace dryer
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:
@@ -16,4 +12,4 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/shelly/pro4pm/base_v1.yaml
+  device: !include devices/shelly/plus_plug_s/base_v1.yaml

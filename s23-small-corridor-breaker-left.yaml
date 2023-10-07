@@ -1,13 +1,13 @@
 substitutions:
   # Red
   devicename: s23-small-corridor-breaker-left
-  sensorname: small corridor breaker left
-  wifi_ip: "192.168.10.174"
+  friendly_name: Short corridor left breaker
+  wifi_ip: 192.168.0.38
 
-  relay_1: n1
-  relay_2: n2
-  relay_3: n3
-  relay_4: n4
+  relay_1: Washing machine
+  relay_2: Workroom
+  relay_3: Kitchen
+  relay_4: Corridor
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

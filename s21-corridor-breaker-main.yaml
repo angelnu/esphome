@@ -1,0 +1,18 @@
+substitutions:
+  # Red
+  devicename: s21-corridor-breaker-main
+  friendly_name: Corridor main breaker
+  wifi_ip: 192.168.0.32
+
+  # For this instance I used the default logger
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  logger_hardware_uart: uart1
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/Hiking_Ketot_EnergyMeter/esp32_wroom_v1.yaml

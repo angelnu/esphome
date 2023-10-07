@@ -1,8 +1,8 @@
 substitutions:
   # Red
   devicename: s19-corridor-breaker-right
-  sensorname: corridor breaker right
-  wifi_ip: "192.168.10.71"
+  friendly_name: Corridor right breaker
+  wifi_ip: 192.168.0.37
 
   relay_1: Unused_1
   relay_2: Network Box

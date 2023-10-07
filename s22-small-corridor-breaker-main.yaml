@@ -1,0 +1,13 @@
+substitutions:
+  # Red
+  devicename: s22-small-corridor-breaker-main
+  friendly_name: Short corridor main breaker
+  wifi_ip: 192.168.0.35
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/Hiking_Ketot_EnergyMeter/lolin_s2_pico_v1.yaml

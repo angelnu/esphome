@@ -20,6 +20,31 @@ void ADE7953::dump_config() {
   LOG_SENSOR("  ", "Active Power B Sensor", this->active_power_b_sensor_);
   LOG_SENSOR("  ", "Rective Power A Sensor", this->reactive_power_a_sensor_);
   LOG_SENSOR("  ", "Reactive Power B Sensor", this->reactive_power_b_sensor_);
+
+  if (!this->is_setup_)
+    return;
+
+  uint32_t val;
+  uint8_t val_8;
+
+  ade_read_8(PGA_V_8, &val_8);
+  ESP_LOGCONFIG(TAG, "  PGA_V_8: 0x%X", val_8);
+  ade_read_8(PGA_IA_8, &val_8);
+  ESP_LOGCONFIG(TAG, "  PGA_IA_8: 0x%X", val_8);
+  ade_read_8(PGA_IB_8, &val_8);
+  ESP_LOGCONFIG(TAG, "  PGA_IB_8: 0x%X", val_8);
+  ade_read_32(AIGAIN_32, &val);
+  ESP_LOGCONFIG(TAG, "  AIGAIN_32: 0x%08jX", (uintmax_t) val);
+  ade_read_32(AVGAIN_32, &val);
+  ESP_LOGCONFIG(TAG, "  AVGAIN_32: 0x%08jX", (uintmax_t) val);
+  ade_read_32(AWGAIN_32, &val);
+  ESP_LOGCONFIG(TAG, "  AWGAIN_32: 0x%08jX", (uintmax_t) val);
+  ade_read_32(BIGAIN_32, &val);
+  ESP_LOGCONFIG(TAG, "  BIGAIN_32: 0x%08jX", (uintmax_t) val);
+  ade_read_32(BVGAIN_32, &val);
+  ESP_LOGCONFIG(TAG, "  BVGAIN_32: 0x%08jX", (uintmax_t) val);
+  ade_read_32(BWGAIN_32, &val);
+  ESP_LOGCONFIG(TAG, "  BWGAIN_32: 0x%08jX", (uintmax_t) val);
 }
 
 #define ADE_PUBLISH_(name, val, factor) \
@@ -30,7 +55,6 @@ void ADE7953::dump_config() {
 #define ADE_PUBLISH(name, val, factor) ADE_PUBLISH_(name, val, factor)
 
 void ADE7953::update() {
-
   if (!this->is_setup_)
     return;
 
@@ -40,8 +64,8 @@ void ADE7953::update() {
   uint32_t interrupts_b = 0;
   if (this->irq_pin_ != nullptr) {
     // Read and reset interrupts
-    err = ade_read_32(0x032E, &interrupts_a);
-    err = ade_read_32(0x0331, &interrupts_b);
+    ade_read_32(0x032E, &interrupts_a);
+    ade_read_32(0x0331, &interrupts_b);
   }
 
   uint32_t val;
@@ -80,6 +104,10 @@ void ADE7953::update() {
   // Voltage
   err = ade_read_32(0x031C, &val);
   ADE_PUBLISH(voltage, (uint32_t) val, 26000.0f);
+
+  // Frequency
+  err = ade_read_16(0x010E, &val_16);
+  ADE_PUBLISH(frequency, 223750.0f, 1 + val_16);
 }
 
 }  // namespace ade7953_base

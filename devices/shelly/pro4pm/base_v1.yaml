@@ -4,16 +4,20 @@ substitutions:
   single_click_min_length: 50ms
   single_click_max_length: 350ms
   CHANNEL_HIGHT: "25"
+  backlight_min: 50%
+  backlight_max: 100%
 
 # For PCB v0.1.9 with dual core ESP32
+
 esphome:
-  name: "${devicename}"
-  build_path: build/${devicename}
   on_boot:
     priority: 600
     # ...
     then:
       - output.turn_off: devices_reset
+      - light.turn_on:
+          id: display_backlight
+          brightness: ${backlight_min}
 
 esp32:
   board: esp32doit-devkit-v1
@@ -24,6 +28,13 @@ external_components:
   - source:
       type: local
       path: components
+  # use spi multibus fix until 2023.9.3
+  # - source:
+  #     type: git
+  #     url: https://github.com/angelnu/esphome-1
+  #     ref: spi_multibus
+  #   components: [spi]
+  #   refresh: 3600s
 
 # ethernet:
 #   type: LAN8720
@@ -83,9 +94,8 @@ output:
 light:
   - platform: monochromatic
     output: display_backlight_output
-    name: ${sensorname} display backlight
+    name: Display backlight
     id: display_backlight
-    restore_mode: RESTORE_DEFAULT_ON
 
 script:
   - id: backlight_script
@@ -94,16 +104,16 @@ script:
     then:
       - light.turn_on:
           id: display_backlight
-          brightness: 100%
+          brightness: ${backlight_max}
       - delay: 10 min
       - light.turn_on:
           id: display_backlight
-          brightness: 50%
+          brightness: ${backlight_min}
     
 # Individual outputs
 switch:
   - platform: gpio
-    name: "${sensorname} ${relay_1}"
+    name: "${relay_1}"
     id: relay_1
     restore_mode: ${restore_mode}
     pin:
@@ -114,7 +124,7 @@ switch:
         output: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} ${relay_4}"
+    name: "${relay_4}"
     id: relay_4
     restore_mode: ${restore_mode}
     pin:
@@ -125,7 +135,7 @@ switch:
         output: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} ${relay_2}"
+    name: "${relay_2}"
     id: relay_2
     restore_mode: ${restore_mode}
     pin:
@@ -136,7 +146,7 @@ switch:
         output: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} ${relay_3}"
+    name: "${relay_3}"
     id: relay_3
     restore_mode: ${restore_mode}
     pin:
@@ -150,7 +160,7 @@ switch:
 # Individual inputs
 binary_sensor:
   - platform: gpio
-    name: "${sensorname} switch 3"
+    #name: switch 3
     id: switch_3
     pin:
       mcp23xxx: mcp23s17_hub
@@ -160,7 +170,7 @@ binary_sensor:
         input: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} switch 2"
+    #name: switch 2
     id: switch_2
     pin:
       mcp23xxx: mcp23s17_hub
@@ -170,7 +180,8 @@ binary_sensor:
         input: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} down"
+    #name: Down
+    id: my_down_key
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -192,7 +203,8 @@ binary_sensor:
               - component.update: my_display
         - script.execute: backlight_script
   - platform: gpio
-    name: "${sensorname} ok"
+    #name: Ok
+    id: my_ok_key
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -209,7 +221,8 @@ binary_sensor:
         - component.update: my_display
         - script.execute: backlight_script
   - platform: gpio
-    name: "${sensorname} up"
+    #name: Up
+    id: my_up_key
     pin:
       mcp23xxx: mcp23s17_hub
       interrupt: CHANGE
@@ -231,7 +244,7 @@ binary_sensor:
               - component.update: my_display
         - script.execute: backlight_script
   - platform: gpio
-    name: "${sensorname} switch 1"
+    #name: switch 1
     id: switch_1
     pin:
       mcp23xxx: mcp23s17_hub
@@ -241,7 +254,7 @@ binary_sensor:
         input: true
       inverted: false
   - platform: gpio
-    name: "${sensorname} switch 4"
+    #name: switch 4
     id: switch_4
     pin:
       mcp23xxx: mcp23s17_hub
@@ -257,37 +270,78 @@ sensor:
     spi_id: spi_bus_1
     cs_pin: GPIO04
     irq_pin: GPIO35
+    current_pga_gain_a: 2x
+    current_pga_gain_b: 2x
+    current_gain_a: 0x600000
+    current_gain_b: 0x600000
     voltage:
-      name: "${sensorname} Voltage 1"
+      name: Voltage 1
+      id: my_voltage_1
+      device_class: voltage
+      state_class: measurement
+      unit_of_measurement: "V"
       filters:
       - delta: 1
-    current_a:
-      name: "${sensorname} ${relay_1} Current"
+    frequency:
+      name: Frequency 1
+      id: my_frequency_1
       filters:
-      - delta: 0.01
+      - delta: 0.03
+    current_a:
+      name: "${relay_1} Current"
+      id: my_current_1
+      device_class: current
+      state_class: measurement
+      unit_of_measurement: "A"
+      accuracy_decimals: 3
+      filters:
+      - delta: 0.001
     current_b:
-      name: "${sensorname} ${relay_2} Current"
+      name: "${relay_2} Current"
+      id: my_current_2
+      device_class: current
+      state_class: measurement
+      unit_of_measurement: "A"
       filters:
       - delta: 0.01
     power_factor_a:
-      name: "${sensorname} ${relay_1} Power Factor"
+      name: "${relay_1} Power Factor"
+      id: my_power_factor_1
+      device_class: power_factor
+      state_class: measurement
+      unit_of_measurement: "%"
       filters:
       - delta: 5
     power_factor_b:
-      name: "${sensorname} ${relay_2} Power Factor"
+      name: "${relay_2} Power Factor"
+      id: my_power_factor_2
+      device_class: power_factor
+      state_class: measurement
+      unit_of_measurement: "%"
       filters:
       - delta: 5
     apparent_power_a:
-      name: "${sensorname} ${relay_1} Apparent Power"
+      name: "${relay_1} Apparent Power"
+      id: my_apparent_power_1
+      device_class: apparent_power
+      state_class: measurement
+      unit_of_measurement: "VA"
       filters:
       - delta: 1
     apparent_power_b:
-      name: "${sensorname} ${relay_2} Apparent Power"
+      name: "${relay_2} Apparent Power"
+      id: my_apparent_power_2
+      device_class: apparent_power
+      state_class: measurement
+      unit_of_measurement: "VA"
       filters:
       - delta: 1
     active_power_a:
-      name: "${sensorname} ${relay_1} Power"
+      name: "${relay_1} Power"
       id: active_power_id_1
+      device_class: power
+      state_class: measurement
+      unit_of_measurement: "W"
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
@@ -296,8 +350,11 @@ sensor:
         then:
           - component.update: my_display
     active_power_b:
-      name: "${sensorname} ${relay_2} Power"
+      name: "${relay_2} Power"
       id: active_power_id_2
+      device_class: power
+      state_class: measurement
+      unit_of_measurement: "W"
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
@@ -306,54 +363,103 @@ sensor:
         then:
           - component.update: my_display
     reactive_power_a:
-      name: "${sensorname} ${relay_1} Reactive Power"
+      name: "${relay_1} Reactive Power"
+      id: my_reactive_power_1
+      device_class: reactive_power
+      state_class: measurement
+      unit_of_measurement: "var"
       # reactive_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
     reactive_power_b:
-      name: "${sensorname} ${relay_2} Reactive Power"
+      name: "${relay_2} Reactive Power"
+      id: my_reactive_power_2
+      device_class: reactive_power
+      state_class: measurement
+      unit_of_measurement: "var"
       # reactive_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
     update_interval: 1s
+
   - platform: ade7953_spi
     id: ade7953_2
     spi_id: spi_bus_1
     cs_pin: GPIO14
     irq_pin: GPIO35
+    current_pga_gain_a: 2x
+    current_pga_gain_b: 2x
+    current_gain_a: 0x600000
+    current_gain_b: 0x600000
     voltage:
-      name: "${sensorname} Voltage 2"
+      name: Voltage
+      id: my_voltage_2
+      device_class: voltage
+      state_class: measurement
+      unit_of_measurement: "V"
       filters:
       - delta: 1
+    frequency:
+      name: Frequency 2
+      id: my_frequency_2
+      filters:
+      - delta: 0.03
     current_a:
-      name: "${sensorname} ${relay_3} Current"
+      name: "${relay_3} Current"
+      id: my_current_3
+      device_class: current
+      state_class: measurement
+      unit_of_measurement: "A"
       filters:
       - delta: 0.01
     current_b:
-      name: "${sensorname} ${relay_4} Current"
+      name: "${relay_4} Current"
+      id: my_current_4
+      device_class: current
+      state_class: measurement
+      unit_of_measurement: "A"
       filters:
       - delta: 0.01
     power_factor_a:
-      name: "${sensorname} ${relay_3} Power Factor"
+      name: "${relay_3} Power Factor"
+      id: my_power_factor_3
+      device_class: power_factor
+      state_class: measurement
+      unit_of_measurement: "%"
       filters:
       - delta: 5
     power_factor_b:
-      name: "${sensorname} ${relay_4} Power Factor"
+      name: "${relay_4} Power Factor"
+      id: my_power_factor_4
+      device_class: power_factor
+      state_class: measurement
+      unit_of_measurement: "%"
       filters:
       - delta: 5
     apparent_power_a:
-      name: "${sensorname} ${relay_3} Apparent Power"
+      name: "${relay_3} Apparent Power"
+      id: my_apparent_power_3
+      device_class: apparent_power
+      state_class: measurement
+      unit_of_measurement: "VA"
       filters:
       - delta: 1
     apparent_power_b:
-      name: "${sensorname} ${relay_4} Apparent Power"
+      name: "${relay_4} Apparent Power"
+      id: my_apparent_power_4
+      device_class: apparent_power
+      state_class: measurement
+      unit_of_measurement: "VA"
       filters:
       - delta: 1
     active_power_a:
-      name: "${sensorname} ${relay_3} Power"
+      name: "${relay_3} Power"
       id: active_power_id_3
+      device_class: power
+      state_class: measurement
+      unit_of_measurement: "W"
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
@@ -362,8 +468,11 @@ sensor:
         then:
           - component.update: my_display
     active_power_b:
-      name: "${sensorname} ${relay_4} Power"
+      name: "${relay_4} Power"
       id: active_power_id_4
+      device_class: power
+      state_class: measurement
+      unit_of_measurement: "W"
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
@@ -372,13 +481,21 @@ sensor:
         then:
           - component.update: my_display
     reactive_power_a:
-      name: "${sensorname} ${relay_3} Reactive Power"
+      name: "${relay_3} Reactive Power"
+      id: my_reactive_power_3
+      device_class: reactive_power
+      state_class: measurement
+      unit_of_measurement: "var"
       # reactive_power is inverted, so multiply by -1
       filters:
       - multiply: -1
       - delta: 1
     reactive_power_b:
-      name: "${sensorname} ${relay_4} Reactive Power"
+      name: "${relay_4} Reactive Power"
+      id: my_reactive_power_4
+      device_class: reactive_power
+      state_class: measurement
+      unit_of_measurement: "var"
       # reactive_power is inverted, so multiply by -1
       filters:
       - multiply: -1
@@ -388,7 +505,7 @@ sensor:
   #temperature sensor
   - platform: ntc
     sensor: temp_resistance_reading
-    name: "${sensorname} Temperature"
+    name: "Temperature"
     id: temp_id
     unit_of_measurement: "°C"
     accuracy_decimals: 1
@@ -409,9 +526,9 @@ sensor:
           - homeassistant.service:
                 service: persistent_notification.create
                 data:
-                  title: "Message from ${sensorname}"
+                  title: "Message from ${friendly_name}"
                 data_template:
-                  message: "${sensorname} turned off because temperature exceeded ${max_temp}°C"
+                  message: "${friendly_name} turned off because temperature exceeded ${max_temp}°C"
 
   - platform: resistance
     id: temp_resistance_reading

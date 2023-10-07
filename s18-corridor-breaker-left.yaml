@@ -1,8 +1,8 @@
 substitutions:
   # Red
   devicename: s18-corridor-breaker-left
-  sensorname: corridor breaker left
-  wifi_ip: "192.168.10.169"
+  friendly_name: Corridor left breaker
+  wifi_ip: 192.168.0.36
 
   relay_1: Dani
   relay_2: Kitchen

@@ -1,0 +1,17 @@
+substitutions:
+  devicename: s26-unused
+  friendly_name: s26 unused
+  #wifi_ip: 192.168.0.43
+  wifi_ip: 192.168.0.100
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common_minimal.yaml
+  #settings: !include settings/common.yaml
+  
+  #Include device definition
+  #device: !include devices/shelly/plus_1pm_mini/base_minimal_v1.yaml
+  device: !include devices/shelly/plus_1pm_mini/base_v1.yaml

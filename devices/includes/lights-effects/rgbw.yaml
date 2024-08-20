@@ -1,7 +1,7 @@
 text_sensor:
   - platform: homeassistant
-    name: "${sensorname}_moon"
-    id: moon_sensor
+    name: "Moon"
+    id: my_moon_sensor
     entity_id: sensor.moon
 
 esphome:

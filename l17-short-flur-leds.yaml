@@ -1,8 +1,8 @@
 substitutions:
   devicename: l17-short-flur-leds
-  sensorname: leds short flur
-  light_1: unused
-  light_2: ceiling
+  friendly_name: Short corridor leds
+  light_1: Unused
+  light_2: Ceiling
   wifi_ip: 192.168.0.16
 
 packages:

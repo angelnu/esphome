@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l05-workroom-2
+  friendly_name: Workroom door and shelves leds
+  light_1: Door
+  light_2: Shelves
+  wifi_ip: "192.168.0.3"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml

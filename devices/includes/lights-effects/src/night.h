@@ -4,7 +4,7 @@ void light_effect_night() {
     auto call = id(my_light).turn_on(); //put the id for your light in here
     call.set_rgbw(color_parms(color_night));
     // new_moon, waxing_crescent, first_quarter, waxing_gibbous, full_moon, waning_gibbous, last_quarter or waning_crescent
-    std::string moon_phase = id(moon_sensor).state;
+    std::string moon_phase = id(my_moon_sensor).state;
     //it.print("Moon Phase: %s", moon_phase.c_str());
     ESP_LOGI("main", "Value of my sensor Moon Phase: %s", moon_phase.c_str());
     if (moon_phase == "new_moon") 

@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l24-pueblo-leds-edu
+  friendly_name: Pueblo leds Edu
+  light_rgbww: Right
+  light_ww: Back
+  wifi_ip: 192.168.104.10
+
+packages:
+  #Include location specific settings
+  location: !include locations/pueblo.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/pcb-led_rf/base_v1.yaml

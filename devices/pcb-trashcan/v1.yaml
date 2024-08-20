@@ -11,6 +11,7 @@ substitutions:
   trashcan_acceleration_min_delta: "0.2" # in m/s²
   trashcan_distance_min_delta: "5" # Min delta in mm before publishing
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
+  error_theshold: 1min
 
 esphome:
   name: ${devicename}
@@ -23,6 +24,10 @@ external_components:
 - source:
     type: local
     path: components
+  components:
+  - tmc2209 # Stepper
+  - vl53l1x # Lidar
+  - i2c_platform # Wrapper for lidar library
 
 uart:
   tx_pin: GPIO17
@@ -45,7 +50,7 @@ stepper:
   dir_pin: GPIO5
   stall_threshold: ${stepper_stall_threshold}
   #cover:
-  #  name: "${sensorname} cover"
+  #  name: "${friendly_name} cover"
   #  id: my_cover
 
 i2c:
@@ -59,7 +64,7 @@ i2c:
 
 sensor:
 - platform: vl53l1x
-  name: "${sensorname} distance door"
+  name: door distance
   id: door_distance
   i2c_id: bus_door
   address: 0x29
@@ -68,13 +73,18 @@ sensor:
   update_interval: 210ms
   long_range: false
   errors:
-    name: "${sensorname} door errors"
+    name: door errors
+    id: door_errors
+    filters:
+    - delta: 1
+    - throttle: ${error_theshold}
   filters:
   - throttle: ${door_distance_throttle}
   - delta: ${door_distance_min_delta}
     
 - platform: template
-  name: "${sensorname} filtered distance door"
+  name: filtered door distance
+  id: filtered_filtered_distance
   lambda: return id(door_distance).raw_state;
   update_interval: 210ms
   filters:  
@@ -97,7 +107,7 @@ sensor:
             data:
               name: "${devicename}_open_door"
               message: "Door opened and trashcan inside -> get it out!" 
-              entity_id: sensor.${sensorname}_distance_door
+              entity_id: sensor.${friendly_name}_distance_door
               domain: logbook
         - stepper.set_target:
             id: my_stepper
@@ -116,7 +126,8 @@ sensor:
   #           id: my_stepper
   #           target: !lambda return id(my_stepper).get_max_step();
 - platform: vl53l1x
-  name: "${sensorname} distance trashcan"
+  name: "trashcan distance"
+  id: trashcan_distance
   i2c_id: bus_trashcan
   address: 0x29
   enable_pin: GPIO26
@@ -124,9 +135,14 @@ sensor:
   update_interval: 210 ms
   long_range: false
   errors:
-    name: "${sensorname} errors"
+    name: trashcan errors
+    id: trashcan_errors
+    filters:
+    - delta: 1
+    - throttle: ${error_theshold}
   speed:
-    name: "${sensorname} speed trashcan"
+    name: trashcan speed
+    id: speed_trashcan
     filters:
     - delta: ${trashcan_speed_min_delta}
     on_raw_value:
@@ -144,7 +160,7 @@ sensor:
       #         service: logbook.log
       #         data:
       #           name: "${devicename}_helping_open"
-      #           entity_id: sensor.${sensorname}_speed_trashcan
+      #           entity_id: sensor.${friendly_name}_speed_trashcan
       #           domain: logbook
       #         data_template:
       #           message: Helping to open. Speed is {{ my_speed }}.
@@ -166,7 +182,7 @@ sensor:
               service: logbook.log
               data:
                 name: "${devicename}_helping_close"
-                entity_id: sensor.${sensorname}_speed_trashcan
+                entity_id: sensor.${friendly_name}_speed_trashcan
                 domain: logbook
               data_template:
                 message: Helping to close. Speed is {{ my_speed }}.
@@ -176,7 +192,8 @@ sensor:
               id: my_stepper
               target: !lambda return id(my_stepper).get_min_step();
   acceleration:
-    name: "${sensorname} acceleration trashcan"
+    name: trashcan acceleration
+    id: trashcan_acceleration
     filters:
     - delta: ${trashcan_acceleration_min_delta}
   filters:
@@ -186,12 +203,11 @@ sensor:
   # Example configuration entry
 button:
   - platform: template
-    name: "${sensorname} calibrate"
+    name: calibrate
+    id: calibrate
     on_press:
       - stepper.calibrate: my_stepper
   #- platform: template
-  #  name: "${sensorname} stop"
+  #  name: "${friendly_name} stop"
   #  on_press:
   #    - cover.stop: my_cover
-  #- platform: restart
-  #  name: "${sensorname} restart"

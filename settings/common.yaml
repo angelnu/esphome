@@ -1,13 +1,8 @@
-esphome:
-  name: ${devicename}
-  friendly_name: ${sensorname}
-  build_path: build/${devicename}
+packages:
+  #Include base device definition
+  minimal: !include common_minimal.yaml
 
-wifi:
-  id: wifi_id
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
+wifi: 
   #reboot_timeout: 0s
   #power_save_mode: light #NEVER enable this! IT does NOT stay ON
   #fast_connect: true
@@ -24,30 +19,33 @@ wifi:
     ssid: ${devicename}
     password: !secret wifi_ap_password
 
+captive_portal:
+
+debug:
+  update_interval: 1h
+
+text_sensor:
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+  - platform: version
+    name: "ESPHome Build Timestamp"
+    hide_timestamp: false
+
 # Enable Home Assistant API
 api:
-  id: api_id
   reboot_timeout: ${api_reboot_timeout}
-  #password: !secret api_password
-  encryption:
-    key: !secret api_key
 
 #mqtt:
 #  broker: !secret mqtt_broker
 #  port: !secret mqtt_port
 #  username: !secret mqtt_user
 #  password: !secret mqtt_password
-  
-ota:
-  password: !secret ota_password
-
-logger:
-  #level: VERY_VERBOSE
-  #level: INFO
-
-web_server:
-  #js_url: "https://rss.angelnu.com/scrapping/esphome.js"
-  port: 80
 
 time:
   - platform: homeassistant
@@ -73,24 +71,18 @@ time:
               }
 
 sensor:
-  - platform: uptime
-    name: ${sensorname} Uptime
-    filters:
-      - lambda: return x / 3600.0;
-    unit_of_measurement: "hours"
-    accuracy_decimals: 2
-    update_interval: !secret uptime_update_interval
-    entity_category: 'diagnostic'
-
   # WiFi Signal sensor.
   - platform: wifi_signal
-    name: "${devicename} WiFi Signal"
+    name: WiFi Signal
+    id: my_wifi_signal
     update_interval: !secret uptime_update_interval
     entity_category: 'diagnostic'
-
-# Restart Button
-button:
-  - platform: restart
-    id: "restart_device"
-    name: "${devicename} Restart"
+  - platform: uptime
+    name: Uptime
+    id: my_uptime
+    filters:
+      - lambda: return x / 3600.0;
+    unit_of_measurement: "h"
+    accuracy_decimals: 2
+    update_interval: !secret uptime_update_interval
     entity_category: 'diagnostic'

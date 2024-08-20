@@ -1,13 +1,13 @@
 substitutions:
   # Red
   devicename: s15-legos-closet
-  sensorname: legos closet
+  friendly_name: Closet legos
   wifi_ip: "192.168.0.26"
 
   restore_mode: RESTORE_DEFAULT_ON
 
   switch_1: grievous
-  switch_2: s2
+  switch_2: ECTO
   switch_3: s3
   switch_4: s4
   switch_5: s5

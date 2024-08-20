@@ -2,7 +2,7 @@ substitutions:
   #This is the name for device in wifi
   devicename: m1-casa96-meter
   #Sensor name in home assistant and web server
-  sensorname: casa96
+  friendly_name: Casa96 meter
   #IP for device
   wifi_ip: "192.168.0.29"
 

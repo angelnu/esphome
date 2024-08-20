@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l23-guestroom-leds-2
+  friendly_name: Guestroom back right leds
+  light_rgbww: Right
+  light_ww: Back
+  wifi_ip: 192.168.0.21
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/pcb-led_lights/rgbww_ww_v1.yaml

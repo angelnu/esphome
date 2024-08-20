@@ -1,0 +1,26 @@
+substitutions:
+  # Red
+  devicename: s20-shelly-unused
+  friendly_name: s20 shelly unused
+  wifi_ip: 192.168.0.34
+
+  restore_mode: RESTORE_DEFAULT_ON
+  wattage_calibration1: "1 -> 1"
+  wattage_calibration2: "481 -> 414"
+  amperage_calibration1: "1 -> 1"
+  amperage_calibration2: "2 -> 2"
+  voltage_calibration1: "1 -> 1"
+  voltage_calibration2: "2 -> 2"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  # device: !include devices/shelly/plus_plug_s/base_v1.yaml
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf

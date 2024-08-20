@@ -1,30 +1,34 @@
-esphome:
-  name: ${devicename}
-  platform: ESP8266
+substitutions:
+  # time to press key before opening the door
+  bell_key_delay: 1000ms
+  # time to keep opening the door
+  open_time: 2000ms
+
+esp8266:
   board: d1_mini
-  build_path: build/${devicename}
 
 switch:
   - platform: gpio
     pin: D2
     #name: "DoorRelay Test-Only"
     restore_mode: ALWAYS_OFF 
-    id: relay
-    
+    id: my_relay
+
+button:    
   - platform: template
-    name: "${devicename}_open_door"
-    id: open_door
+    name: "Open button"
+    id: my_open_button
     icon: "mdi:gate"
-    turn_on_action:
-    - switch.turn_on: relay
-    - delay: 2000ms
-    - switch.turn_off: relay
+    on_press:
+    - switch.turn_on: my_relay
+    - delay: ${open_time}
+    - switch.turn_off: my_relay
     
   - platform: template
     name: "Ring Homematic Bell"
     internal: true
-    id: homematic_bell
-    turn_on_action:
+    id: my_homematic_bell
+    on_press:
     #Bell on
     - homeassistant.service:
         service: notify.html5
@@ -42,14 +46,15 @@ binary_sensor:
       number: D1
       mode: INPUT_PULLUP
       inverted: True
-    name: "${devicename}_bell"
+    name: "Bell key"
+    id: my_bell_key
     device_class: sound
     filters:
-      - delayed_off: 1000ms
+      - delayed_off: ${bell_key_delay}
     on_release:
-    - switch.turn_on: homematic_bell
+    - button.press: my_homematic_bell
     on_multi_click:
     - timing:
         - ON for at least 2s
       then:
-      - switch.turn_on: open_door
+      - button.press: my_open_button

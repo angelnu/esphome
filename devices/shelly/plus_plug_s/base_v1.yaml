@@ -1,0 +1,341 @@
+substitutions:
+  max_power: "1500" # 2000
+  max_temp: "65.0" # 70.0
+  # Higher value gives lower watt readout.
+  current_res: "0.001"
+  # Lower value gives lower voltage readout.
+  voltage_div: "1830"
+
+  restore_mode: RESTORE_DEFAULT_OFF
+
+esphome:
+  on_boot:
+    - delay: 10s
+    - lambda: !lambda |-
+        id(rgb_ready) = true;
+    - script.execute: set_rgb
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+
+globals:
+  - id: rgb_ready
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: total_energy
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+
+
+    #### only needed for RGB LED to set up a while after boot. Not available with esp-idf framework #####
+
+script:
+  - id: set_rgb
+    mode: queued
+    then:
+      - if:
+          condition:
+            lambda: 'return id(rgb_ready);'
+          then:
+            - if:
+                condition:
+                  lambda: 'return id(relay).state;'
+                then:
+                  - if:
+                      condition:
+                        lambda: 'return id(ring_on).remote_values.is_on();'
+                      then:
+                        - light.turn_on:
+                            id: rgb_light1
+                            brightness: !lambda |-
+                              return id(ring_on).remote_values.get_brightness();
+                            red: !lambda |-
+                              return id(ring_on).remote_values.get_red();
+                            green: !lambda |-
+                              return id(ring_on).remote_values.get_green();
+                            blue: !lambda |-
+                              return id(ring_on).remote_values.get_blue();
+                        - light.turn_on:
+                            id: rgb_light2
+                            brightness: !lambda |-
+                              return id(ring_on).remote_values.get_brightness();
+                            red: !lambda |-
+                              return id(ring_on).remote_values.get_red();
+                            green: !lambda |-
+                              return id(ring_on).remote_values.get_green();
+                            blue: !lambda |-
+                              return id(ring_on).remote_values.get_blue();
+                      else:
+                        - light.turn_off: rgb_light1
+                        - light.turn_off: rgb_light2
+                else:
+                  - if:
+                      condition:
+                        lambda: 'return id(ring_off).remote_values.is_on();'
+                      then:
+                        - light.turn_on:
+                            id: rgb_light1
+                            brightness: !lambda |-
+                              return id(ring_off).remote_values.get_brightness();
+                            red: !lambda |-
+                              return id(ring_off).remote_values.get_red();
+                            green: !lambda |-
+                              return id(ring_off).remote_values.get_green();
+                            blue: !lambda |-
+                              return id(ring_off).remote_values.get_blue();
+                        - light.turn_on:
+                            id: rgb_light2
+                            brightness: !lambda |-
+                              return id(ring_off).remote_values.get_brightness();
+                            red: !lambda |-
+                              return id(ring_off).remote_values.get_red();
+                            green: !lambda |-
+                              return id(ring_off).remote_values.get_green();
+                            blue: !lambda |-
+                              return id(ring_off).remote_values.get_blue();
+                      else:
+                        - light.turn_off: rgb_light1
+                        - light.turn_off: rgb_light2
+
+output:
+  - platform: template
+    id: r_out_on
+    type: float
+    write_action:
+      - lambda: |-
+  - platform: template
+    id: g_out_on
+    type: float
+    write_action:
+      - lambda: |-
+  - platform: template
+    id: b_out_on
+    type: float
+    write_action:
+      - lambda: |-
+  - platform: template
+    id: r_out_off
+    type: float
+    write_action:
+      - lambda: |-
+  - platform: template
+    id: g_out_off
+    type: float
+    write_action:
+      - lambda: |-
+  - platform: template
+    id: b_out_off
+    type: float
+    write_action:
+      - lambda: |-
+
+light:
+  - platform: rgb
+    id: ring_on
+    name: "Ring when On"
+    icon: "mdi:circle-outline"
+    default_transition_length: 0s
+    red: r_out_on
+    green: g_out_on
+    blue: b_out_on
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+    on_state:
+      - delay: 50ms
+      - script.execute: set_rgb
+  - platform: rgb
+    id: ring_off
+    name: "Ring when Off"
+    icon: "mdi:circle-outline"
+    default_transition_length: 0s
+    red: r_out_off
+    green: g_out_off
+    blue: b_out_off
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+    on_state:
+      - delay: 50ms
+      - script.execute: set_rgb
+
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    rmt_channel: 0
+    chipset: ws2812
+    pin: GPIO25
+    num_leds: 2
+    id: rgb_light1
+    internal: true
+    default_transition_length: 700ms
+    restore_mode: ALWAYS_OFF
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    rmt_channel: 1
+    chipset: ws2812
+    pin: GPIO26
+    num_leds: 2
+    id: rgb_light2
+    internal: true
+    default_transition_length: 700ms
+    restore_mode: ALWAYS_OFF
+
+binary_sensor:
+  - platform: gpio
+    id: "push_button"
+    internal: true
+    pin:
+      number: GPIO9
+      inverted: yes
+      mode:
+        input: true
+        pullup: true
+    on_click:
+      then:
+        - if:
+            condition:
+              switch.is_off: button_lock
+            then:
+              - switch.toggle: relay
+    filters:
+      - delayed_on_off: 5ms
+
+switch:
+  - platform: gpio
+    pin: GPIO4
+    id: relay
+    name: "Switch"
+    restore_mode: ${restore_mode}
+    on_turn_on:
+      - script.execute: set_rgb
+    on_turn_off:
+      - script.execute: set_rgb
+  - platform: template
+    entity_category: 'config'
+    name: "Button lock"
+    id: button_lock
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+sensor:
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    icon: "mdi:thermometer"
+    entity_category: 'diagnostic'
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+    on_value_range:
+      - above: ${max_temp}
+        then:
+          - switch.turn_off: "relay"
+          - homeassistant.service:
+              service: persistent_notification.create
+              data:
+                title: Message from ${friendly_name}
+              data_template:
+                message: Switch turned off because temperature exceeded ${max_temp} °C
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+  - platform: adc
+    id: temp_analog_reading
+    pin: GPIO33
+    attenuation: 11db
+    update_interval: 10s
+
+  - platform: hlw8012
+    model: BL0937
+    sel_pin:
+      number: GPIO19
+      inverted: true
+    cf_pin: GPIO10
+    cf1_pin: GPIO22
+    current_resistor: ${current_res}
+    voltage_divider: ${voltage_div}
+    change_mode_every: 1
+    update_interval: 5s
+    current:
+      id: my_current_id
+      device_class: current
+      state_class: measurement
+      unit_of_measurement: A
+      accuracy_decimals: 3
+      internal: true
+      name: "Current"
+      filters:
+      - calibrate_linear:
+        - ${amperage_calibration1}
+        - ${amperage_calibration2}
+      - delta: 0.01 #Only send if current changes 10mA
+    voltage:
+      id: my_voltage_id
+      device_class: voltage
+      state_class: measurement
+      unit_of_measurement: V
+      accuracy_decimals: 1
+      internal: false
+      name: "Voltage"
+      filters:
+      - calibrate_linear:
+        - ${voltage_calibration1}
+        - ${voltage_calibration2}
+      - delta: 2 #Only send if voltage changes more than 2 volts
+    power:
+      name: "Power"
+      device_class: power
+      state_class: measurement
+      unit_of_measurement: W
+      id: my_power_id
+      force_update: true
+      filters:
+      - calibrate_linear:
+        - ${wattage_calibration1}
+        - ${wattage_calibration2}
+      - delta: 1 #Only send if consumption changes 1W
+      on_value_range:
+        - above: ${max_power}
+          then:
+            - switch.turn_off: relay
+            - homeassistant.service:
+                service: persistent_notification.create
+                data:
+                  title: Message from ${friendly_name}
+                data_template:
+                  message: Switch turned off because power exceeded ${max_power}W
+    energy:
+      id: my_energy_id
+      device_class: energy
+      state_class: total_increasing
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      name: "Total energy"
+      filters:
+        # Multiplication factor from W to kW is 0.001
+        - multiply: 0.001
+
+  - platform: total_daily_energy
+    id: my_daily_energy_id
+    name: "Daily energy"
+    power_id: my_energy_id
+    state_class: total_increasing
+    unit_of_measurement: kWh
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+      - lambda: !lambda |-
+          static auto last_state = x;
+          if (x < last_state) { // x was reset
+            id(total_energy) += last_state;
+            ESP_LOGI("main", "Energy channel 1 was reset: %f", id(total_energy));
+          }
+          last_state = x;
+          return id(total_energy) + x;

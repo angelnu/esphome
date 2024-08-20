@@ -1,0 +1,18 @@
+substitutions:
+  devicename: i01-unused
+  friendly_name: i01 unused
+  sensor_1_name: button 1 unused
+  sensor_2_name: button 2 unused
+  sensor_3_name: button 3 unused
+  sensor_4_name: button 4 unused
+
+  wifi_ip: "192.168.0.52"
+
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/shelly/plus_i4/base_v1.yaml

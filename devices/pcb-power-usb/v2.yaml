@@ -1,0 +1,30 @@
+esp32:
+  board: esp32dev
+
+output:
+  - id: output_1
+    platform: ledc
+    pin: GPIO5
+  - id: output_2
+    platform: ledc
+    pin: GPIO14
+  - id: output_3
+    platform: ledc
+    pin: GPIO15
+  - id: output_4
+    platform: ledc
+    pin: GPIO16
+  - id: output_5
+    platform: ledc
+    pin: GPIO17
+  - id: output_6
+    platform: ledc
+    pin: GPIO18
+  - id: output_7
+    platform: ledc
+    pin: GPIO19
+  - id: output_8
+    platform: ledc
+    pin: GPIO23
+
+

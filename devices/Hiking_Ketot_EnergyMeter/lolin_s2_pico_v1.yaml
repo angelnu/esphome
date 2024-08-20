@@ -1,0 +1,21 @@
+# Basic Config
+---
+
+substitutions:
+  rx_pin: GPIO18
+  tx_pin: GPIO21
+  led_pin: GPIO17
+  key_pin: GPIO16
+  logger_hardware_uart: uart0
+
+packages:
+  #Include device definition
+  device: !include common_v1.yaml
+
+
+esphome:
+  platform: ESP32
+  board: lolin_s2_mini
+  platformio_options:
+    board_build.extra_flags:
+      - -DARDUINO_USB_CDC_ON_BOOT=0

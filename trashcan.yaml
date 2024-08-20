@@ -3,7 +3,7 @@ substitutions:
   #This is the name for device in wifi
   devicename: trashcan
   #Sensor name in home assistant and web server
-  sensorname: trashcan
+  friendly_name: trashcan
   #IP for device
   wifi_ip: "192.168.0.23"
 

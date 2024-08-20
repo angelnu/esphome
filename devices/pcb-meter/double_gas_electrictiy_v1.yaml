@@ -1,7 +1,4 @@
-esphome:
-  name: ${devicename}
-  build_path: build/${devicename}
-  platform: ESP32
+esp32:
   board: esp32dev
 
 packages:
@@ -9,28 +6,32 @@ packages:
     file: includes/electricity_meter.yaml
     vars:
       id: 1
-      meter_sensor_name: ${sensorname}_right_electricity      
+      meter_sensor_name: electricity right
+      meter_sensor_id: electricity_right
       pin_number: 19
 
   sensor_2: !include
     file: includes/gas_meter.yaml
     vars:
       id: 2
-      meter_sensor_name: ${sensorname}_right_gas
+      meter_sensor_name: Gas right
+      meter_sensor_id: gas_right
       pin_number: 18
 
   sensor_3: !include
     file: includes/electricity_meter.yaml
     vars:
       id: 3
-      meter_sensor_name: ${sensorname}_center_electricity      
+      meter_sensor_name: Electricity center
+      meter_sensor_id: electricity_center
       pin_number: 5
 
   sensor_4: !include
     file: includes/gas_meter.yaml
     vars:
       id: 4
-      meter_sensor_name: ${sensorname}_center_gas
+      meter_sensor_name: Gas_center
+      meter_sensor_id: gas_center
       pin_number: 17
 
 preferences:

@@ -1,0 +1,41 @@
+binary_sensor:
+  - platform: gpio
+    name: "${sensor_name}"
+    pin:
+      number: "${sensor_pin}"
+      mode:
+        input: true
+    on_multi_click:
+      # double click
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          # send double click event
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                title: ${sensor_name} double click
+        # long click
+      - timing:
+          - ON for at least 1.5s
+        then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                title: ${sensor_name} long click
+        # single click
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.5s
+        then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                title: ${sensor_name} short click
+    # internal: true
+    id: "${sensor_id}"
+    filters:
+      - delayed_on_off: 50ms

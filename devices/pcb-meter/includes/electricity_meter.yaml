@@ -4,6 +4,7 @@ packages:
     vars:
       id: ${id}
       meter_sensor_name: ${meter_sensor_name}
+      meter_sensor_id: ${meter_sensor_id}
       
       pin_number: ${pin_number}
       pin_inverted: true

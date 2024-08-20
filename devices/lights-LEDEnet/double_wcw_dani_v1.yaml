@@ -1,0 +1,26 @@
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v1.yaml
+
+light:
+  - platform: cwww
+    id: light_1
+    name: "${light_1}"
+    cold_white: output_white_cold
+    warm_white: output_green
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+  - platform: cwww
+    id: light_2
+    name: "${light_2}"
+    cold_white: output_white_warm
+    warm_white: output_blue
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+
+# toggle_light script (called from base)
+script:
+  - id: toggle_light
+    then:
+    - light.toggle: light_1
+    - light.toggle: light_2

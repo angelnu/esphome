@@ -45,7 +45,7 @@ esphome:
 
 api:
   services:
-  - service: set_${meter_sensor_name}_total
+  - service: set_${meter_sensor_id}_total
     variables:
       ${total_unit_of_measurement_service}: float
     then:

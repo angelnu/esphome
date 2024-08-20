@@ -1,0 +1,6 @@
+switch:
+  - name: ${name}
+    id: switch_${id}
+    platform: output
+    output: output_${id}
+    restore_mode: ${restore_mode}

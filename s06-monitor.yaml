@@ -1,6 +1,6 @@
 substitutions:
   devicename: s06-monitor
-  sensorname: guestroom_monitor
+  friendly_name: Guestroom monitor
   wifi_ip: "192.168.2.15"
 
   restore_mode: RESTORE_DEFAULT_OFF

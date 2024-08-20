@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l07-dani-leds
+  friendly_name: Dani leds
+  light_1: Back left
+  light_2: Front right
+  wifi_ip: "192.168.0.5"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml

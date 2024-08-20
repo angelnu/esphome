@@ -1,0 +1,25 @@
+esphome:
+  name: ${devicename}
+  friendly_name: ${friendly_name}
+  platformio_options:
+    #board_build.partitions: "../../../custom_partitions.csv"
+    board_build.flash_mode: dio
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+    platform_version: 6.4.0
+    version: 5.1.1
+  variant: esp32c3
+external_components:
+  # support for full OTA
+  - source:
+      type: git
+      url: https://github.com/angelnu/esphome-1
+      ref: extend_ota
+    components: [ota]
+    refresh: 3600s
+ota:
+  unprotected_writes: True
+logger:
+  hardware_uart: USB_SERIAL_JTAG

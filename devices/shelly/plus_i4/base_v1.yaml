@@ -1,0 +1,41 @@
+substitutions:
+  sensor_1_name: button 1
+  sensor_1_id:   button_1
+  sensor_2_name: button 2
+  sensor_2_id:   button_2
+  sensor_3_name: button 3
+  sensor_3_id:   button_3
+  sensor_4_name: button 4
+  sensor_4_id:   button_4
+
+esp32:
+  board: esp32doit-devkit-v1
+  #framework:
+  #  type: esp-idf
+
+packages:
+  button_1: !include
+    file: button_sensor_v1.yaml
+    vars:
+      sensor_pin: GPIO12
+      sensor_name: "${sensor_1_name}"
+      sensor_id: "${sensor_1_id}"
+  button_2: !include
+    file: button_sensor_v1.yaml
+    vars:
+      sensor_pin: GPIO14
+      sensor_name: "${sensor_2_name}"
+      sensor_id: "${sensor_2_id}"
+  button_3: !include
+    file: button_sensor_v1.yaml
+    vars:
+      sensor_pin: GPIO27
+      sensor_name: "${sensor_3_name}"
+      sensor_id: "${sensor_3_id}"
+  button_4: !include
+    file: button_sensor_v1.yaml
+    vars:
+      sensor_pin: GPIO26
+      sensor_name: "${sensor_4_name}"
+      sensor_id: "${sensor_4_id}"
+

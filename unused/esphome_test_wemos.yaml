@@ -1,0 +1,47 @@
+substitutions:
+  devicename: esphome_minimal_wemos
+  friendly_name: esphome_minimal_wemos
+  wifi_ip: "192.168.0.28"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+
+esp8266:
+  board: d1_mini
+  
+# Example configuration entry
+remote_receiver:
+  pin: D5
+  dump: rc_switch
+  
+  
+  
+  # Settings to optimize recognition of RF devices
+ # tolerance: 25%
+#  filter: 35us
+#  idle: 3ms
+#  buffer_size: 1kb
+
+#  dump: rc_switch
+#  tolerance: 50%
+#  filter: 10us
+#  idle: 4ms
+#  buffer_size: 2kb
+
+remote_transmitter:
+  pin: D1
+  # RF uses a 100% carrier signal
+  carrier_duty_percent: 100%
+
+switch:
+  - platform: template
+    name: RF Power Button
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '100010000000000010111110'
+          protocol: 2
+
+  

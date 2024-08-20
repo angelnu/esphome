@@ -1,0 +1,38 @@
+---
+esphome:
+  name: test
+  platform: ESP32
+  board: nodemcu-32s
+  build_path: build/test4
+
+external_components:
+  # - source:
+  #     type: local
+  #     path: components
+ - source:  github://angelnu/esphome-1@595_spi
+   components: [ sn74hc595 ]
+   refresh: 600s
+
+#spi:
+  # clk_pin: GPIO32
+  # mosi_pin: GPIO33
+  # miso_pin: GPIO39
+
+sn74hc595:
+  - id: 'sn74hc595_hub'
+    #spi_id: fooo
+    #data_pin: GPIO33
+    #clock_pin: GPIO32
+    latch_pin: GPIO5
+    oe_pin: GPIO14
+    sr_count: 2
+
+# Individual outputs
+switch:
+  - platform: gpio
+    name: "SN74HC595 Pin #0"
+    pin:
+      sn74hc595: sn74hc595_hub
+      # Use pin number 0
+      number: 0
+      inverted: false

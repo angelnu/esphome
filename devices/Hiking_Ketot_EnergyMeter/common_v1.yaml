@@ -1,0 +1,221 @@
+# Basic Config
+---
+
+substitutions:
+  rx_pin: GPIO18
+  tx_pin: GPIO21
+  led_pin: GPIO17
+  key_pin: GPIO16
+  logger_hardware_uart: uart0
+
+logger:
+  hardware_uart: ${logger_hardware_uart}
+
+uart:
+  rx_pin: ${rx_pin}
+  tx_pin: ${tx_pin}
+  baud_rate: 9600
+
+light:
+  - platform: status_led
+    id: my_status_led
+    pin:
+      number: ${led_pin}
+      # It is inverted but I want the led on when everything is fine (wifi on)
+      # inverted: true
+
+tuya:
+  on_datapoint_update:
+    - sensor_datapoint: 6
+      datapoint_type: raw
+      then:
+        - lambda: |-
+            id(my_voltage).publish_state       (                                                 (x[13] << 8  | x[14])            * 0.1);
+            id(my_current).publish_state       ((x[10] & 0x80 ? -1 : 1) * ((x[10] & 0x7F) << 16 | x[11] << 8  | x[12])            * 0.001);
+            id(my_power_factor).publish_state  ((x[8]  & 0x80 ? -1 : 1) * ((x[8]  & 0x7F) << 8  | x[9] )                          * 0.1);
+            id(my_active_power).publish_state  ((x[0]  & 0x80 ? -1 : 1) * ((x[0]  & 0x7F) << 24 | x[1]  << 16 | x[2] << 8 | x[3]) * 1);
+            id(my_reactive_power).publish_state((x[4]  & 0x80 ? -1 : 1) * ((x[4]  & 0x7F) << 24 | x[5]  << 16 | x[6] << 8 | x[7]) * 1);
+
+switch:
+  - platform: "tuya"
+    name: Breaker
+    id: my_breaker
+    switch_datapoint: 16
+
+
+binary_sensor:
+  - platform: gpio
+    name: key
+    id: my_key
+    pin: ${key_pin}
+    # on_press:
+    #   then:
+    #     - switch.toggle: my_breaker
+
+sensor:
+  - platform: template
+    name: Voltage
+    id: my_voltage
+    accuracy_decimals: 1
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: "V"
+  - platform: template
+    name: Current
+    id: my_current
+    accuracy_decimals: 3
+    device_class: current
+    state_class: measurement
+    unit_of_measurement: "A"
+  - platform: template
+    name: Power Factor
+    id: my_power_factor
+    accuracy_decimals: 1
+    device_class: power_factor
+    state_class: measurement
+    unit_of_measurement: "%"
+  - platform: template
+    name: Real Active Power
+    id: my_active_power
+    accuracy_decimals: 0
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+  - platform: template
+    name: Real Reactive Power
+    id: my_reactive_power
+    accuracy_decimals: 0
+    device_class: reactive_power
+    state_class: measurement
+    unit_of_measurement: "var"
+    #icon: "mdi:flash"
+
+  - platform: tuya
+    name: Total Energy
+    id: my_total_energy
+    sensor_datapoint: 1
+    accuracy_decimals: 2
+    device_class: energy
+    state_class: total
+    unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: Positive kWh
+    id: my_postive_kwh
+    sensor_datapoint: 101
+    accuracy_decimals: 2
+    device_class: energy
+    state_class: total_increasing
+    unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: Reverse kWh
+    id: my_reverse_kwh
+    sensor_datapoint: 102
+    accuracy_decimals: 2
+    device_class: energy
+    state_class: total_increasing
+    unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: Reactive energy
+    id: my_reactive_kwh
+    sensor_datapoint: 103
+    accuracy_decimals: 2
+    state_class: total_increasing
+    unit_of_measurement: "kvarh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    # Energy left before turning off power. Zero = dissabled
+    name: Balance
+    id: my_balance
+    sensor_datapoint: 107
+    accuracy_decimals: 2
+    device_class: energy
+    state_class: total
+    unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: unknown_109
+    id: my_unknown_109
+    sensor_datapoint: 109
+    accuracy_decimals: 2
+    # device_class: energy
+    state_class: measurement
+    # unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: unknown_110
+    id: my_unknown_110
+    sensor_datapoint: 110
+    accuracy_decimals: 2
+    # device_class: energy
+    state_class: measurement
+    # unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: unknown_111
+    id: my_unknown_111
+    sensor_datapoint: 111
+    accuracy_decimals: 2
+    # device_class: energy
+    state_class: measurement
+    # unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+
+  - platform: tuya
+    name: Frequency
+    id: my_frequency
+    sensor_datapoint: 105
+    accuracy_decimals: 2
+    device_class: frequency
+    state_class: measurement
+    unit_of_measurement: "Hz"
+    filters:
+      - multiply: 0.01
+
+number:
+- platform: "tuya"
+  # If set, this turns off the power when counter reaches 0
+  name: "107 balance"
+  internal: true
+  number_datapoint: 107
+  min_value: 0
+  max_value: 1000
+  step: 1
+- platform: "tuya"
+  name: "109"
+  internal: true
+  number_datapoint: 110
+  min_value: 0
+  max_value: 1000
+  step: 1
+- platform: "tuya"
+  name: "110"
+  internal: true
+  number_datapoint: 110
+  min_value: 0
+  max_value: 1000
+  step: 1
+- platform: "tuya"
+  name: "111"
+  internal: true
+  number_datapoint: 111
+  min_value: 0
+  max_value: 1000
+  step: 1

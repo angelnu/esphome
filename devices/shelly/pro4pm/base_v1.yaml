@@ -22,19 +22,15 @@ esphome:
 esp32:
   board: esp32doit-devkit-v1
   framework:
+    #type: esp-idf
     type: arduino
+    version: recommended
 
 external_components:
-  - source:
-      type: local
-      path: components
-  # use spi multibus fix until 2023.9.3
-  # - source:
-  #     type: git
-  #     url: https://github.com/angelnu/esphome-1
-  #     ref: spi_multibus
-  #   components: [spi]
-  #   refresh: 3600s
+  # https://github.com/esphome/esphome/pull/7172
+  # Until esphome 2024.8
+  - source: github://pr#7172
+    components: [ ade7953_spi ]
 
 # ethernet:
 #   type: LAN8720
@@ -269,7 +265,9 @@ sensor:
     id: ade7953_1
     spi_id: spi_bus_1
     cs_pin: GPIO04
-    irq_pin: GPIO35
+    irq_pin:
+      number: GPIO35
+      allow_other_uses: true
     current_pga_gain_a: 2x
     current_pga_gain_b: 2x
     current_gain_a: 0x600000
@@ -382,13 +380,15 @@ sensor:
       filters:
       - multiply: -1
       - delta: 1
-    update_interval: 1s
+    update_interval: 60s
 
   - platform: ade7953_spi
     id: ade7953_2
     spi_id: spi_bus_1
     cs_pin: GPIO14
-    irq_pin: GPIO35
+    irq_pin:
+      number: GPIO35
+      allow_other_uses: true
     current_pga_gain_a: 2x
     current_pga_gain_b: 2x
     current_gain_a: 0x600000
@@ -500,7 +500,7 @@ sensor:
       filters:
       - multiply: -1
       - delta: 1
-    update_interval: 1s
+    update_interval: 60s
 
   #temperature sensor
   - platform: ntc

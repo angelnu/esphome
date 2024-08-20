@@ -1,6 +1,6 @@
 substitutions:
   devicename: s08-cleaner
-  sensorname: guestroom_cleaner
+  friendly_name: Guestroom cleaner
   wifi_ip: "192.168.2.13"
 
   restore_mode: RESTORE_DEFAULT_OFF

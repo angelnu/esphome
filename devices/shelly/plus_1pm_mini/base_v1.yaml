@@ -1,0 +1,73 @@
+packages:
+  #Include base device definition
+  minimal: !include base_minimal_v1.yaml
+
+esp32:
+  framework:
+    platform_version: 5.4.0
+    version: recommended # Not all components here can work with 5.1.1
+
+output:
+  - platform: gpio
+    id: "relay_output"
+    pin: GPIO05
+
+light:
+  - platform: binary
+    name: "Light"
+    output: relay_output
+    id: lightid
+    restore_mode: RESTORE_DEFAULT_OFF
+
+binary_sensor:
+  - platform: gpio
+    name: "Switch"
+    pin: GPIO10
+    on_state:
+      then:
+        - light.toggle: "lightid"
+
+sensor:
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    icon: "mdi:thermometer"
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+    on_value_range:
+      - above: "80.0"
+        then:
+          - light.turn_off: "lightid"
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+  - platform: adc
+    id: temp_analog_reading
+    pin: GPIO3
+    attenuation: 11db
+
+  - platform: bl0942
+    uart_id: uart_bus
+    voltage:
+      name: 'Voltage'
+    current:
+      name: 'Current'
+    power:
+      name: 'Power'
+    frequency:
+      name: "Frequency"
+      accuracy_decimals: 2
+    update_interval: 5s
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO6
+  rx_pin: GPIO7
+  baud_rate: 9600
+  stop_bits: 1

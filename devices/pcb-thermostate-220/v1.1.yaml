@@ -1,8 +1,5 @@
-esphome:
-  name: ${devicename}
-  platform: ESP32
+esp32:
   board: esp32dev
-  build_path: build/${devicename}
 
 dallas:
   - pin: GPIO02
@@ -17,7 +14,7 @@ sensor:
   - platform: dallas
     #index: 0
     address: ${dallas_sensor_address_1}
-    name: ${sensorname} Temperature 1
+    name: ${thermostate_friendly_name_1} Temperature
     id: temperature_1
     dallas_id: dallas_bus_${dallas_sensor_bus_1}
     filters:
@@ -25,7 +22,7 @@ sensor:
   - platform: dallas
     #index: 0
     address: ${dallas_sensor_address_2}
-    name: ${sensorname} Temperature 2
+    name: ${thermostate_friendly_name_2} Temperature
     id: temperature_2
     dallas_id: dallas_bus_${dallas_sensor_bus_2}
     filters:
@@ -44,7 +41,7 @@ output:
     
 switch:
   - platform: output
-    name: ${sensorname} Relay 1
+    name: ${thermostate_friendly_name_1} Relay
     id: relay_1
     output: relay_1_out
     on_turn_on:
@@ -56,7 +53,7 @@ switch:
         then:
         - light.turn_off: led
   - platform: output
-    name: ${sensorname} Relay 2
+    name: ${thermostate_friendly_name_2} Relay
     id: relay_2
     output: relay_2_out
     on_turn_on:
@@ -70,14 +67,14 @@ switch:
 
 light:
   - platform: binary
-    name: ${sensorname} Led
+    name: Led
     id: led
     output: led_out
 
 climate:
   - platform: bang_bang
     sensor: temperature_1
-    name: ${sensorname} 1
+    name: ${thermostate_friendly_name_1}
     id: climate_1
     default_target_temperature_low: ${default_target_temperature_low_1} °C
     default_target_temperature_high: ${default_target_temperature_high_1} °C
@@ -92,7 +89,7 @@ climate:
       - switch.turn_off: relay_1
   - platform: bang_bang
     sensor: temperature_2
-    name: ${sensorname} 2
+    name: ${thermostate_friendly_name_2}
     id: climate_2
     default_target_temperature_low: ${default_target_temperature_low_2} °C
     default_target_temperature_high: ${default_target_temperature_high_2} °C

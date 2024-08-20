@@ -1,0 +1,12 @@
+substitutions:
+  devicename: l02-alicia-lights-bed
+  friendly_name: Alicia Bed Light
+  wifi_ip: "192.168.2.18"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/rgbw.yaml

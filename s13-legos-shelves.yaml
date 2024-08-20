@@ -1,19 +1,10 @@
 substitutions:
   # Green
   devicename: s13-legos-shelves
-  sensorname: legos shelves
+  friendly_name: Shelves legos
   wifi_ip: "192.168.0.24"
 
   restore_mode: RESTORE_DEFAULT_ON
-
-  switch_1: castle
-  switch_2: AT-AT
-  switch_3: tree
-  switch_4: s4
-  switch_5: s5
-  switch_6: s6
-  switch_7: s7
-  switch_8: s8
 
 packages:
   #Include location specific settings
@@ -21,4 +12,46 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/pcb-power-usb/v1.yaml
+  device: !include devices/pcb-power-usb/v2.yaml
+
+  #Include lights
+  output_1: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 1
+      name: "AT-AT"
+  output_2: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 2
+      name: "s2"
+  output_3: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 3
+      name: "Tree"
+  output_4: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 4
+      name: "Castle"
+  output_5: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 5
+      name: "Cantine"
+  output_6: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 6
+      name: "Longneck"
+  output_7: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 7
+      name: "Cactus"
+  output_8: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 8
+      name: "MoonLanding"

@@ -1,6 +1,6 @@
 substitutions:
   devicename: s04-firetv
-  sensorname: Living Room FireTV
+  friendly_name: Living Room FireTV
   wifi_ip: "192.168.2.24"
 
   restore_mode: RESTORE_DEFAULT_ON

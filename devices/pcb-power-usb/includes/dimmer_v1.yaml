@@ -1,0 +1,6 @@
+light:
+  - name: ${name}
+    id: dimmer_${id}
+    platform: monochromatic
+    output: output_${id}
+    restore_mode: ${restore_mode}

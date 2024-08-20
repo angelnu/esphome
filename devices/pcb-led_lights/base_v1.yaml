@@ -1,0 +1,50 @@
+substitutions:
+  pwm_frequency: "100 Hz"
+
+esp32:
+  board: esp32dev
+
+output:
+  - platform: ledc
+    id: output_red
+    frequency: ${pwm_frequency}
+    pin: GPIO05
+  - platform: ledc
+    id: output_green
+    frequency: ${pwm_frequency}
+    pin: GPIO19
+  - platform: ledc
+    id: output_blue
+    frequency: ${pwm_frequency}
+    pin: GPIO18
+  - platform: ledc
+    id: output_white_warm
+    frequency: ${pwm_frequency}
+    pin: GPIO17
+  - platform: ledc
+    id: output_white_cold
+    frequency: ${pwm_frequency}
+    pin: GPIO16
+  - platform: ledc
+    id: output2_white_warm
+    frequency: ${pwm_frequency}
+    pin: GPIO14
+  - platform: ledc
+    id: output2_white_cold
+    frequency: ${pwm_frequency}
+    pin: GPIO15
+
+binary_sensor:
+- platform: gpio
+  name: "Input Button"
+  id: my_button_id
+  pin:
+    number: GPIO23
+    mode: INPUT_PULLUP
+    inverted: true
+  filters:
+  - delayed_on: 100ms
+  - delayed_off: 100ms
+  on_press:
+    then:
+    - script.execute: toggle_light

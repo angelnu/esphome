@@ -1,8 +1,8 @@
 substitutions:
   devicename: d2-aquarium
-  sensorname: switch aquarium
-  switch1: ultraviolet
-  switch2: filter
+  friendly_name: Aquarium switches
+  switch1: Ultraviolet
+  switch2: Filter
   wifi_ip: "192.168.2.9"
 
   restore_mode: RESTORE_DEFAULT_ON

@@ -1,8 +1,8 @@
 substitutions:
   devicename: l15-livingroom-leds-2
-  sensorname: livingroom leds
-  light_1: front right
-  light_2: front left
+  friendly_name: Livingroom front leds
+  light_1: Front Right
+  light_2: Front Left
   wifi_ip: 192.168.0.14
   pwm_frequency: "1000 Hz"
 

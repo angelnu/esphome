@@ -1,0 +1,12 @@
+substitutions:
+  devicename: l06-large-flur-leds
+  friendly_name: Corridor leds
+  wifi_ip: "192.168.0.4"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/rgbwcw.yaml

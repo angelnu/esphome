@@ -1,0 +1,68 @@
+
+esp32:
+  # https://wiki.luatos.com/chips/esp32c3/board.html
+  board: airm2m_core_esp32c3
+
+uart:
+  id: uart_1
+  tx_pin: 0
+  rx_pin: 1
+  baud_rate: 115200
+
+dfrobot_sen0395:
+  uart_id: uart_1
+
+light:
+  - platform: binary
+    name: "led"
+    id: light_led
+    output: light_output
+
+output:
+  - id: light_output
+    platform: gpio
+    pin: 13
+
+binary_sensor:
+  # Information coming from uart bus
+  - platform: dfrobot_sen0395
+    name: Mmwave Detected via UART
+
+  # Information coming from dedicated gpio (IO2)
+  - platform: gpio
+    name: Mmwave Detected via GPIO
+    device_class: motion
+    pin:
+      number: 8
+      mode: INPUT_PULLDOWN
+    on_press:
+      light.turn_on: light_led
+    on_release:
+      light.turn_off: light_led
+
+switch:
+  # Switch to turn on/off detection
+  - platform: dfrobot_sen0395
+    name: Mmwave Active
+    type: sensor_active
+  # Switch to turn on/off detection
+  - platform: dfrobot_sen0395
+    name: Mmwave Led Active
+    type: turn_on_led
+
+
+
+# Example configuration entry
+button:
+- platform: template
+  name: "Program sensor settings"
+  on_press:
+  - dfrobot_sen0395.settings:
+      factory_reset: true
+      detection_segments:
+        # Define between one and four segments
+        - [0m, 9m]
+      output_latency:
+        delay_after_detect: 0s
+        delay_after_disappear: 60s
+      sensitivity: 9

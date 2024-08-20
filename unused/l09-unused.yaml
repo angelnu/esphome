@@ -1,0 +1,13 @@
+substitutions:
+  devicename: l09-unused
+  friendly_name: Unused
+  wifi_ip: "192.168.0.7"
+  pwm_frequency: "100 Hz"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/rgbwcw.yaml

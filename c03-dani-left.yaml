@@ -1,0 +1,17 @@
+substitutions:
+  devicename: c03-dani-left
+  friendly_name: Left Dani cover
+  # Relay trip limits
+  max_power: "3600.0"
+  max_temp: "80.0"
+
+  wifi_ip: "192.168.0.44"
+
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/shelly/plus_2pm/cover_v1.yaml

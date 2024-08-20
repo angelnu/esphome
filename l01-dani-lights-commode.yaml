@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l01-dani-lights-commode
+  friendly_name: Dani commode light
+  light_1: Commode
+  light_2: Shelves
+  wifi_ip: "192.168.2.17"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml  
+  #Include device definition
+  device: !include devices/lights-LEDEnet/double_wcw_dani_v1.yaml

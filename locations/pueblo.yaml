@@ -2,7 +2,6 @@ substitutions:
   api_reboot_timeout: 0s
 
 wifi:
-
   # Optional manual IP
   manual_ip:
     static_ip: ${wifi_ip}

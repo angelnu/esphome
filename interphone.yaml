@@ -1,7 +1,6 @@
 substitutions:
   devicename: interphone
-  sensorname: corridor_interphone
-  upper_devicename: Interphone Siedle HT402
+  friendly_name: Corridor Interphone
   wifi_ip: "192.168.2.11"
 
 packages:

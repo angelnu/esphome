@@ -1,0 +1,14 @@
+substitutions:
+  devicename: l22-unused
+  friendly_name: Unused
+  light_1: Unused_1
+  light_2: Unused_2
+  wifi_ip: 192.168.0.20
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common.yaml
+  #Include device definition
+  device: !include devices/lights-LEDEnet/double_wcw_v1.yaml

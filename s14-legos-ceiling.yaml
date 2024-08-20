@@ -1,17 +1,17 @@
 substitutions:
   # Blue
   devicename: s14-legos-ceiling
-  sensorname: legos ceiling
+  friendly_name: Ceiling legos
   wifi_ip: "192.168.0.25"
 
   restore_mode: RESTORE_DEFAULT_ON
 
-  switch_1: millennium falcon
-  switch_2: tie right
-  switch_3: tie left
-  switch_4: s4
-  switch_5: s5
-  switch_6: s6
+  switch_1: Millennium falcon
+  switch_2: Tie right
+  switch_3: Tie left
+  switch_4: Kylo Rens Ship
+  switch_5: Chromecast
+  switch_6: Destroyer
   switch_7: s7
   switch_8: s8
 
@@ -21,4 +21,46 @@ packages:
   #Include common definitions for home (wifi, web server, etc)
   settings: !include settings/common.yaml
   #Include device definition
-  device: !include devices/pcb-power-usb/v1.yaml
+  device: !include devices/pcb-power-usb/v2.yaml
+
+  #Include lights
+  output_1: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 1
+      name: "Millennium falcon"
+  output_2: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 2
+      name: "Tie right"
+  output_3: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 3
+      name: "Tie left"
+  output_4: !include
+    file: devices/pcb-power-usb/includes/light_v1.yaml
+    vars:
+      id: 4
+      name: "Kylo Rens Ship"
+  output_5: !include
+    file: devices/pcb-power-usb/includes/switch_v1.yaml
+    vars:
+      id: 5
+      name: "Chromecast"
+  output_6: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 6
+      name: "Destroyer"
+  output_7: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 7
+      name: "s7"
+  output_8: !include
+    file: devices/pcb-power-usb/includes/dimmer_v1.yaml
+    vars:
+      id: 8
+      name: "s8"

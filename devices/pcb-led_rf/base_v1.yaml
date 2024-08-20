@@ -1,0 +1,23 @@
+substitutions:
+  pwm_frequency: "100 Hz"
+
+esp32:
+  board: esp32dev
+
+remote_receiver:
+  pin:
+    number: 2
+    mode: INPUT
+    inverted: True
+  dump: rc_switch
+  # Settings to optimize recognition of RF devices
+  tolerance: 50%
+  filter: 250us
+  idle: 4ms
+  # tolerance: 75%
+  # filter: 100us
+  # idle: 8ms 
+
+
+web_server:
+  version: 3

@@ -1,0 +1,338 @@
+substitutions:
+  switch_1_name: switch 1
+  switch_2_name: switch 2
+  wait_for_battery_to_load: 1 min
+  min_current_threshold_a: "1"  # If an output is lower than threshold, switch to alternate
+  min_charging_time: 30 minutes
+
+
+esp32:
+  board: esp32dev
+
+i2c:
+  sda: 2
+  scl: 15
+  scan: true
+
+ads1115:
+  - address: 0x48
+
+remote_receiver:
+  rmt_channel: 0
+  pin:
+    number: 34  # D34
+    mode: INPUT
+    inverted: True
+  # Settings to optimize recognition of RF devices
+  tolerance: 50%
+  filter: 250us
+  idle: 4ms  
+  dump: rc_switch
+
+switch:
+  - platform: gpio
+    id: switch_1
+    name: "${switch_1_name}"
+    pin:
+      number: 16  # D16
+      inverted: true
+    restore_mode: RESTORE_DEFAULT_ON
+  - platform: gpio
+    id: switch_2
+    name: "${switch_2_name}"
+    pin:
+      number: 18  # D18
+      inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+logger:
+  level: INFO
+  logs:
+    ads1115.sensor: INFO
+
+sensor:
+  # Shunt
+  - platform: ads1115
+    multiplexer: 'A2_A3'
+    gain: 0.256
+    id: shunt_uncalibrated
+    name: "Current (uncalibrated)"
+    accuracy_decimals: 3
+    device_class: current
+    unit_of_measurement: A
+    update_interval: 0.1s
+    entity_category: 'diagnostic'
+    disabled_by_default: true
+    filters:
+    - throttle_average: 1s
+    - multiply: 1333.33  # 100 A / 0.075
+    - or:
+      - throttle: 1h
+      - delta: 0.00001
+  - platform: copy
+    source_id: shunt_uncalibrated
+    id: shunt
+    name: "Current (calibrated)"
+    entity_category: ''
+    disabled_by_default: false
+    filters:
+    - clamp:
+        min_value: 0
+
+  # USB GND
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    gain: 0.256
+    name: "GND USB"
+    id: gnd_usb_uncalibrated
+    accuracy_decimals: 6
+    device_class: voltage
+    unit_of_measurement: V
+    update_interval: 60s
+    entity_category: 'diagnostic'
+    disabled_by_default: true
+    filters:
+      multiply: -1
+
+  # Solar VCC
+  - platform: ads1115
+    multiplexer: 'A1_A3'
+    gain: 4.096
+    name: "Solar VCC (uncalibrated)"
+    id: solar_vcc_uncalibrated
+    accuracy_decimals: 1
+    device_class: voltage
+    unit_of_measurement: V
+    update_interval: 2s
+    entity_category: 'diagnostic'
+    disabled_by_default: true
+    filters:
+      - multiply: 40  # 1 + (22000 Ohms / 560 Ohms)
+      - or:
+        - throttle: 1h
+        - delta: 0.5
+  - platform: copy
+    source_id: solar_vcc_uncalibrated
+    id: solar_vcc
+    name: "Solar VCC (calibrated)"
+    entity_category: ''
+    disabled_by_default: false
+    filters:
+    - clamp:
+        min_value: 0
+    - calibrate_linear:
+        method: least_squares
+        datapoints:
+        - 09.8 -> 10
+        - 19.6 -> 20
+        - 29.5 -> 30
+
+  # Solar power
+  - platform: template
+    id: solar_power
+    name: "Solar power"
+    lambda: return id(shunt).state * id(solar_vcc).state;
+    accuracy_decimals: 0
+    device_class: power
+    unit_of_measurement: W
+    update_interval: 2s
+    filters:
+      - or:
+        - throttle: 1h
+        - delta: 10
+  - platform: template
+    id: switch_1_solar_power
+    name: "${switch_1_name} - Solar power"
+    lambda: 'return id(switch_1).state ? (id(shunt).state * id(solar_vcc).state) : 0;'
+    accuracy_decimals: 0
+    device_class: power
+    unit_of_measurement: W
+    update_interval: 2s
+    disabled_by_default: true
+    filters:
+      - or:
+        - throttle: 1h
+        - delta: 10
+  - platform: template
+    id: switch_2_solar_power
+    name: "${switch_2_name} - Solar power"
+    lambda: 'return id(switch_2).state ? (id(shunt).state * id(solar_vcc).state) : 0;'
+    accuracy_decimals: 0
+    device_class: power
+    unit_of_measurement: W
+    update_interval: 2s
+    disabled_by_default: true
+    filters:
+      - or:
+        - throttle: 1h
+        - delta: 10
+
+  # Daily energy
+  - platform: total_daily_energy
+    id: solar_daily_energy
+    name: Solar Daily Energy
+    power_id: solar_power
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+  - platform: total_daily_energy
+    id: switch_1_solar_daily_energy
+    name: "${switch_1_name} - Solar Daily Energy"
+    power_id: switch_1_solar_power
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+  - platform: total_daily_energy
+    id: switch_2_solar_daily_energy
+    name: "${switch_2_name} - Solar Daily Energy"
+    power_id: switch_2_solar_power
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+
+  # Total energy
+  - platform: integration
+    name: Total Solar Energy
+    id: solar_total_energy
+    sensor: solar_power
+    time_unit: h
+    restore: true
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+
+select:
+  - platform: template
+    name: "Mode"
+    id: working_mode
+    optimistic: true
+    restore_value: yes
+    entity_category: 'config'
+    options:
+      - Manual
+      - Automatic
+      - Automatic - prioritised switch 1
+      - Automatic - prioritised switch 2
+    initial_option: Automatic
+    on_value:
+      then:
+      - if:
+          condition:
+            lambda: 'return i == 0 /* Manual */;'
+          then:
+          - logger.log:
+              format: Set to manual - stoping automation
+              level: &select_log_level INFO
+          - script.stop: switch_script
+      - if:
+          condition:
+            lambda: 'return i == 1 /* Automatic */;'
+          then:
+          - logger.log:
+              format: Set to Automatic - starting automation
+              level: *select_log_level
+          - script.execute:
+              id: switch_script
+              prioritised_switch: 0
+      - if:
+          condition:
+            lambda: 'return i == 2 /* Automatic - prioritised switch 1 */;'
+          then:
+          - logger.log:
+              format: Set to Automatic (switch 1 priority) - starting automation
+              level: *select_log_level
+          - script.execute:
+              id: switch_script
+              prioritised_switch: 1
+      - if:
+          condition:
+            lambda: 'return i == 3 /* Automatic - prioritised switch 2 */;'
+          then:
+          - logger.log:
+              format: Set to Automatic (switch 1 priority) - starting automation
+              level: *select_log_level
+          - script.execute:
+              id: switch_script
+              prioritised_switch: 2
+
+script:
+  - id: switch_script
+    mode: restart
+    parameters:
+      prioritised_switch: uint8_t
+    then:
+    - logger.log:
+        format: "Automatically turning on switch %d"
+        args: ["id(switch_1).state ? 1 : 2"]
+        level: &script_log_level INFO
+    - if:
+        condition:
+          lambda: 'return id(switch_1).state ? 1 : 2;'
+        then:
+        - switch.turn_off: switch_2
+        - delay: 1s
+        - switch.turn_on: switch_1
+        else:
+        - switch.turn_off: switch_1
+        - delay: 1s
+        - switch.turn_on: switch_2
+    - while:
+        condition:
+          lambda: 'return true;'
+        then:
+        - delay: "${wait_for_battery_to_load}"
+        - if:
+            condition:
+              lambda: 'return (id(switch_1).state ? 1 : 2) == prioritised_switch;'
+            then:
+            - logger.log:
+                format: "Waiting for prioritised switch_%d to take less than ${min_current_threshold_a}A"
+                args: ["id(switch_1).state ? 1 : 2"]
+                level: *script_log_level
+            - wait_until:    
+                condition:
+                  sensor.in_range:
+                    id: shunt
+                    below: "${min_current_threshold_a}"
+            else:
+            - logger.log:
+                format: "Waiting for switch_%d to take less than ${min_current_threshold_a}A or ${min_charging_time}"
+                args: ["id(switch_1).state ? 1 : 2"]
+                level: *script_log_level
+            - wait_until:          
+                timeout: "${min_charging_time}"
+                condition:
+                  sensor.in_range:
+                    id: shunt
+                    below: "${min_current_threshold_a}"
+        - logger.log:
+            format: "Automatically switching from %d to %d"
+            args: ["id(switch_1).state ? 1 : 2", "id(switch_1).state ? 2 : 1"]
+            level: *script_log_level
+        - if:
+            condition:
+              lambda: 'return (id(switch_1).state != 1);'
+            then:
+            - switch.turn_off: switch_2
+            - delay: 1s
+            - switch.turn_on: switch_1
+            else:
+            - switch.turn_off: switch_1
+            - delay: 1s
+            - switch.turn_on: switch_2

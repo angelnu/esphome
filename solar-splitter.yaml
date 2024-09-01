@@ -1,0 +1,14 @@
+substitutions:
+  wifi_ip: 192.168.104.12
+  devicename: solar-splitter
+  friendly_name: Divisor solar
+  switch_1_name: "Bateria 1"
+  switch_2_name: "Bateria 2"
+
+packages:
+  #Include location specific settings
+  location: !include locations/pueblo.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common_esp32.yaml
+  #Include device definition
+  device: !include devices/pcb_solar_splitter/v1.yaml

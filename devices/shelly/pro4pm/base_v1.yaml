@@ -26,12 +26,6 @@ esp32:
     type: arduino
     version: recommended
 
-external_components:
-  # https://github.com/esphome/esphome/pull/7172
-  # Until esphome 2024.8
-  - source: github://pr#7172
-    components: [ ade7953_spi ]
-
 # ethernet:
 #   type: LAN8720
 #   mdc_pin: GPIO23

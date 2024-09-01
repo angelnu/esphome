@@ -39,6 +39,6 @@ packages:
   #Include location specific settings
   location: !include locations/pueblo.yaml
   #Include common definitions for home (wifi, web server, etc)
-  settings: !include settings/common.yaml
+  settings: !include settings/common_esp32.yaml
   #Include device definition
   device: !include devices/pcb-thermostate-220/v1.1.yaml

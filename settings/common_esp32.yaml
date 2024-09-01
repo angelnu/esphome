@@ -1,0 +1,6 @@
+packages:
+  #Include base device definition
+  minimal: !include common.yaml
+
+web_server:
+  version: 3

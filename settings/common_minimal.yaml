@@ -35,3 +35,7 @@ button:
     id: restart_device
     name: Restart
     entity_category: 'diagnostic'
+  - platform: safe_mode
+    id: safe_mode_button
+    name: "Restart into Safe Mode"
+    entity_category: 'diagnostic'

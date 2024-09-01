@@ -10,7 +10,7 @@ packages:
   #Include location specific settings
   location: !include locations/casa96.yaml
   #Include common definitions for home (wifi, web server, etc)
-  settings: !include settings/common.yaml
+  settings: !include settings/common_esp32.yaml
   #Include device definition
   device: !include devices/pcb-power-usb/v2.yaml
 

@@ -1,0 +1,77 @@
+substitutions:
+  led1_name: led1
+  led1_num_leds: "10"
+  led1_rgb_order: RGB
+  led2_name: led2
+  led2_num_leds: "10"
+  led2_rgb_order: RGB
+
+packages:
+  light_configurations: !include ../includes/light-configurations/package.yaml
+
+esp32:
+  board: esp32dev
+
+remote_receiver:
+  rmt_channel: 0
+  pin:
+    number: 4  # D4
+    mode: INPUT
+    inverted: true
+  # Settings to optimize recognition of RF devices
+  tolerance: 50%
+  filter: 250us
+  idle: 4ms  
+  dump: rc_switch
+
+external_components:
+  # https://github.com/esphome/esphome/pull/7354
+  - source: github://pr#7354
+    components: [ esp32_rmt_led_strip ]
+light:
+  # - platform: neopixelbus
+  #   type: ${led1_rgb_order}
+  #   variant: min_charging_time
+  - platform: esp32_rmt_led_strip
+    rgb_order: ${led1_rgb_order}
+    rmt_channel: 1  # 0 used by remote_receiver
+    # https://www.tme.eu/Document/26d574b43ad9ddaffa4d5bcd140ec145/WS2811.pdf
+    bit0_high: 300 ns
+    bit0_low: 950 ns
+    bit1_high: 950 ns
+    bit1_low: 300 ns
+    reset_low: 300 us
+    # bit0_high: 320 ns
+    # bit0_low: 960 ns
+    # bit1_high: 640 ns
+    # bit1_low: 640 ns
+    # reset_low: 300 us
+    max_refresh_rate: 10ms
+
+    id: led1
+    pin: 32  # D32
+    name: ${led1_name}
+    num_leds: ${led1_num_leds}
+    effects:
+      !include ../includes/lights-effects/addressable_effects.yaml
+
+  # - platform: neopixelbus
+  #   type: ${led2_rgb_order}
+  #   variant: WS2811
+  - platform: esp32_rmt_led_strip
+    rgb_order: ${led2_rgb_order}
+    rmt_channel: 2  # 0 used by remote_receiver
+    # https://www.tme.eu/Document/26d574b43ad9ddaffa4d5bcd140ec145/WS2811.pdf
+    bit0_high: 300 ns
+    bit0_low: 950 ns
+    bit1_high: 900 ns
+    bit1_low: 350 ns
+    reset_low: 300 us
+    max_refresh_rate: 10ms
+
+    id: led2
+    pin: 26  # D26
+    name: ${led2_name}
+    num_leds: ${led2_num_leds}
+    effects:
+      !include ../includes/lights-effects/addressable_effects.yaml

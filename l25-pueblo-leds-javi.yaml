@@ -1,7 +1,7 @@
 substitutions:
-  wifi_ip: 192.168.104.10
-  devicename: l24-pueblo-leds-edu
-  friendly_name: Pueblo leds Edu
+  wifi_ip: 192.168.104.11
+  devicename: l25-pueblo-leds-javi
+  friendly_name: Pueblo leds Javi
   delayed_off: "300ms"
   led1_name: bed
   led1_num_leds: "39"
@@ -23,8 +23,8 @@ light:
     name: "left bed"
     segments:
       - id: led1
-        from: 34
-        to: 38
+        from: 0
+        to: 4    
     effects:
       !include devices/includes/lights-effects/addressable_effects.yaml
 
@@ -33,17 +33,17 @@ light:
     name: "right bed"
     segments:
       - id: led1
-        from: 0
-        to: 4
+        from: 34
+        to: 38 
     effects:
       !include devices/includes/lights-effects/addressable_effects.yaml
 
 binary_sensor:
-  # Left pushbutton (ventana)
+  # Left pushbutton (armario)
   - platform: remote_receiver
     name: "left_pushbotton left"
     rc_switch_raw:
-      code: "111011000011111111010100"
+      code: "101001010101110111010100"
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
@@ -53,25 +53,25 @@ binary_sensor:
   - platform: remote_receiver
     name: "left_pushbotton center"
     rc_switch_raw:
-      code: "111011000011111111011000"
+      code: "101001010101110111011000"
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
   - platform: remote_receiver
     name: "left_pushbotton right"
     rc_switch_raw:
-      code: "111011000011111111010010"
+      code: "101001010101110111010010"
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
     on_press:
       then:
       - light.toggle: led1
-  # Right pushbutton (armario)
+  # Right pushbutton (ventana)
   - platform: remote_receiver
     name: "right_pushbotton left"
     rc_switch_raw:
-      code: "110100100000010100000100"
+      code: "101000001010000010010100"
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
@@ -81,14 +81,14 @@ binary_sensor:
   - platform: remote_receiver
     name: "right_pushbotton center"
     rc_switch_raw:
-      code: "1101001000000101000"
+      code: "101000001010000010011000"
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
   - platform: remote_receiver
     name: "right_pushbotton right"
     rc_switch_raw:
-      code: "110100100000010100000010"
+      code: "101000001010000010010010"
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}

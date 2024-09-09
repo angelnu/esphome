@@ -27,7 +27,10 @@ In addition the device includes an screen for Shunt that is independent from the
 - Firmware: [esphome](esphome.io)
   - You need to modify/create your own esphome definition and include the yaml in this folder matching your PCB
   - [Example for v1](../../solar-splitter.yaml)
-- [3D Printed cage](cage): 
+- [3D Printed cage](box): 
+  - [FreeCad file](box/solar_panel_distribution.FCStd)
+  - [Box inside - 3MF file](box/solar_panel_distribution-inside_box.3mf)
+  - [Box outside - 3MF file](box/solar_panel_distribution-outside_box.3mf)
   - ![Cage Mount](pictures/Outside_solar_splitter.jpg)
   - ![Cage inside](pictures/Inside_solar_splitter.jpg)
 

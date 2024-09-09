@@ -2,7 +2,9 @@ substitutions:
   switch_1_name: switch 1
   switch_2_name: switch 2
   wait_for_battery_to_load: 1 min
+  min_voltage_threshold_v: "50"
   min_current_threshold_a: "1"  # If an output is lower than threshold, switch to alternate
+  min_current_threshold_length: 10s # how long to be under the threshold current before switching
   min_charging_time: 30 minutes
 
 
@@ -60,15 +62,15 @@ sensor:
     accuracy_decimals: 3
     device_class: current
     unit_of_measurement: A
-    update_interval: 0.1s
+    update_interval: 1s
     entity_category: 'diagnostic'
     disabled_by_default: true
     filters:
-    - throttle_average: 1s
+    - throttle_average: 2s
     - multiply: 1333.33  # 100 A / 0.075
     - or:
       - throttle: 1h
-      - delta: 0.00001
+      - delta: 0.1
   - platform: copy
     source_id: shunt_uncalibrated
     id: shunt
@@ -92,7 +94,8 @@ sensor:
     entity_category: 'diagnostic'
     disabled_by_default: true
     filters:
-      multiply: -1
+      - multiply: -1
+      - delta: 0.1
 
   # Solar VCC
   - platform: ads1115
@@ -179,6 +182,7 @@ sensor:
     filters:
       # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
+      - delta: 0.1
   - platform: total_daily_energy
     id: switch_1_solar_daily_energy
     name: "${switch_1_name} - Solar Daily Energy"
@@ -190,6 +194,7 @@ sensor:
     filters:
       # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
+      - delta: 0.1
   - platform: total_daily_energy
     id: switch_2_solar_daily_energy
     name: "${switch_2_name} - Solar Daily Energy"
@@ -201,6 +206,7 @@ sensor:
     filters:
       # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
+      - delta: 0.1
 
   # Total energy
   - platform: integration
@@ -216,6 +222,7 @@ sensor:
     filters:
       # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
+      - delta: 0.1
 
 select:
   - platform: template
@@ -265,7 +272,7 @@ select:
             lambda: 'return i == 3 /* Automatic - prioritised switch 2 */;'
           then:
           - logger.log:
-              format: Set to Automatic (switch 1 priority) - starting automation
+              format: Set to Automatic (switch 2 priority) - starting automation
               level: *select_log_level
           - script.execute:
               id: switch_script
@@ -283,7 +290,7 @@ script:
         level: &script_log_level INFO
     - if:
         condition:
-          lambda: 'return id(switch_1).state ? 1 : 2;'
+          lambda: 'return id(switch_1).state ? true : false;'
         then:
         - switch.turn_off: switch_2
         - delay: 1s
@@ -296,6 +303,14 @@ script:
         condition:
           lambda: 'return true;'
         then:
+        - logger.log:
+            format: "Waiting for #{min_voltage_threshold_v} V"
+            level: *script_log_level
+        - wait_until:
+            condition:
+              sensor.in_range:
+                id: solar_vcc
+                above: "${min_voltage_threshold_v}"
         - delay: "${wait_for_battery_to_load}"
         - if:
             condition:
@@ -307,9 +322,12 @@ script:
                 level: *script_log_level
             - wait_until:    
                 condition:
-                  sensor.in_range:
-                    id: shunt
-                    below: "${min_current_threshold_a}"
+                  for:
+                    time: "${min_current_threshold_length}"
+                    condition:
+                      sensor.in_range:
+                        id: shunt
+                        below: "${min_current_threshold_a}"
             else:
             - logger.log:
                 format: "Waiting for switch_%d to take less than ${min_current_threshold_a}A or ${min_charging_time}"
@@ -318,9 +336,12 @@ script:
             - wait_until:          
                 timeout: "${min_charging_time}"
                 condition:
-                  sensor.in_range:
-                    id: shunt
-                    below: "${min_current_threshold_a}"
+                  for:
+                    time: "${min_current_threshold_length}"
+                    condition:
+                      sensor.in_range:
+                        id: shunt
+                        below: "${min_current_threshold_a}"
         - logger.log:
             format: "Automatically switching from %d to %d"
             args: ["id(switch_1).state ? 1 : 2", "id(switch_1).state ? 2 : 1"]

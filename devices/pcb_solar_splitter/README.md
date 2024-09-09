@@ -17,7 +17,7 @@ In addition the device includes an screen for Shunt that is independent from the
     - [Amazon link](https://www.amazon.es/Heschen-monof%C3%A1sico-SSR-100DD-Entrada-24-220VCC/dp/B0716S1GS8)
   - 1x Shunt with screen
     - [Amazon link - Shunt with screen](https://amzn.eu/d/aZfakt4)
-  - Resistences: R1: 1K, R2: 22K, R3: 560
+  - Resistences: R2: 22K, R3: 560, R4: 1K
     - [Amazon set](https://amzn.eu/d/dpWQRg7)
   - PCB and terminal connectors
     - [Amazon link](https://amzn.eu/d/82N9dl3)

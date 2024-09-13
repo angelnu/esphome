@@ -37,7 +37,6 @@ In addition the device includes an screen for Shunt that is independent from the
   - [Box inside - 3MF file](box/solar_panel_distribution-inside_box.3mf)
     ![solar_panel_distribution-inside_box.jpg](pictures/solar_panel_distribution-inside_box.jpg)
     ![solar_panel_distribution-outside_box.jpg](pictures/solar_panel_distribution-outside_box.jpg)
-  - [Box outside - 3MF file](box/solar_panel_distribution-outside_box.3mf)
 - Mount photos: 
   - ![Cage Mount](pictures/Outside_solar_splitter.jpg)[3D Printed cage](box): 
   - ![Cage inside](pictures/Inside_solar_splitter.jpg)

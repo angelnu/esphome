@@ -12,6 +12,5 @@ packages:
   #Include device definition
   device: !include common_v1.yaml
 
-esphome:
-  platform: ESP32
+esp32:
   board: esp32dev

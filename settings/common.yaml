@@ -5,6 +5,7 @@ packages:
 wifi: 
   #reboot_timeout: 0s
   #power_save_mode: light #NEVER enable this! IT does NOT stay ON
+  power_save_mode: none
   #fast_connect: true
   #output_power: 18dB
 
@@ -50,25 +51,25 @@ api:
 time:
   - platform: homeassistant
     timezone: Europe/Berlin
-  #- platform: sntp
-  #  timezone: Europe/Berlin
-    on_time:
-      # Every 30 minutes
-      - seconds: 0
-        minutes: /30
-        #hours: 4-6
-        then:
-          - lambda: |-
-              if (wifi::global_wifi_component->wifi_rssi() < -70) {
-                // PATCH: Reset old priorities for known networks
-                for (auto &scan : wifi::global_wifi_component->get_scan_result()) {
-                  if (wifi::global_wifi_component->has_sta_priority(scan.get_bssid())) {
-                    wifi::global_wifi_component->set_sta_priority(scan.get_bssid(), 0);
-                  }
-                }
-                // Rescan
-                wifi::global_wifi_component->start_scanning();
-              }
+  - platform: sntp
+    timezone: Europe/Berlin
+    # on_time:
+    #   # Every 30 minutes
+    #   - seconds: 0
+    #     minutes: /30
+    #     #hours: 4-6
+    #     then:
+    #       - lambda: |-
+    #           if (wifi::global_wifi_component->wifi_rssi() < -70) {
+    #             // PATCH: Reset old priorities for known networks
+    #             for (auto &scan : wifi::global_wifi_component->get_scan_result()) {
+    #               if (wifi::global_wifi_component->has_sta_priority(scan.get_bssid())) {
+    #                 wifi::global_wifi_component->set_sta_priority(scan.get_bssid(), 0);
+    #               }
+    #             }
+    #             // Rescan
+    #             wifi::global_wifi_component->start_scanning();
+    #           }
 
 sensor:
   # WiFi Signal sensor.

@@ -4,6 +4,7 @@ esphome:
   build_path: build/${devicename}
 
 wifi:
+  power_save_mode: none
   id: wifi_id
   ssid: !secret wifi_ssid
   password: !secret wifi_password
@@ -11,9 +12,6 @@ wifi:
 ota:
   - platform: esphome
     password: !secret ota_password
-  - platform: http_request
-http_request:
-  verify_ssl: false
 
 logger:
   #level: VERY_VERBOSE
@@ -28,6 +26,10 @@ api:
   id: api_id
   encryption:
     key: !secret api_key
+
+time:
+  - platform: sntp
+    timezone: Europe/Berlin
 
 # Restart Button
 button:

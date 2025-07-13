@@ -1,30 +1,32 @@
 esp32:
   board: esp32dev
 
-dallas:
-  - pin: GPIO02
+one_wire:
+  - platform: gpio
+    pin: GPIO02
     id: dallas_bus_1
-    update_interval: 10s
-  - pin: GPIO04
+  - platform: gpio
+    pin: GPIO04
     id: dallas_bus_2
-    update_interval: 10s
 
 # Individual sensors
 sensor:
-  - platform: dallas
+  - platform: dallas_temp
     #index: 0
     address: ${dallas_sensor_address_1}
     name: ${thermostate_friendly_name_1} Temperature
     id: temperature_1
-    dallas_id: dallas_bus_${dallas_sensor_bus_1}
+    one_wire_id: dallas_bus_${dallas_sensor_bus_1}
+    update_interval: 10s
     filters:
       delta: 0.5
-  - platform: dallas
+  - platform: dallas_temp
     #index: 0
     address: ${dallas_sensor_address_2}
     name: ${thermostate_friendly_name_2} Temperature
     id: temperature_2
-    dallas_id: dallas_bus_${dallas_sensor_bus_2}
+    one_wire_id: dallas_bus_${dallas_sensor_bus_2}
+    update_interval: 10s
     filters:
       delta: 0.5
 

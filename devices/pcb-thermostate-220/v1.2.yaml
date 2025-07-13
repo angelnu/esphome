@@ -1,7 +1,7 @@
 esp32:
   board: esp32dev
 
-dallas:
+dallas_temp:
   - pin: GPIO15
     id: dallas_bus_1
     update_interval: 10s

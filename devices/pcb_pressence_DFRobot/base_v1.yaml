@@ -21,7 +21,9 @@ light:
 output:
   - id: light_output
     platform: gpio
-    pin: 13
+    pin:
+      number: 13
+      ignore_pin_validation_error: true
 
 binary_sensor:
   # Information coming from uart bus

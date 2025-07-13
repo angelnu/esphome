@@ -4,3 +4,9 @@ packages:
 
 web_server:
   version: 3
+
+ota:
+  - platform: http_request
+
+http_request:
+  verify_ssl: false

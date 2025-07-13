@@ -6,9 +6,6 @@ substitutions:
   led2_num_leds: "10"
   led2_rgb_order: RGB
 
-packages:
-  light_configurations: !include ../includes/light-configurations/package.yaml
-
 esp32:
   board: esp32dev
 

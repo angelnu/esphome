@@ -565,9 +565,11 @@ font:
 
 image:
   - file: mdi:wifi
+    type: binary
     id: wifi_icon
     resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
   - file: mdi:home-assistant
+    type: binary
     id: home_assistant_icon
     resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
 

@@ -13,11 +13,8 @@ substitutions:
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
   error_theshold: 1min
 
-esphome:
-  name: ${devicename}
-  platform: ESP32
+esp32:
   board: esp32dev
-  build_path: build/${devicename}
 
 external_components:
 # use all components from a local folder

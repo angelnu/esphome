@@ -17,3 +17,4 @@ build
 *.py[cod]
 #Freecad
 *.FCBak
+**/.DS_Store

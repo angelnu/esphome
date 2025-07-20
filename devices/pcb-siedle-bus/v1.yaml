@@ -1,7 +1,17 @@
 esp32:
   board: esp32dev
+  framework:
+    type: arduino
+    version: latest
 
-# external_components:
-#   - source:
-#       type: local
-#       path: components
+external_components:
+  - source:
+      type: local
+      path: devices/pcb-siedle-bus/components
+
+siedle_inhome_bus:
+  carrier_pin: GPIO16
+  rx_pin: GPIO17
+  load_pin: GPIO13
+  tx_pin: GPIO14
+

@@ -1,7 +1,11 @@
 from esphome import pins
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.const import CONF_ID, CONF_SENSING_PIN, CONF_RX_PIN, CONF_TX_PIN
+from esphome.const import CONF_ID, CONF_SENSING_PIN, CONF_RX_PIN, CONF_TX_PIN, CONF_DUMP
+
+MULTI_CONF = True
+CONF_SIEDLE_INHOME_BUS_ID = "siedle_inhome_bus_id"
+AUTO_LOAD = ["binary_sensor", "button"]
 
 siedle_inhome_bus_ns = cg.esphome_ns.namespace("siedle_inhome_bus")
 SiedleInhomeBus = siedle_inhome_bus_ns.class_("SiedleInhomeBus", cg.Component)
@@ -15,6 +19,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Required(CONF_RX_PIN): pins.internal_gpio_input_pin_schema,
         cv.Required(CONF_LOAD_PIN): pins.internal_gpio_output_pin_schema,
         cv.Required(CONF_TX_PIN): pins.internal_gpio_output_pin_schema,
+        cv.Optional(CONF_DUMP, default=True): cv.boolean,
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -30,3 +35,4 @@ async def to_code(config):
     cg.add(var.set_load_pin(pin))
     pin = await cg.gpio_pin_expression(config[CONF_TX_PIN])
     cg.add(var.set_tx_pin(pin))
+    cg.add(var.set_dump(config[CONF_DUMP]))

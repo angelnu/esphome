@@ -1,8 +1,12 @@
+substitutions:
+  # time to press key before opening the door
+  bell_key_delay: 1000ms
+  # time to keep opening the door
+  open_time: 2000ms
+
 esp32:
   board: esp32dev
-  framework:
-    type: arduino
-    version: latest
+  flash_size: 8MB
 
 external_components:
   - source:
@@ -14,4 +18,20 @@ siedle_inhome_bus:
   rx_pin: GPIO17
   load_pin: GPIO13
   tx_pin: GPIO14
+  dump: true
 
+binary_sensor:
+  - platform: siedle_inhome_bus
+    name: bell
+    icon: "mdi:bell"
+    device_class: sound
+    command: 0x12345678
+    filters:
+      - delayed_off: ${bell_key_delay}
+
+button:
+  - platform: siedle_inhome_bus
+    name: open
+    id: my_open_button
+    icon: "mdi:gate"
+    command: 0x11223344

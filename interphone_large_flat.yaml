@@ -1,0 +1,12 @@
+substitutions:
+  devicename: interphone_large_flat
+  friendly_name: Long Corridor Interphone
+  wifi_ip: "192.168.0.55"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common_esp32.yaml
+  #Include device definition
+  device: !include devices/pcb-siedle-bus/v1.yaml

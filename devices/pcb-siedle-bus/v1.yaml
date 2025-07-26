@@ -15,23 +15,46 @@ external_components:
 
 siedle_inhome_bus:
   carrier_pin: GPIO16
-  rx_pin: GPIO17
+  rx_pin: 
+    number: GPIO17
+    inverted: true
   load_pin: GPIO13
-  tx_pin: GPIO14
+  tx_pin: 
+    number: GPIO14
+    inverted: true
   dump: true
 
 binary_sensor:
   - platform: siedle_inhome_bus
-    name: bell
+    name: bell_small
     icon: "mdi:bell"
     device_class: sound
-    command: 0x12345678
+    command: 0x44A210A0
     filters:
       - delayed_off: ${bell_key_delay}
+    on_release:
+    - button.press: my_open_button
+  - platform: siedle_inhome_bus
+    name: bell_large
+    icon: "mdi:bell"
+    device_class: sound
+    command: 0x44FA10A0
+    filters:
+      - delayed_off: ${bell_key_delay}
+    on_release:
+    - button.press: my_open_button
 
 button:
   - platform: siedle_inhome_bus
     name: open
     id: my_open_button
     icon: "mdi:gate"
-    command: 0x11223344
+    command: 0x460A1220
+  - platform: siedle_inhome_bus
+    name: trigger_bell_small
+    icon: "mdi:bell"
+    command: 0x44A210A0
+  - platform: siedle_inhome_bus
+    name: trigger_bell_large
+    icon: "mdi:bell"
+    command: 0x44FA10A0

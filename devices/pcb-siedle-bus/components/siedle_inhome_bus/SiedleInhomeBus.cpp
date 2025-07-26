@@ -9,14 +9,18 @@ namespace siedle_inhome_bus {
 
 static const char *TAG = "siedle_inhome_bus.component";
 
-static const uint32_t BIT_DURATION_US = 1980;
+static const uint32_t BIT_DURATION_US = 2000;
 static const uint8_t TICKS_PER_BIT = 4;
 
 void SiedleInhomeBus::setup() {
+    // Inputs
     this->carrier_pin_->setup();
     this->rx_pin_->setup();
+    //Outputs
     this->load_pin_->setup();
+    this->load_pin_->digital_write(false);
     this->tx_pin_->setup();
+    this->tx_pin_->digital_write(true);
 
     this->isr_carrier_pin_ = this->carrier_pin_->to_isr();
     this->isr_rx_pin_      = this->rx_pin_->to_isr();
@@ -46,6 +50,11 @@ void SiedleInhomeBus::loop() {
         ESP_LOGI(TAG, "Command completed at %" PRIu32, this->last_command_complete_at_);
         this->last_command_complete_at_ = 0;
     }
+    
+    if (this->aborted_at_pin_ != 0) {
+        ESP_LOGE(TAG, "Aborted receive at bit %d", this->aborted_at_pin_-100);
+        this->aborted_at_pin_ = 0;
+    }
 
     // Reset enabled binary sensors (previous loop)
     for(const auto& [command, binary_sensor] : this->binary_sensors_){
@@ -63,7 +72,7 @@ void SiedleInhomeBus::loop() {
 
         auto binary_sensor_itr = this->binary_sensors_.find(cmd);
         if (binary_sensor_itr != this->binary_sensors_.end()) {
-          // found
+            // found
             binary_sensor_itr -> second -> publish_state(true);
         }
     }
@@ -79,10 +88,11 @@ void SiedleInhomeBus::dump_config(){
     LOG_PIN("  TX Pin:      ", this->tx_pin_);
 
     // TBD - remove
-    ESP_LOGI(TAG, "Carrier: %d Bits: %d", this->carrier_pin_->digital_read(), this->rx_pin_->digital_read());
+    ESP_LOGI(TAG, "Carrier: %d RX: %d", this->carrier_pin_->digital_read(), this->rx_pin_->digital_read());
+    ESP_LOGI(TAG, "Load: %d TX: %d", this->load_pin_->digital_read(), this->tx_pin_->digital_read());
 
     for(const auto& [command, binary_sensor] : this->binary_sensors_){
-        auto desc = std::format("Binary Sensor - Comnand ({}):", format_hex_pretty(command));
+        auto desc = std::format("Binary Sensor - Comand ({}):", format_hex_pretty(command));
         LOG_BINARY_SENSOR("  ", desc.c_str(), binary_sensor);
     }
 }
@@ -115,7 +125,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::s_gpio_intr(SiedleInhomeBus *arg) {
 
 void SiedleInhomeBus::send_cmd(uint32_t cmd) {
 
-    ESP_LOGI(TAG, "Sending command: %s", format_hex_pretty(cmd).c_str());
+    ESP_LOGI(TAG, "Sending command: %s at %" PRIu32, format_hex_pretty(cmd).c_str(), micros());
     
     noInterrupts();
     if (this->bus_status_ != SiedleInhomeBus::idle) {
@@ -129,14 +139,14 @@ void SiedleInhomeBus::send_cmd(uint32_t cmd) {
     this->transferred_cmd_ = cmd;
     this->bus_status_ = SiedleInhomeBus::sending;
     
+    timerRestart(this->bus_timer_);
+    this->bit_ticks_left_ = TICKS_PER_BIT;
+    this->bits_left_ = 31;
 
     // Enable load to write
     this->load_pin_->digital_write(true);
-    bool bit_to_send = (this->transferred_cmd_ >> 31) & 1;
-    this->tx_pin_->digital_write(!bit_to_send);
-
-    this->bit_ticks_left_ = TICKS_PER_BIT;
-    this->bits_left_ = 31;
+    bool bit_to_send = bitRead(this->transferred_cmd_, this->bits_left_);
+    this->tx_pin_->digital_write(bit_to_send);
 
     interrupts();
 }
@@ -159,8 +169,10 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
         if (!this->isr_carrier_pin_.digital_read()) {
             // Aborted read
             this->bus_status_ = SiedleInhomeBus::idle;
+            this->aborted_at_pin_ = 100 + this->bits_left_;
+            return;
         }
-        bool received_bit = !this->isr_rx_pin_.digital_read();
+        bool received_bit = this->isr_rx_pin_.digital_read();
         this->transferred_cmd_ = (this->transferred_cmd_<<1) + received_bit;
 
         this->bits_left_--;
@@ -178,12 +190,13 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
     case SiedleInhomeBus::sending: {
         if (this->bits_left_ > 0) {
             this->bits_left_--;
-            bool bit_to_send = (this->transferred_cmd_ >> this->bits_left_) & 1;
-            this->isr_tx_pin_.digital_write(!bit_to_send);            
+            bool bit_to_send = bitRead(this->transferred_cmd_, this->bits_left_);
+            this->isr_tx_pin_.digital_write(bit_to_send);            
             // Wait for next bit
             this->bit_ticks_left_ = TICKS_PER_BIT;
         } else {
             // End transmission
+            this->isr_tx_pin_.digital_write(true);
             this->isr_load_pin_.digital_write(false);
             this->bus_status_ = SiedleInhomeBus::idle;
             last_command_complete_at_ = micros();

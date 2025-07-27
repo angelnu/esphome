@@ -1,46 +1,88 @@
 
-[aib-150-01 Vendor page](https://www.siedle.de/de-de/home/service/linked-pages/produktkatalog/tuersprechanlagen-innen/siedle-basic/aib-150-01/)
-[German Forum thread](https://www.mikrocontroller.net/topic/308271)
+# Siedle In-Home bus client
 
-010 - 3 Bit, Start des Siedle In Home-Buspakets
-6 Bit - Signal oder Befehl
-5 Bit - Adresse des Zielgeräts
-4 Bit - Adresse des Zielsegments
-010 - 3 Bits, normalerweise sind sie immer so, aber sofort habe ich 
-einen Befehl erhalten, der hier 110 hatte. Auf jeden Fall scheint "1" in 
-der Mitte "1" zu sein.
-5 Bit - Adresse des Quellgeräts
-4 Bit - Adresse des Quellensegments
-00 - 2 Bits, normalerweise sind sie 00, aber in einigen Fällen könnten 
-es 10 sein. Ich persönlich glaube, dass dies wahrscheinlich irgendwie 
-mit Broadcast-Nachrichten zusammenhängt, aber ich weiß es wirklich 
-nicht.
+This PCB allows interacting with a Sidle In-Home bus and automatically trigger actions or connect it to home automation such as [Home Assistant](https://www.home-assistant.io/). It uses [ESPHome](https://esphome.io) as base firmware.
 
-#define DEV_ON_BUS 0b101000
-#define LIGHT_ON 0b101100
-#define SET_SEGMENT_ADDR 0b010000
-#define IS_ADDR_OK 0b110011
-#define ADDR_OK 0b100100
-#define START_PROG 0b110000
-#define PROGunknown 0b010011
-#define STOPPROG 0b001000
-#define CANCEL_SEG 0b011100
-#define PROGMODE_DEV 0b111010
-#define INCOMING_RING 0b110001
-#define RING_ACCEPTED 0b001110
-#define ONAIR 0b000001
-#define ONAIR_OFF 0b100001
-#define OPEN_DOOR 0b001100
-#define CALLBACK 0b111001
+- ![Overview picture](pictures/overview.png)
+- [Aisler PCB project](https://aisler.net/p/WQLXACYH)
+- <details>
+  <summary>KiCad PCB - schematics and assembly </summary>
 
-44.9A.10.B0
-44.9A.10.A0
-40.8A.11.A0
-46.0A.11.A0
-46.0A.11.A0
-42.9A.11.A0
-42.9A.11.A0
+  - [KiCad PCB project](kicad/siedle-bus/siedle-bus.kicad_pro)
+  - ![Schematics Preview](pictures/schematics.png)
+  - ![PCB front Assembly](pictures/pcb-top-preview.jpg)
+  - ![PCB tracks](pictures/pcb-tracks.png)
+  - ![PCB front Assembly](pictures/pcb-top.png)
+  - ![PCB front Assembly](pictures/pcb-bottom-preview.jpg)
+  - ![PCB back Assembly](pictures/pcb-bottom.png)
+  
+  </details>
+- <details>
+  <summary>3D Printed Box </summary>
 
+  - [3D Printed box](box): 
+  - [FreeCad file](box/siedle-bus.FCStd)
+  - [Box inside - 3MF file](box/siedle-bus-inside_box.3mf)
+    ![solar_panel_distribution-inside_box.jpg](pictures/siedle-bus-inside_box.jpg)
+    ![solar_panel_distribution-outside_box.jpg](pictures/siedle-bus-outside_box.jpg)
 
-44.A2.10.A0 Pequeno
-44.FA.10.A0 Grande
+  </details>
+- <details>
+  <summary>Parts</summary>
+
+  - 1x [ESP32-WROOM-32 with 8MB Flash](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+  - 1x [AMS1117 - 3,3v 1A regulator in SOT-223 format](http://www.advanced-monolithic.com/pdf/ds1117.pdf)
+  - 8x [IRLML0030 - 5A N-MOSFET](https://www.infineon.com/dgdl/Infineon-IRLML0030-DataSheet-v01_01-EN.pdf?fileId=5546d462533600a401535664773825df)
+  - 8x [USB_A_Stewart_SS-52100-001_Horizontal](https://www.digikey.de/en/products/detail/stewart-connector/SS-52100-001/7902377)
+  - 1x 10 KOhm resistor (reset)
+  - 9x 0805 10 uF capacitor
+  
+  </details>
+- PINs:
+  - Bus connector - external temperature sensors. From top to bottom:
+    - TA-
+    - Ta+
+  - Serial programming:
+    - 3.3V
+    - TX
+    - RX
+    - GND
+- Firmware: [ESPHome.io](https://esphome.io)
+  - You need to modify/create your own ESPHome definition and include the yaml in this folder matching your PCB
+  - [Example for v1.0](../../interphone_small_flat.yaml)
+
+## Bus information
+
+The bus uses only 2 wires for communication and powering devices. A third wire is also present but not used here.
+
+The bus provides 27V and can power client devices for up to 15mA (in the original board circuit there is a current limiter). It is very important to ensure that a high impedance is present to AC to not affect the bus communication. This is achieved in this project using a [Girator](https://en.wikipedia.org/wiki/Gyrator). The girator in this project uses a MOSFET to implement the girator and implement a virtual coil.
+
+To prepare the bus to send a message, the bus is first shorted with 200 Ohms. This triggers the power supply of the bus to lower the current and allow the bits of the message to be sent. To send the bits a resistor of 10 ohms in parallel to the 200 Ohms is used to signal a zero while the 200 Ohms signal a 1. Each bit is 2 ms.
+
+The PCB in this project uses a PNP Bipolar transistor to detect the bus carrier (when the voltage is dropped) and the following message bits. An NPN MOSFET is used to add the resistors to the bus.
+
+### Message
+
+Each message sent in the bus has 32 bits:
+
+- 31-29: 010
+- 28-23: command
+- 22-18: destination
+- 17-14: destination bus
+- 13-12: 010 (first bit might be 1)
+- 10-06: source
+- 05-02: source bus
+- 01-00: 00 (first bit might be 1 - broadcast?)
+
+### References
+
+I used all the reverse engineering from this [mikrocontroller Forum thread (german)](https://www.mikrocontroller.net/topic/308271) as base. Thanks a lot for all that contributed there.
+
+Example of devices using this bus:
+- [aib-150-01 Vendor page](https://www.siedle.de/de-de/home/service/linked-pages/produktkatalog/tuersprechanlagen-innen/siedle-basic/aib-150-01/)
+
+## Changelog
+
+### v1
+
+- First version

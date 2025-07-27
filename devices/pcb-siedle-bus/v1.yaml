@@ -1,8 +1,6 @@
 substitutions:
   # time to press key before opening the door
   bell_key_delay: 1000ms
-  # time to keep opening the door
-  open_time: 2000ms
 
 esp32:
   board: esp32dev
@@ -19,23 +17,66 @@ external_components:
 
 siedle_inhome_bus:
   carrier_pin: GPIO16
-  rx_pin: GPIO17
+  rx_pin: 
+    number: GPIO17
+    inverted: true
   load_pin: GPIO13
-  tx_pin: GPIO14
+  tx_pin: 
+    number: GPIO14
+    inverted: true
   dump: true
 
 binary_sensor:
   - platform: siedle_inhome_bus
-    name: bell
+    name: bell_small
     icon: "mdi:bell"
     device_class: sound
-    command: 0x12345678
+    message:
+      # 0x44A210A0
+      command: &BELL_CMD 0x9
+      source: &DOOR 0x2
+      destination: &SMALL_FLAT 0x8
     filters:
       - delayed_off: ${bell_key_delay}
+    on_release:
+    - button.press: my_open_button
+  - platform: siedle_inhome_bus
+    name: bell_large
+    icon: "mdi:bell"
+    device_class: sound
+    message:
+      # 0x44FA10A0
+      command: *BELL_CMD
+      source: *DOOR
+      destination: &LARGE_FLAT 0x1E
+    filters:
+      - delayed_off: ${bell_key_delay}
+    on_release:
+    - button.press: my_open_button
 
 button:
   - platform: siedle_inhome_bus
     name: open
     id: my_open_button
     icon: "mdi:gate"
-    command: 0x11223344
+    message:
+      # 0x460A1220
+      command: &OPEN_COMMAND 0xC
+      source: *SMALL_FLAT
+      destination: *DOOR
+  - platform: siedle_inhome_bus
+    name: trigger_bell_small
+    icon: "mdi:bell"
+    message:
+      # 0x44A210A0
+      command: *BELL_CMD
+      source: *DOOR
+      destination: *SMALL_FLAT
+  - platform: siedle_inhome_bus
+    name: trigger_bell_large
+    icon: "mdi:bell"
+    message:
+      # 0x44FA10A0
+      command: *BELL_CMD
+      source: *DOOR
+      destination: *LARGE_FLAT

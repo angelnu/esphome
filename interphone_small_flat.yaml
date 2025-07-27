@@ -1,6 +1,6 @@
 substitutions:
-  devicename: interphone
-  friendly_name: Corridor Interphone
+  devicename: interphone_small_flat
+  friendly_name: Short Corridor Interphone
   wifi_ip: "192.168.2.11"
 
 packages:

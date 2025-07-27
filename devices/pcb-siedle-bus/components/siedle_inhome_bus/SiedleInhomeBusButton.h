@@ -11,7 +11,7 @@ namespace siedle_inhome_bus {
 class SiedleInhomeBusButton : public button::Button, public Component {
  public:
   void set_parent(SiedleInhomeBus *parent) { parent_ = parent; }
-  void set_command(uint32_t command) { command_ = command; }
+  void set_message(SiedleInhomeBusMessage *msg) { message_ = msg; }
 
   void dump_config() override;
 
@@ -19,7 +19,7 @@ class SiedleInhomeBusButton : public button::Button, public Component {
   void press_action() override;
 
   SiedleInhomeBus *parent_;
-  uint32_t command_;
+  SiedleInhomeBusMessage *message_;
 };
 
 }  // namespace siedle_inhome_bus

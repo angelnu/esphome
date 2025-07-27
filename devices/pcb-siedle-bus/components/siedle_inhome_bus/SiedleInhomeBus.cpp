@@ -9,14 +9,18 @@ namespace siedle_inhome_bus {
 
 static const char *TAG = "siedle_inhome_bus.component";
 
-static const uint32_t BIT_DURATION_US = 1980;
+static const uint32_t BIT_DURATION_US = 2000;
 static const uint8_t TICKS_PER_BIT = 4;
 
 void SiedleInhomeBus::setup() {
+    // Inputs
     this->carrier_pin_->setup();
     this->rx_pin_->setup();
+    //Outputs
     this->load_pin_->setup();
+    this->load_pin_->digital_write(false);
     this->tx_pin_->setup();
+    this->tx_pin_->digital_write(true);
 
     this->isr_carrier_pin_ = this->carrier_pin_->to_isr();
     this->isr_rx_pin_      = this->rx_pin_->to_isr();
@@ -38,13 +42,18 @@ void SiedleInhomeBus::setup() {
 void SiedleInhomeBus::loop() {
 
     if (this->last_gpio_interrupt_at_ != 0) {
-        ESP_LOGI(TAG, "Interrupt received at %" PRIu32, this->last_gpio_interrupt_at_);
+        ESP_LOGV(TAG, "Interrupt received at %" PRIu32, this->last_gpio_interrupt_at_);
         this->last_gpio_interrupt_at_ = 0;
     }
     
     if (this->last_command_complete_at_ != 0) {
-        ESP_LOGI(TAG, "Command completed at %" PRIu32, this->last_command_complete_at_);
+        ESP_LOGV(TAG, "Command completed at %" PRIu32, this->last_command_complete_at_);
         this->last_command_complete_at_ = 0;
+    }
+    
+    if (this->aborted_at_pin_ != 0) {
+        ESP_LOGE(TAG, "Aborted receive at bit %d", this->aborted_at_pin_-100);
+        this->aborted_at_pin_ = 0;
     }
 
     // Reset enabled binary sensors (previous loop)
@@ -54,18 +63,23 @@ void SiedleInhomeBus::loop() {
         }
     }
 
-    if (is_received_cmd()) {
-        auto cmd = get_received_cmd();
+    while (is_received_messages()) {
+        auto msg = get_received_message();
 
         if (enabled_dump_) {
-            ESP_LOGI (TAG, "Received CMD: %s", format_hex_pretty(cmd).c_str());
+            ESP_LOGI (TAG, "Received %s", msg.get_string().c_str());
         }
 
-        auto binary_sensor_itr = this->binary_sensors_.find(cmd);
+        auto binary_sensor_itr = this->binary_sensors_.find(msg.get_raw());
         if (binary_sensor_itr != this->binary_sensors_.end()) {
-          // found
+            // found
             binary_sensor_itr -> second -> publish_state(true);
         }
+    }
+
+    if (is_to_be_send_messages()) {
+        auto msg = get_to_be_send_message();
+        internal_send_message(msg);
     }
 
 }
@@ -78,12 +92,10 @@ void SiedleInhomeBus::dump_config(){
     LOG_PIN("  Load Pin:    ", this->load_pin_);
     LOG_PIN("  TX Pin:      ", this->tx_pin_);
 
-    // TBD - remove
-    ESP_LOGI(TAG, "Carrier: %d Bits: %d", this->carrier_pin_->digital_read(), this->rx_pin_->digital_read());
-
-    for(const auto& [command, binary_sensor] : this->binary_sensors_){
-        auto desc = std::format("Binary Sensor - Comnand ({}):", format_hex_pretty(command));
-        LOG_BINARY_SENSOR("  ", desc.c_str(), binary_sensor);
+    // Binary sensors
+    for(const auto& [msg_raw, binary_sensor] : this->binary_sensors_) {
+        LOG_BINARY_SENSOR("  ", "Binary Sensor:", binary_sensor);
+        LOG_SIEDLE_MESSAGE("    ", binary_sensors_messages_[msg_raw]);
     }
 }
 
@@ -95,7 +107,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::gpio_intr() {
 
     // Abort if not idle
     if (this->bus_status_ != SiedleInhomeBus::idle) {
-        //Cannot read new cmd if not idle
+        //Cannot read new msg if not idle
         return;
     }
 
@@ -113,30 +125,30 @@ void IRAM_ATTR HOT SiedleInhomeBus::s_gpio_intr(SiedleInhomeBus *arg) {
 }
 
 
-void SiedleInhomeBus::send_cmd(uint32_t cmd) {
+void SiedleInhomeBus::internal_send_message(SiedleInhomeBusMessage& msg) {
 
-    ESP_LOGI(TAG, "Sending command: %s", format_hex_pretty(cmd).c_str());
+    ESP_LOGD(TAG, "Sending %s at %" PRIu32, msg.get_string().c_str(), micros());
     
     noInterrupts();
     if (this->bus_status_ != SiedleInhomeBus::idle) {
         interrupts();
-        //Cannot transfer new cmd if not idle
-        ESP_LOGE(TAG, "send_cmd called while not idle: %d", this->bus_status_);
+        //Cannot transfer new msg if not idle
+        ESP_LOGE(TAG, "internal_send_message called while not idle: %d", this->bus_status_);
         return;
     }
 
     //Start sending
-    this->transferred_cmd_ = cmd;
+    this->transferred_msg_ = msg.get_raw();
     this->bus_status_ = SiedleInhomeBus::sending;
     
+    timerRestart(this->bus_timer_);
+    this->bit_ticks_left_ = TICKS_PER_BIT;
+    this->bits_left_ = 31;
 
     // Enable load to write
     this->load_pin_->digital_write(true);
-    bool bit_to_send = (this->transferred_cmd_ >> 31) & 1;
-    this->tx_pin_->digital_write(!bit_to_send);
-
-    this->bit_ticks_left_ = TICKS_PER_BIT;
-    this->bits_left_ = 31;
+    bool bit_to_send = bitRead(this->transferred_msg_, this->bits_left_);
+    this->tx_pin_->digital_write(bit_to_send);
 
     interrupts();
 }
@@ -144,7 +156,9 @@ void SiedleInhomeBus::send_cmd(uint32_t cmd) {
 /// Timmer interrupt routine, called each BIT_DURATION_US / TICKS_PER_BIT
 void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
 
-    if (this->bus_status_ != SiedleInhomeBus::receiving && this->bus_status_ != SiedleInhomeBus::sending) {
+    if (this->bus_status_ != SiedleInhomeBus::receiving &&
+        this->bus_status_ != SiedleInhomeBus::received &&
+        this->bus_status_ != SiedleInhomeBus::sending) {
         return;
     }
 
@@ -159,9 +173,11 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
         if (!this->isr_carrier_pin_.digital_read()) {
             // Aborted read
             this->bus_status_ = SiedleInhomeBus::idle;
+            this->aborted_at_pin_ = 100 + this->bits_left_;
+            return;
         }
-        bool received_bit = !this->isr_rx_pin_.digital_read();
-        this->transferred_cmd_ = (this->transferred_cmd_<<1) + received_bit;
+        bool received_bit = this->isr_rx_pin_.digital_read();
+        this->transferred_msg_ = (this->transferred_msg_<<1) + received_bit;
 
         this->bits_left_--;
         if (this->bits_left_ > 0) {
@@ -169,21 +185,30 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             this->bit_ticks_left_ = TICKS_PER_BIT;
         } else {
             //Transmission end
+            this->received_messages_.push(this->transferred_msg_);
             this->bus_status_ = SiedleInhomeBus::received;
-            last_command_complete_at_ = micros();
+
+            // Wait for half bit to end (as we read in the middle of the bit)
+            this->bit_ticks_left_ = TICKS_PER_BIT / 2;
         }
         return;
     }
 
+    case SiedleInhomeBus::received:
+        this->bus_status_ = SiedleInhomeBus::idle;
+        last_command_complete_at_ = micros();
+        return;
+
     case SiedleInhomeBus::sending: {
         if (this->bits_left_ > 0) {
             this->bits_left_--;
-            bool bit_to_send = (this->transferred_cmd_ >> this->bits_left_) & 1;
-            this->isr_tx_pin_.digital_write(!bit_to_send);            
+            bool bit_to_send = bitRead(this->transferred_msg_, this->bits_left_);
+            this->isr_tx_pin_.digital_write(bit_to_send);            
             // Wait for next bit
             this->bit_ticks_left_ = TICKS_PER_BIT;
         } else {
             // End transmission
+            this->isr_tx_pin_.digital_write(true);
             this->isr_load_pin_.digital_write(false);
             this->bus_status_ = SiedleInhomeBus::idle;
             last_command_complete_at_ = micros();
@@ -202,14 +227,26 @@ void IRAM_ATTR HOT SiedleInhomeBus::s_timer_intr(SiedleInhomeBus *arg) {
     arg->timer_intr();
 }
 
-uint32_t SiedleInhomeBus::get_received_cmd() {
-    if (!this->is_received_cmd()) {
-        ESP_LOGE(TAG, "get_received_cmd called but not cmd received. bus_status_: %d", this->bus_status_);
+SiedleInhomeBusMessage SiedleInhomeBus::get_received_message() {
+    if (!this->is_received_messages()) {
+        ESP_LOGE(TAG, "get_received_message called but not msg received. bus_status_: %d", this->bus_status_);
+        return 0xFFFFFF;
     }
 
-    auto cmd = this->transferred_cmd_;
-    this->bus_status_ = SiedleInhomeBus::idle;
-    return cmd;
+    auto msg = this->received_messages_.front();
+    this->received_messages_.pop();
+    return msg;
+}
+
+SiedleInhomeBusMessage SiedleInhomeBus::get_to_be_send_message() {
+    if (!this->is_to_be_send_messages()) {
+        ESP_LOGE(TAG, "get_to_be_send_message called but not msg to be sent. bus_status_: %d", this->bus_status_);
+        return 0xFFFFFF;
+    }
+
+    auto msg = this->to_be_send_messages_.front();
+    this->to_be_send_messages_.pop();
+    return msg;
 }
 
 

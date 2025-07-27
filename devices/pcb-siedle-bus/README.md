@@ -20,11 +20,10 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 - <details>
   <summary>3D Printed Box </summary>
 
-  - [3D Printed box](box): 
-  - [FreeCad file](box/siedle-bus.FCStd)
-  - [Box inside - 3MF file](box/siedle-bus-inside_box.3mf)
-    ![solar_panel_distribution-inside_box.jpg](pictures/siedle-bus-inside_box.jpg)
-    ![solar_panel_distribution-outside_box.jpg](pictures/siedle-bus-outside_box.jpg)
+  - [3D Printed box](FreeCAD)
+  - [FreeCad file](FreeCAD/siedle-bus.FCStd)
+  - [3MF file](FreeCAD/siedle-bus-cage.3mf)
+    ![cage-render](pictures/cage-preview.png)
 
   </details>
 - <details>

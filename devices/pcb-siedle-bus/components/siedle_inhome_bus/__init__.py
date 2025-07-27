@@ -10,6 +10,11 @@ AUTO_LOAD = ["binary_sensor", "button"]
 siedle_inhome_bus_ns = cg.esphome_ns.namespace("siedle_inhome_bus")
 SiedleInhomeBus = siedle_inhome_bus_ns.class_("SiedleInhomeBus", cg.Component)
 
+SiedleInhomeBusCommand = siedle_inhome_bus_ns.class_("SiedleInhomeBusCommand")
+
+CONF_SOURCE_BUS = "source_bus"
+CONF_DESTINATION = "destination"
+CONF_DESTINATION_BUS = "destination_bus"
 CONF_CARRIER_PIN = "carrier_pin"
 CONF_LOAD_PIN = "load_pin"
 CONFIG_SCHEMA = cv.Schema(

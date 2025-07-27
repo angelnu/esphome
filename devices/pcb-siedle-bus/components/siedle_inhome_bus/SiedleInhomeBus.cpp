@@ -63,18 +63,23 @@ void SiedleInhomeBus::loop() {
         }
     }
 
-    if (is_received_cmd()) {
+    while (is_received_cmd()) {
         auto cmd = get_received_cmd();
 
         if (enabled_dump_) {
-            ESP_LOGI (TAG, "Received CMD: %s", format_hex_pretty(cmd).c_str());
+            ESP_LOGI (TAG, "Received %s", cmd.get_string().c_str());
         }
 
-        auto binary_sensor_itr = this->binary_sensors_.find(cmd);
+        auto binary_sensor_itr = this->binary_sensors_.find(cmd.get_raw());
         if (binary_sensor_itr != this->binary_sensors_.end()) {
             // found
             binary_sensor_itr -> second -> publish_state(true);
         }
+    }
+
+    if (is_to_be_send_cmd()) {
+        auto cmd = get_to_be_send_cmd();
+        send_cmd_internal(cmd);
     }
 
 }
@@ -87,13 +92,10 @@ void SiedleInhomeBus::dump_config(){
     LOG_PIN("  Load Pin:    ", this->load_pin_);
     LOG_PIN("  TX Pin:      ", this->tx_pin_);
 
-    // TBD - remove
-    ESP_LOGI(TAG, "Carrier: %d RX: %d", this->carrier_pin_->digital_read(), this->rx_pin_->digital_read());
-    ESP_LOGI(TAG, "Load: %d TX: %d", this->load_pin_->digital_read(), this->tx_pin_->digital_read());
-
-    for(const auto& [command, binary_sensor] : this->binary_sensors_){
-        auto desc = std::format("Binary Sensor - Comand ({}):", format_hex_pretty(command));
-        LOG_BINARY_SENSOR("  ", desc.c_str(), binary_sensor);
+    // Binary sensors
+    for(const auto& [cmd_raw, binary_sensor] : this->binary_sensors_) {
+        LOG_BINARY_SENSOR("  ", "Binary Sensor:", binary_sensor);
+        LOG_SIEDLE_COMMAND("    ", binary_sensors_commands_[cmd_raw]);
     }
 }
 
@@ -123,9 +125,9 @@ void IRAM_ATTR HOT SiedleInhomeBus::s_gpio_intr(SiedleInhomeBus *arg) {
 }
 
 
-void SiedleInhomeBus::send_cmd(uint32_t cmd) {
+void SiedleInhomeBus::send_cmd_internal(SiedleInhomeBusCommand& cmd) {
 
-    ESP_LOGI(TAG, "Sending command: %s at %" PRIu32, format_hex_pretty(cmd).c_str(), micros());
+    ESP_LOGI(TAG, "Sending %s at %" PRIu32, cmd.get_string().c_str(), micros());
     
     noInterrupts();
     if (this->bus_status_ != SiedleInhomeBus::idle) {
@@ -136,7 +138,7 @@ void SiedleInhomeBus::send_cmd(uint32_t cmd) {
     }
 
     //Start sending
-    this->transferred_cmd_ = cmd;
+    this->transferred_cmd_ = cmd.get_raw();
     this->bus_status_ = SiedleInhomeBus::sending;
     
     timerRestart(this->bus_timer_);
@@ -181,7 +183,8 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             this->bit_ticks_left_ = TICKS_PER_BIT;
         } else {
             //Transmission end
-            this->bus_status_ = SiedleInhomeBus::received;
+            this->received_comands_.push(this->transferred_cmd_);
+            this->bus_status_ = SiedleInhomeBus::idle;
             last_command_complete_at_ = micros();
         }
         return;
@@ -215,13 +218,25 @@ void IRAM_ATTR HOT SiedleInhomeBus::s_timer_intr(SiedleInhomeBus *arg) {
     arg->timer_intr();
 }
 
-uint32_t SiedleInhomeBus::get_received_cmd() {
+SiedleInhomeBusCommand SiedleInhomeBus::get_received_cmd() {
     if (!this->is_received_cmd()) {
         ESP_LOGE(TAG, "get_received_cmd called but not cmd received. bus_status_: %d", this->bus_status_);
+        return 0xFFFFFF;
     }
 
-    auto cmd = this->transferred_cmd_;
-    this->bus_status_ = SiedleInhomeBus::idle;
+    auto cmd = this->received_comands_.front();
+    this->received_comands_.pop();
+    return cmd;
+}
+
+SiedleInhomeBusCommand SiedleInhomeBus::get_to_be_send_cmd() {
+    if (!this->is_to_be_send_cmd()) {
+        ESP_LOGE(TAG, "get_to_be_send_cmd called but not cmd to be sent. bus_status_: %d", this->bus_status_);
+        return 0xFFFFFF;
+    }
+
+    auto cmd = this->to_be_send_cmds_.front();
+    this->to_be_send_cmds_.pop();
     return cmd;
 }
 

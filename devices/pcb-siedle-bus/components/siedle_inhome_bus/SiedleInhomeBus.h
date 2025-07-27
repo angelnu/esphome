@@ -1,12 +1,15 @@
 #pragma once
 
 #include <map>
+#include <queue>
 
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 
 #include <esp32-hal-timer.h>
+
+#include "SiedleInhomeBusCommand.h"
 
 namespace esphome {
 namespace siedle_inhome_bus {
@@ -23,12 +26,19 @@ class SiedleInhomeBus : public Component {
   void set_tx_pin     (InternalGPIOPin *tx_pin)      { tx_pin_       = tx_pin; }
   void set_dump       (bool enabled_dump)            { enabled_dump_ = enabled_dump;}
 
-  void register_binary_sensor(uint32_t command, binary_sensor::BinarySensor *obj) { this->binary_sensors_[command] = obj; }
+  void register_binary_sensor(binary_sensor::BinarySensor *obj,
+                              uint8_t command,
+                              uint8_t destination,
+                              uint8_t destination_bus,
+                              uint8_t source,
+                              uint8_t source_bus) {
+    auto cmd = new SiedleInhomeBusCommand(command, destination, destination_bus, source, source_bus);
+    uint32_t cmd_raw = cmd -> get_raw();
+    binary_sensors_commands_[cmd_raw] = cmd;
+    this->binary_sensors_[cmd_raw] = obj;
+  }
 
-  void send_cmd (uint32_t);
-  
-  bool is_received_cmd() { return this->bus_status_ == SiedleInhomeBus::received; }
-  uint32_t get_received_cmd();
+  void send_cmd (SiedleInhomeBusCommand& cmd) { this->to_be_send_cmds_.push(cmd.get_raw()); }
 
  protected:
   // Bus settings
@@ -40,6 +50,18 @@ class SiedleInhomeBus : public Component {
 
   // Binary sensors
   std::map<uint32_t, binary_sensor::BinarySensor *> binary_sensors_;
+  std::map<uint32_t, SiedleInhomeBusCommand *> binary_sensors_commands_;
+
+  // Command queues
+  std::queue<SiedleInhomeBusCommand> received_comands_;
+  std::queue<SiedleInhomeBusCommand> to_be_send_cmds_;
+  
+  bool is_received_cmd() { return !this->received_comands_.empty(); }
+  SiedleInhomeBusCommand get_received_cmd();
+  
+  bool is_to_be_send_cmd() { return !this->to_be_send_cmds_.empty(); }
+  SiedleInhomeBusCommand get_to_be_send_cmd();
+  void send_cmd_internal (SiedleInhomeBusCommand&);
 
   //Interrupt pins
   ISRInternalGPIOPin isr_carrier_pin_;
@@ -53,7 +75,7 @@ class SiedleInhomeBus : public Component {
   uint8_t  aborted_at_pin_=0;
   hw_timer_t *bus_timer_;
 
-  enum bus_status_t {idle, receiving, received, sending};
+  enum bus_status_t {idle, receiving, sending};
 
   bus_status_t bus_status_ = idle;
   uint32_t transferred_cmd_;

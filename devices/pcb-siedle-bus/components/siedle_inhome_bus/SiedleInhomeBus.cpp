@@ -42,12 +42,12 @@ void SiedleInhomeBus::setup() {
 void SiedleInhomeBus::loop() {
 
     if (this->last_gpio_interrupt_at_ != 0) {
-        ESP_LOGI(TAG, "Interrupt received at %" PRIu32, this->last_gpio_interrupt_at_);
+        ESP_LOGV(TAG, "Interrupt received at %" PRIu32, this->last_gpio_interrupt_at_);
         this->last_gpio_interrupt_at_ = 0;
     }
     
     if (this->last_command_complete_at_ != 0) {
-        ESP_LOGI(TAG, "Command completed at %" PRIu32, this->last_command_complete_at_);
+        ESP_LOGV(TAG, "Command completed at %" PRIu32, this->last_command_complete_at_);
         this->last_command_complete_at_ = 0;
     }
     
@@ -127,7 +127,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::s_gpio_intr(SiedleInhomeBus *arg) {
 
 void SiedleInhomeBus::send_cmd_internal(SiedleInhomeBusCommand& cmd) {
 
-    ESP_LOGI(TAG, "Sending %s at %" PRIu32, cmd.get_string().c_str(), micros());
+    ESP_LOGD(TAG, "Sending %s at %" PRIu32, cmd.get_string().c_str(), micros());
     
     noInterrupts();
     if (this->bus_status_ != SiedleInhomeBus::idle) {

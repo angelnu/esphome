@@ -8,6 +8,10 @@ esp32:
   board: esp32dev
   flash_size: 8MB
 
+esphome:
+  platformio_options:
+    build_flags: -DCONFIG_GPTIMER_CTRL_FUNC_IN_IRAM=1
+
 external_components:
   - source:
       type: local

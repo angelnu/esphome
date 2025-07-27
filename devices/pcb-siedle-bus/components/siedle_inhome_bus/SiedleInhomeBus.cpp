@@ -156,7 +156,9 @@ void SiedleInhomeBus::internal_send_message(SiedleInhomeBusMessage& msg) {
 /// Timmer interrupt routine, called each BIT_DURATION_US / TICKS_PER_BIT
 void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
 
-    if (this->bus_status_ != SiedleInhomeBus::receiving && this->bus_status_ != SiedleInhomeBus::sending) {
+    if (this->bus_status_ != SiedleInhomeBus::receiving &&
+        this->bus_status_ != SiedleInhomeBus::received &&
+        this->bus_status_ != SiedleInhomeBus::sending) {
         return;
     }
 
@@ -184,11 +186,18 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
         } else {
             //Transmission end
             this->received_messages_.push(this->transferred_msg_);
-            this->bus_status_ = SiedleInhomeBus::idle;
-            last_command_complete_at_ = micros();
+            this->bus_status_ = SiedleInhomeBus::received;
+
+            // Wait for half bit to end (as we read in the middle of the bit)
+            this->bit_ticks_left_ = TICKS_PER_BIT / 2;
         }
         return;
     }
+
+    case SiedleInhomeBus::received:
+        this->bus_status_ = SiedleInhomeBus::idle;
+        last_command_complete_at_ = micros();
+        return;
 
     case SiedleInhomeBus::sending: {
         if (this->bits_left_ > 0) {

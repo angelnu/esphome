@@ -30,11 +30,7 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
   <summary>Parts</summary>
 
   - 1x [ESP32-WROOM-32 with 8MB Flash](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
-  - 1x [AMS1117 - 3,3v 1A regulator in SOT-223 format](http://www.advanced-monolithic.com/pdf/ds1117.pdf)
-  - 8x [IRLML0030 - 5A N-MOSFET](https://www.infineon.com/dgdl/Infineon-IRLML0030-DataSheet-v01_01-EN.pdf?fileId=5546d462533600a401535664773825df)
-  - 8x [USB_A_Stewart_SS-52100-001_Horizontal](https://www.digikey.de/en/products/detail/stewart-connector/SS-52100-001/7902377)
-  - 1x 10 KOhm resistor (reset)
-  - 9x 0805 10 uF capacitor
+  - TBD
   
   </details>
 - PINs:

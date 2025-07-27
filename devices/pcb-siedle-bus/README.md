@@ -3,7 +3,7 @@
 
 This PCB allows interacting with a Sidle In-Home bus and automatically trigger actions or connect it to home automation such as [Home Assistant](https://www.home-assistant.io/). It uses [ESPHome](https://esphome.io) as base firmware.
 
-- ![Overview picture](pictures/overview.png)
+- ![Overview picture](pictures/esphome-dashboard.png)
 - [Aisler PCB project](https://aisler.net/p/WQLXACYH)
 - <details>
   <summary>KiCad PCB - schematics and assembly </summary>

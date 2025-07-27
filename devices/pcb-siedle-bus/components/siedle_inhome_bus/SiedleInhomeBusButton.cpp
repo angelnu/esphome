@@ -12,11 +12,11 @@ static const char *TAG = "siedle_inhome_bus.button";
 void SiedleInhomeBusButton::dump_config(){
 
     LOG_BUTTON("", "Siedle In-Home Bus Button", this);
-    LOG_SIEDLE_COMMAND("  ", command_);
+    LOG_SIEDLE_MESSAGE("  ", message_);
 }
 
 void SiedleInhomeBusButton::press_action() {
-    this->parent_->send_cmd(*this->command_);
+    this->parent_->send_message(*this->message_);
 }
 
 

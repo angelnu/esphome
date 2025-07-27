@@ -29,10 +29,11 @@ binary_sensor:
     name: bell_small
     icon: "mdi:bell"
     device_class: sound
-    # 0x44A210A0
-    command: 0x9 # Bell
-    source: 0x2 # Door
-    destination: 0x8 # Small flat
+    message:
+      # 0x44A210A0
+      command: 0x9 # Bell
+      source: 0x2 # Door
+      destination: 0x8 # Small flat
     filters:
       - delayed_off: ${bell_key_delay}
     on_release:
@@ -41,10 +42,11 @@ binary_sensor:
     name: bell_large
     icon: "mdi:bell"
     device_class: sound
-    # 0x44FA10A0
-    command: 0x9 # Bell
-    source: 0x2 # Door
-    destination: 0x1E # Large flat
+    message:
+      # 0x44FA10A0
+      command: 0x9 # Bell
+      source: 0x2 # Door
+      destination: 0x1E # Large flat
     filters:
       - delayed_off: ${bell_key_delay}
     on_release:
@@ -55,21 +57,24 @@ button:
     name: open
     id: my_open_button
     icon: "mdi:gate"
-    # 0x460A1220
-    command: 0xC # Open
-    source: 0x8 # Small flat
-    destination: 0x2 # Door
+    message:
+      # 0x460A1220
+      command: 0xC # Open
+      source: 0x8 # Small flat
+      destination: 0x2 # Door
   - platform: siedle_inhome_bus
     name: trigger_bell_small
     icon: "mdi:bell"
-    # 0x44A210A0
-    command: 0x9 # Bell
-    source: 0x2 # Door
-    destination: 0x8 # Small flat
+    message:
+      # 0x44A210A0
+      command: 0x9 # Bell
+      source: 0x2 # Door
+      destination: 0x8 # Small flat
   - platform: siedle_inhome_bus
     name: trigger_bell_large
     icon: "mdi:bell"
-    # 0x44FA10A0
-    command: 0x9 # Bell
-    source: 0x2 # Door
-    destination: 0x1E # Large flat
+    message:
+      # 0x44FA10A0
+      command: 0x9 # Bell
+      source: 0x2 # Door
+      destination: 0x1E # Large flat

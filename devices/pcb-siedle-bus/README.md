@@ -33,7 +33,9 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
   - TBD
   
   </details>
-- PINs:
+- <details>
+  <summary>Pins</summary>
+
   - Bus connector - external temperature sensors. From top to bottom:
     - TA-
     - Ta+
@@ -42,9 +44,15 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
     - TX
     - RX
     - GND
-- Firmware: [ESPHome.io](https://esphome.io)
+  </details>
+
+- <details>
+  <summary>Firmware [ESPHome.io](https://esphome.io)</summary>
+
   - You need to modify/create your own ESPHome definition and include the yaml in this folder matching your PCB
   - [Example for v1.0](../../interphone_small_flat.yaml)
+
+  </details>
 
 ## Bus information
 

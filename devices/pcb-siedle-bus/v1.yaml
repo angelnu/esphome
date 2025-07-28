@@ -33,9 +33,9 @@ binary_sensor:
     device_class: sound
     message:
       # 0x44A210A0
-      command: &BELL_CMD 0x9
-      source: &DOOR 0x2
-      destination: &SMALL_FLAT 0x8
+      command: &BELL_CMD 0x09
+      source: &DOOR 0x02
+      destination: &SMALL_FLAT 0x08
     filters:
       - delayed_off: ${bell_key_delay}
     on_release:
@@ -61,7 +61,7 @@ button:
     icon: "mdi:gate"
     message:
       # 0x460A1220
-      command: &OPEN_COMMAND 0xC
+      command: &OPEN_COMMAND 0x0C
       source: *SMALL_FLAT
       destination: *DOOR
   - platform: siedle_inhome_bus

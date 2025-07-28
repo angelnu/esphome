@@ -22,6 +22,11 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 
   - [3D Printed box](FreeCAD)
   - [FreeCad file](FreeCAD/siedle-bus.FCStd)
+    - fix PCB with 3x M2 screws up to 7mm long
+    - use up to 3x 3mm wide screws to fix to the wall
+    - cover slack: 0.15 mm (enough that it holds without screws)
+    - all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to
+      adjust to your case
   - [3MF file](FreeCAD/siedle-bus-cage.3mf)
     ![cage-render](pictures/cage-preview.png)
 

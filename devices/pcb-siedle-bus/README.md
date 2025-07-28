@@ -3,61 +3,68 @@
 
 This PCB allows interacting with a Sidle In-Home bus and automatically trigger actions or connect it to home automation such as [Home Assistant](https://www.home-assistant.io/). It uses [ESPHome](https://esphome.io) as base firmware.
 
-- ![Overview picture](pictures/esphome-dashboard.png)
-- [Aisler PCB project](https://aisler.net/p/WQLXACYH)
-- <details>
-  <summary>KiCad PCB - schematics and assembly </summary>
+![Overview picture](pictures/esphome-dashboard.png)
 
-  - [KiCad PCB project](kicad/siedle-bus/siedle-bus.kicad_pro)
-  - ![Schematics Preview](pictures/schematics.png)
-  - ![PCB front Assembly](pictures/pcb-top-preview.jpg)
-  - ![PCB tracks](pictures/pcb-tracks.png)
-  - ![PCB front Assembly](pictures/pcb-top.png)
-  - ![PCB front Assembly](pictures/pcb-bottom-preview.jpg)
-  - ![PCB back Assembly](pictures/pcb-bottom.png)
+[Aisler PCB project](https://aisler.net/p/WQLXACYH)
+
+<details>
+<summary>KiCad PCB - schematics and assembly </summary>
+
+- [KiCad PCB project](kicad/siedle-bus/siedle-bus.kicad_pro)
+- ![Schematics Preview](pictures/schematics.png)
+- ![PCB front Assembly](pictures/pcb-top-preview.jpg)
+- ![PCB tracks](pictures/pcb-tracks.png)
+- ![PCB front Assembly](pictures/pcb-top.png)
+- ![PCB front Assembly](pictures/pcb-bottom-preview.jpg)
+- ![PCB back Assembly](pictures/pcb-bottom.png)
   
-  </details>
-- <details>
-  <summary>3D Printed Box </summary>
+</details>
 
-  - [3D Printed box](FreeCAD)
-  - [FreeCad file](FreeCAD/siedle-bus.FCStd)
-    - fix PCB with 3x M2 screws up to 7mm long
-    - use up to 3x 3mm wide screws to fix to the wall
-    - cover slack: 0.15 mm (enough that it holds without screws)
-    - all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to
-      adjust to your case
-  - [3MF file](FreeCAD/siedle-bus-cage.3mf)
-    ![cage-render](pictures/cage-preview.png)
+<details>
+<summary>3D Printed Box </summary>
 
-  </details>
-- <details>
-  <summary>Parts</summary>
+- [3D Printed box](FreeCAD)
+- [FreeCad file](FreeCAD/siedle-bus.FCStd)
+- fix PCB with 3x M2 screws up to 7mm long
+- use up to 3x 3mm wide screws to fix to the wall
+- cover slack: 0.15 mm (enough that it holds without screws)
+- all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to
+    adjust to your case
+- [3MF file](FreeCAD/siedle-bus-cage.3mf)
+![cage-render](pictures/cage-preview.png)
 
-  - 1x [ESP32-WROOM-32 with 8MB Flash](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
-  - TBD
+</details>
+
+<details>
+<summary>Parts</summary>
+
+- 1x [ESP32-WROOM-32 with 8MB Flash](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+- TBD
   
-  </details>
-- <details>
-  <summary>Pins</summary>
+</details>
 
-  - Bus connector - external temperature sensors. From top to bottom:
-    - TA-
-    - Ta+
-  - Serial programming:
-    - 3.3V
-    - TX
-    - RX
-    - GND
-  </details>
+<details>
+<summary>Pins</summary>
 
-- <details>
-  <summary>Firmware [ESPHome.io](https://esphome.io)</summary>
+- Bus connector - external temperature sensors. From top to bottom:
+- TA-
+- Ta+
+- Serial programming:
+- 3.3V
+- TX
+- RX
+- GND
 
-  - You need to modify/create your own ESPHome definition and include the yaml in this folder matching your PCB
-  - [Example for v1.0](../../interphone_small_flat.yaml)
+</details>
 
-  </details>
+<details>
+<summary>Firmware [ESPHome.io](https://esphome.io)</summary>
+
+- You need to modify/create your own ESPHome definition and include the yaml in this folder matching your PCB
+- [Example for v1.0](../../interphone_small_flat.yaml)
+
+</details>
+
 
 ## Bus information
 

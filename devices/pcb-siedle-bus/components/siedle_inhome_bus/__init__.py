@@ -23,9 +23,9 @@ CONFIG_MESSAGE_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(SiedleInhomeBusMessage),
         cv.Required(CONF_COMMAND): cv.All(cv.hex_int_range(max=63), cv.uint32_t),
         cv.Required(CONF_DESTINATION): cv.All(cv.hex_int_range(max=31), cv.uint8_t),
-        cv.Optional(CONF_DESTINATION_BUS, default=0b1000): cv.All(cv.hex_int_range(max=15), cv.uint8_t),
+        cv.Optional(CONF_DESTINATION_BUS, default=0x08): cv.All(cv.hex_int_range(max=15), cv.uint8_t),
         cv.Required(CONF_SOURCE): cv.All(cv.hex_int_range(max=31), cv.uint8_t),
-        cv.Optional(CONF_SOURCE_BUS, default=0b1000): cv.All(cv.hex_int_range(max=15), cv.uint8_t),
+        cv.Optional(CONF_SOURCE_BUS, default=0x08): cv.All(cv.hex_int_range(max=15), cv.uint8_t),
     }
 )
 

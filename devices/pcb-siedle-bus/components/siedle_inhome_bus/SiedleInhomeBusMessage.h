@@ -26,7 +26,8 @@ namespace siedle_inhome_bus {
       SiedleInhomeBusMessage (uint32_t raw_msg) { raw_msg_ = raw_msg; }
 
       uint32_t get_raw() { return raw_msg_; }
-      std::string get_string() ;
+      std::string get_string();
+      bool log_unexpected_bits();
       
       uint8_t get_command();
       uint8_t get_destination();
@@ -36,6 +37,10 @@ namespace siedle_inhome_bus {
 
     protected:
       uint32_t raw_msg_;
+
+      uint8_t get_msg_prolog();
+      uint8_t get_msg_middle();
+      uint8_t get_msg_epilog();
   };
 
 }  // namespace siedle_inhome_bus

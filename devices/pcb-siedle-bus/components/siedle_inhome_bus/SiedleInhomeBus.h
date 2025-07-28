@@ -70,7 +70,7 @@ class SiedleInhomeBus : public Component {
   uint8_t  aborted_at_pin_=0;
   hw_timer_t *bus_timer_;
 
-  enum bus_status_t {idle, receiving, received, sending};
+  enum bus_status_t {idle, receiving, sending, terminating};
 
   bus_status_t bus_status_ = idle;
   uint32_t transferred_msg_;

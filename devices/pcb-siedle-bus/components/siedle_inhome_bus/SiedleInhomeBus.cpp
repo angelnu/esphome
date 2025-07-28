@@ -68,6 +68,7 @@ void SiedleInhomeBus::loop() {
 
         if (enabled_dump_) {
             ESP_LOGI (TAG, "Received %s", msg.get_string().c_str());
+            msg.log_unexpected_bits();
         }
 
         auto binary_sensor_itr = this->binary_sensors_.find(msg.get_raw());
@@ -157,8 +158,8 @@ void SiedleInhomeBus::internal_send_message(SiedleInhomeBusMessage& msg) {
 void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
 
     if (this->bus_status_ != SiedleInhomeBus::receiving &&
-        this->bus_status_ != SiedleInhomeBus::received &&
-        this->bus_status_ != SiedleInhomeBus::sending) {
+        this->bus_status_ != SiedleInhomeBus::sending &&
+        this->bus_status_ != SiedleInhomeBus::terminating) {
         return;
     }
 
@@ -184,20 +185,15 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             // Wait for next bit
             this->bit_ticks_left_ = TICKS_PER_BIT;
         } else {
-            //Transmission end
+            // Transmission end - queue message
             this->received_messages_.push(this->transferred_msg_);
-            this->bus_status_ = SiedleInhomeBus::received;
-
-            // Wait for half bit to end (as we read in the middle of the bit)
-            this->bit_ticks_left_ = TICKS_PER_BIT / 2;
+            
+            // Wait until carrier is off
+            this->bus_status_ = SiedleInhomeBus::terminating;
+            this->bit_ticks_left_ = 1;
         }
         return;
     }
-
-    case SiedleInhomeBus::received:
-        this->bus_status_ = SiedleInhomeBus::idle;
-        last_command_complete_at_ = micros();
-        return;
 
     case SiedleInhomeBus::sending: {
         if (this->bits_left_ > 0) {
@@ -210,11 +206,23 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             // End transmission
             this->isr_tx_pin_.digital_write(true);
             this->isr_load_pin_.digital_write(false);
+            
+            // Wait until carrier is off
+            this->bus_status_ = SiedleInhomeBus::terminating;
+            this->bit_ticks_left_ = 1;
+        }
+        return;
+    }
+
+    case SiedleInhomeBus::terminating:
+        if (this->isr_carrier_pin_.digital_read()) {
+            // Carrier still detected - wait another tick
+            this->bit_ticks_left_ = 1;
+        } else {
             this->bus_status_ = SiedleInhomeBus::idle;
             last_command_complete_at_ = micros();
         }
         return;
-    }
 
     default:
         // Unexpected bus_status

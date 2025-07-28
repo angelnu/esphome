@@ -58,9 +58,9 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 </details>
 
 <details>
-<summary>Firmware [ESPHome.io](https://esphome.io)</summary>
+<summary>Firmware</summary>
 
-- You need to modify/create your own ESPHome definition and include the yaml in this folder matching your PCB
+- You need to modify/create your own [ESPHome.io](https://esphome.io) definition and include the [yaml in this folder](v1.yaml)
 - [Example for v1.0](../../interphone_small_flat.yaml)
 
 </details>

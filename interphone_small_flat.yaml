@@ -3,6 +3,12 @@ substitutions:
   friendly_name: Short Corridor Interphone
   wifi_ip: "192.168.2.11"
 
+  client_1_addr: 0x08
+  client_1_name: small_flat
+
+  client_2_addr: 0x1E
+  client_2_name: large_flat
+
 packages:
   #Include location specific settings
   location: !include locations/casa96.yaml

@@ -2,13 +2,21 @@ substitutions:
   # time to press key before opening the door
   bell_key_delay: 1000ms
 
+  door_addr: 0x02
+  
+  #client_1_addr: 
+  client_1_name: client_1
+  #client_2_addr: 
+  client_2_name: client_2
+
 esp32:
   board: esp32dev
   flash_size: 8MB
 
-esphome:
-  platformio_options:
-    build_flags: -DCONFIG_GPTIMER_CTRL_FUNC_IN_IRAM=1
+
+# esphome:
+#   platformio_options:
+#     build_flags: -DCONFIG_GPTIMER_CTRL_FUNC_IN_IRAM=1
 
 external_components:
   - source:
@@ -27,56 +35,63 @@ siedle_inhome_bus:
   dump: true
 
 binary_sensor:
+  # Bell client 1
   - platform: siedle_inhome_bus
-    name: bell_small
+    name: bell_${client_1_name}
     icon: "mdi:bell"
     device_class: sound
     message:
-      # 0x44A210A0
       command: &BELL_CMD 0x09
-      source: &DOOR 0x02
-      destination: &SMALL_FLAT 0x08
+      source: ${door_addr}
+      destination: ${client_1_addr}
     filters:
       - delayed_off: ${bell_key_delay}
     on_release:
     - button.press: my_open_button
+  # Bell client 2
   - platform: siedle_inhome_bus
-    name: bell_large
+    name: bell_${client_2_name}
     icon: "mdi:bell"
     device_class: sound
     message:
-      # 0x44FA10A0
       command: *BELL_CMD
-      source: *DOOR
-      destination: &LARGE_FLAT 0x1E
+      source: ${door_addr}
+      destination: ${client_2_addr}
     filters:
       - delayed_off: ${bell_key_delay}
-    on_release:
-    - button.press: my_open_button
 
 button:
+  # Open
   - platform: siedle_inhome_bus
     name: open
     id: my_open_button
     icon: "mdi:gate"
     message:
-      # 0x460A1220
       command: &OPEN_COMMAND 0x0C
-      source: *SMALL_FLAT
-      destination: *DOOR
+      source: ${client_1_addr}
+      destination: ${door_addr}
+  # Light
   - platform: siedle_inhome_bus
-    name: trigger_bell_small
+    name: light
+    id: my_light_button
+    icon: "mdi:light"
+    message:
+      command: &LIGHT_COMMAND 0x2C
+      source: ${client_1_addr}
+      destination: &DOORLIGHT 0x00
+  # Bell client 1
+  - platform: siedle_inhome_bus
+    name: trigger_bell_${client_1_name}
     icon: "mdi:bell"
     message:
-      # 0x44A210A0
       command: *BELL_CMD
-      source: *DOOR
-      destination: *SMALL_FLAT
+      source: ${door_addr}
+      destination: ${client_1_addr}
+  # Bell client 2
   - platform: siedle_inhome_bus
-    name: trigger_bell_large
+    name: trigger_bell_${client_2_name}
     icon: "mdi:bell"
     message:
-      # 0x44FA10A0
       command: *BELL_CMD
-      source: *DOOR
-      destination: *LARGE_FLAT
+      source: ${door_addr}
+      destination: ${client_2_addr}

@@ -54,7 +54,7 @@ namespace siedle_inhome_bus {
     }
     
     if ( get_msg_middle() != MSG_MIDDLE) {
-      ESP_LOGW(TAG, "Unexpected miidle %s", format_hex_pretty(get_msg_middle()).c_str());
+      ESP_LOGW(TAG, "Unexpected middle %s", format_hex_pretty(get_msg_middle()).c_str());
     }
     
     if ( get_msg_epilog() != MSG_EPILOG) {

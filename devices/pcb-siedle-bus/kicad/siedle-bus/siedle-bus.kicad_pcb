@@ -521,13 +521,13 @@
 			)
 		)
 		(property "Value" "RESET"
-			(at 0 2.6 90)
-			(layer "F.Fab")
+			(at -0.575 3.575 90)
+			(layer "F.SilkS")
 			(uuid "93247c98-04bc-40b7-9f46-472155c39300")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 2 2)
+					(thickness 0.3)
 				)
 			)
 		)
@@ -2551,13 +2551,13 @@
 			)
 		)
 		(property "Value" "BOOT"
-			(at 0 2.6 90)
-			(layer "F.Fab")
+			(at -0.425 3.575 90)
+			(layer "F.SilkS")
 			(uuid "b1a73917-6311-4e64-a5ba-11b4e7cc256a")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 2 2)
+					(thickness 0.3)
 				)
 			)
 		)
@@ -9430,7 +9430,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "10"
+		(property "Value" "47"
 			(at 2.8625 0 0)
 			(layer "B.Fab")
 			(uuid "d5bdbba4-f909-4f75-abe8-57b8fd07f9af")
@@ -10443,7 +10443,7 @@
 		(layer "Edge.Cuts")
 		(uuid "a0d79d68-73c0-4ccf-9b44-698be320f0f8")
 	)
-	(gr_text "Siedle Interphone Bus rev5\n2025.7.24 Angel Nunez"
+	(gr_text "Siedle Interphone Bus rev6\n2025.8.2 Angel Nunez Mencias"
 		(at 179 94.5 0)
 		(layer "F.SilkS")
 		(uuid "309654c1-cf98-4e39-9d85-1ee7023260ec")
@@ -10516,7 +10516,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "Ta(-)"
+	(gr_text "Tb(-)"
 		(at 161 94 0)
 		(layer "F.SilkS")
 		(uuid "c9a32cb6-60ec-458f-aca3-05502947f593")

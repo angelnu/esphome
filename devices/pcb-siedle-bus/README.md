@@ -13,7 +13,7 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 - [KiCad PCB project](kicad/siedle-bus/siedle-bus.kicad_pro)
 - ![Schematics Preview](pictures/schematics.png)
   - [Simulation of Girator](https://www.circuitlab.com/circuit/edpfjhg6bu9k/siedle-inbus-girator/)
-- ![PCB front Assembly](pictures/pcb-top-preview.jpg)
+- ![PCB front Assembly](pictures/pcb-top-preview.png)
 - ![PCB tracks](pictures/pcb-tracks.png)
 - ![PCB front Assembly](pictures/pcb-top.png)
 - ![PCB front Assembly](pictures/pcb-bottom-preview.jpg)
@@ -48,14 +48,14 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 <details>
 <summary>Pins</summary>
 
-- Bus connector - external temperature sensors. From top to bottom:
-- TA-
-- Ta+
+- Bus connector (ETR not used). From top to bottom:
+  - Tb-
+  - Ta+
 - Serial programming:
-- 3.3V
-- TX
-- RX
-- GND
+  - 3.3V
+  - TX
+  - RX
+  - GND
 
 </details>
 
@@ -96,6 +96,7 @@ Each message sent in the bus has 32 bits:
 I used all the reverse engineering from this [mikrocontroller Forum thread (german)](https://www.mikrocontroller.net/topic/308271) as base. Thanks a lot for all that contributed there.
 
 Example of devices using this bus:
+
 - [aib-150-01 Vendor page](https://www.siedle.de/de-de/home/service/linked-pages/produktkatalog/tuersprechanlagen-innen/siedle-basic/aib-150-01/)
 
 ## Changelog

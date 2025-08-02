@@ -1,13 +1,13 @@
 substitutions:
-  devicename: interphone_small_flat
-  friendly_name: Short Corridor Interphone
-  wifi_ip: "192.168.2.11"
+  devicename: interphone-large-flat
+  friendly_name: Long Corridor Interphone
+  wifi_ip: "192.168.0.55"
 
-  client_1_addr: 0x08
-  client_1_name: small_flat
+  client_1_addr: 0x1E
+  client_1_name: large_flat
 
-  client_2_addr: 0x1E
-  client_2_name: large_flat
+  client_2_addr: 0x08
+  client_2_name: small_flat
 
 packages:
   #Include location specific settings

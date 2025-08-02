@@ -30,7 +30,8 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
   - cover slack: 0.15 mm (enough that it holds without screws)
   - all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to
     adjust to your case
-- [3MF file](FreeCAD/siedle-bus-cage.3mf)
+- [3MF file - small box](FreeCAD/siedle-bus-cage.3mf)
+- [3MF file - large box with placement template](FreeCAD/siedle-bus-cage_large.3mf)
 ![cage-render](pictures/cage-preview.png)
 
 </details>

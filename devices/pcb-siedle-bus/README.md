@@ -1,7 +1,7 @@
 
 # Siedle In-Home bus client
 
-This PCB allows interacting with a Sidle In-Home bus and automatically trigger actions or connect it to home automation such as [Home Assistant](https://www.home-assistant.io/). It uses [ESPHome](https://esphome.io) as base firmware.
+This PCB allows interacting with a Sidle In-Home bus and automatically trigger actions or connect it to home automation such as [Home Assistant](https://www.home-assistant.io/). It uses [ESPHome](https://esphome.io) as base firmware. The power comes from the bus so no additional power supply is needed.
 
 ![Overview picture](pictures/esphome-dashboard.png)
 
@@ -12,6 +12,7 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 
 - [KiCad PCB project](kicad/siedle-bus/siedle-bus.kicad_pro)
 - ![Schematics Preview](pictures/schematics.png)
+  - [Simulation of Girator](https://www.circuitlab.com/circuit/edpfjhg6bu9k/siedle-inbus-girator/)
 - ![PCB front Assembly](pictures/pcb-top-preview.jpg)
 - ![PCB tracks](pictures/pcb-tracks.png)
 - ![PCB front Assembly](pictures/pcb-top.png)

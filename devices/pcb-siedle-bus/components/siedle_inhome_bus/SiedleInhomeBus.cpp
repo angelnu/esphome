@@ -10,7 +10,7 @@ namespace siedle_inhome_bus {
 static const char *TAG = "siedle_inhome_bus.component";
 
 static const uint32_t BIT_DURATION_US = 2000;
-static const uint8_t TICKS_PER_BIT = 4;
+static const uint8_t TICKS_PER_BIT = 2;
 
 void SiedleInhomeBus::setup() {
     // Inputs
@@ -190,7 +190,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             
             // Wait until carrier is off
             this->bus_status_ = SiedleInhomeBus::terminating;
-            this->bit_ticks_left_ = 1;
+            this->bit_ticks_left_ = TICKS_PER_BIT;
         }
         return;
     }
@@ -209,7 +209,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             
             // Wait until carrier is off
             this->bus_status_ = SiedleInhomeBus::terminating;
-            this->bit_ticks_left_ = 1;
+            this->bit_ticks_left_ = TICKS_PER_BIT;
         }
         return;
     }

@@ -10,7 +10,7 @@ namespace siedle_inhome_bus {
 static const char *TAG = "siedle_inhome_bus.component";
 
 static const uint32_t BIT_DURATION_US = 2000;
-static const uint8_t TICKS_PER_BIT = 2;
+static const uint8_t TICKS_PER_BIT = 4;
 
 void SiedleInhomeBus::setup() {
     // Inputs

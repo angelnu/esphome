@@ -13,23 +13,28 @@ static const uint32_t BIT_DURATION_US = 2000;
 static const uint8_t TICKS_PER_BIT = 4;
 
 void SiedleInhomeBus::setup() {
+
     // Inputs
     this->carrier_pin_->setup();
     this->rx_pin_->setup();
+
     //Outputs
     this->load_pin_->setup();
     this->load_pin_->digital_write(false);
     this->tx_pin_->setup();
     this->tx_pin_->digital_write(true);
 
+    //ISR Pins
     this->isr_carrier_pin_ = this->carrier_pin_->to_isr();
     this->isr_rx_pin_      = this->rx_pin_->to_isr();
     this->isr_load_pin_    = this->load_pin_->to_isr();
     this->isr_tx_pin_      = this->tx_pin_->to_isr();
 
+    //Carrier GPIO interrupt
     this->carrier_pin_->attach_interrupt(&SiedleInhomeBus::s_gpio_intr, this,
                                          gpio::INTERRUPT_RISING_EDGE);
-    
+
+    //Timer interrupt
     this->bus_timer_ = timerBegin(1000000);
     auto casted_bus_timer = reinterpret_cast<void (*)(void *)>(&SiedleInhomeBus::s_timer_intr);
     timerAttachInterruptArg(this->bus_timer_, casted_bus_timer, this);
@@ -190,7 +195,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             
             // Wait until carrier is off
             this->bus_status_ = SiedleInhomeBus::terminating;
-            this->bit_ticks_left_ = TICKS_PER_BIT;
+            this->bit_ticks_left_ = 2 * TICKS_PER_BIT;
         }
         return;
     }
@@ -209,7 +214,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             
             // Wait until carrier is off
             this->bus_status_ = SiedleInhomeBus::terminating;
-            this->bit_ticks_left_ = TICKS_PER_BIT;
+            this->bit_ticks_left_ = 2 * TICKS_PER_BIT;
         }
         return;
     }

@@ -50,15 +50,18 @@ namespace siedle_inhome_bus {
     bool is_unexpected = false;
 
     if ( get_msg_prolog() != MSG_PROLOG) {
-      ESP_LOGW(TAG, "Unexpected prolog %s", format_hex_pretty(get_msg_prolog()).c_str());
+      ESP_LOGW(TAG, "Unexpected prolog 0x%s", format_hex_pretty(get_msg_prolog()).c_str());
+      is_unexpected = true;
     }
     
     if ( get_msg_middle() != MSG_MIDDLE) {
-      ESP_LOGW(TAG, "Unexpected middle %s", format_hex_pretty(get_msg_middle()).c_str());
+      ESP_LOGW(TAG, "Unexpected middle 0x%s", format_hex_pretty(get_msg_middle()).c_str());
+      is_unexpected = true;
     }
     
     if ( get_msg_epilog() != MSG_EPILOG) {
-      ESP_LOGW(TAG, "Unexpected epilog %s", format_hex_pretty(get_msg_epilog()).c_str());
+      ESP_LOGW(TAG, "Unexpected epilog 0x%s", format_hex_pretty(get_msg_epilog()).c_str());
+      is_unexpected = true;
     }
 
     if ( is_unexpected) {

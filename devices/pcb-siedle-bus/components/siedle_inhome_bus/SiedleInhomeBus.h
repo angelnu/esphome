@@ -31,6 +31,7 @@ class SiedleInhomeBus : public Component {
     uint32_t msg_raw = msg -> get_raw();
     binary_sensors_messages_[msg_raw] = msg;
     this->binary_sensors_[msg_raw] = obj;
+    obj->publish_state(false);
   }
 
   void send_message (SiedleInhomeBusMessage& msg) { this->to_be_send_messages_.push(msg.get_raw()); }

@@ -8,8 +8,6 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
-    platform_version: 6.4.0
-    version: 5.1.1
   variant: esp32c3
 external_components:
   # support for full OTA

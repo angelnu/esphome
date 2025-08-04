@@ -10,6 +10,8 @@ substitutions:
 
 esp32:
   board: esp32dev
+  framework:
+    type: esp-idf  # or arduino
 
 i2c:
   sda: 2
@@ -20,7 +22,6 @@ ads1115:
   - address: 0x48
 
 remote_receiver:
-  rmt_channel: 0
   pin:
     number: 34  # D34
     mode: INPUT

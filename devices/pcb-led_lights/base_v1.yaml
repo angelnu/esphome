@@ -3,6 +3,8 @@ substitutions:
 
 esp32:
   board: esp32dev
+  framework:
+    type: esp-idf  # or arduino
 
 output:
   - platform: ledc

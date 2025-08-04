@@ -39,3 +39,6 @@ This PCB allows providing 5 V for up to 8 USB devices. Each of them can be disab
   - First version
   - BUGS:
     - None so far
+
+## v2.0
+    - use outputs instead of switches so optionally lights can be used

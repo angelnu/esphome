@@ -2,6 +2,8 @@
 esp32:
   # https://wiki.luatos.com/chips/esp32c3/board.html
   board: airm2m_core_esp32c3
+  framework:
+    type: esp-idf  # or arduino
 
 uart:
   id: uart_1

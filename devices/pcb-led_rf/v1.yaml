@@ -8,9 +8,10 @@ substitutions:
 
 esp32:
   board: esp32dev
+  framework:
+    type: esp-idf  # or arduino
 
 remote_receiver:
-  rmt_channel: 0
   pin:
     number: 4  # D4
     mode: INPUT
@@ -21,17 +22,12 @@ remote_receiver:
   idle: 4ms  
   dump: rc_switch
 
-external_components:
-  # https://github.com/esphome/esphome/pull/7354
-  - source: github://pr#7354
-    components: [ esp32_rmt_led_strip ]
 light:
   # - platform: neopixelbus
   #   type: ${led1_rgb_order}
   #   variant: min_charging_time
   - platform: esp32_rmt_led_strip
     rgb_order: ${led1_rgb_order}
-    rmt_channel: 1  # 0 used by remote_receiver
     # https://www.tme.eu/Document/26d574b43ad9ddaffa4d5bcd140ec145/WS2811.pdf
     bit0_high: 300 ns
     bit0_low: 950 ns
@@ -57,7 +53,6 @@ light:
   #   variant: WS2811
   - platform: esp32_rmt_led_strip
     rgb_order: ${led2_rgb_order}
-    rmt_channel: 2  # 0 used by remote_receiver
     # https://www.tme.eu/Document/26d574b43ad9ddaffa4d5bcd140ec145/WS2811.pdf
     bit0_high: 300 ns
     bit0_low: 950 ns

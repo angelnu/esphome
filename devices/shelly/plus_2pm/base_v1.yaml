@@ -2,8 +2,8 @@ substitutions:
 
 esp32:
   board: esp32doit-devkit-v1
-  #framework:
-  #  type: esp-idf
+  framework:
+    type: esp-idf
 
 i2c:
   sda: GPIO26

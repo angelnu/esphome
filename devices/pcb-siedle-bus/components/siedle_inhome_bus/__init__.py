@@ -6,6 +6,8 @@ from esphome.const import CONF_ID, CONF_SENSING_PIN, CONF_RX_PIN, CONF_TX_PIN, C
 MULTI_CONF = True
 CONF_SIEDLE_INHOME_BUS_ID = "siedle_inhome_bus_id"
 AUTO_LOAD = ["binary_sensor", "button"]
+cg.add_define("CONFIG_ESP_TIMER_IN_IRAM 1")
+cg.add_define("CONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD 1")
 
 siedle_inhome_bus_ns = cg.esphome_ns.namespace("siedle_inhome_bus")
 SiedleInhomeBus = siedle_inhome_bus_ns.class_("SiedleInhomeBus", cg.Component)

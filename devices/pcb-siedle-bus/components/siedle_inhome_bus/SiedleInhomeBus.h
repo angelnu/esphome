@@ -7,7 +7,7 @@
 #include "esphome/core/hal.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 
-#include <esp32-hal-timer.h>
+#include "esp_timer.h"
 
 #include "SiedleInhomeBusMessage.h"
 
@@ -69,7 +69,7 @@ class SiedleInhomeBus : public Component {
   uint32_t last_gpio_interrupt_at_=0;
   uint32_t last_command_complete_at_=0;
   uint8_t  aborted_at_pin_=0;
-  hw_timer_t *bus_timer_;
+  esp_timer_handle_t bus_timer_;
 
   enum bus_status_t {idle, receiving, sending, terminating};
 

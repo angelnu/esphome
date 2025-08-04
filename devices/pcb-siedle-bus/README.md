@@ -99,6 +99,10 @@ Example of devices using this bus:
 
 - [aib-150-01 Vendor page](https://www.siedle.de/de-de/home/service/linked-pages/produktkatalog/tuersprechanlagen-innen/siedle-basic/aib-150-01/)
 
+### ToDos
+
+- [x] switch to esp-idf framework
+
 ## Changelog
 
 ### v1

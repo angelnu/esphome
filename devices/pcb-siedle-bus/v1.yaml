@@ -12,11 +12,19 @@ substitutions:
 esp32:
   board: esp32dev
   flash_size: 8MB
+  framework:
+    type: esp-idf  # or arduino
 
 
-# esphome:
-#   platformio_options:
-#     build_flags: -DCONFIG_GPTIMER_CTRL_FUNC_IN_IRAM=1
+esphome:
+  platformio_options:
+    build_flags:
+    # - -DCONFIG_GPTIMER_CTRL_FUNC_IN_IRAM=1
+
+    # Allow calling esp_timer from interrupts
+    - -DCONFIG_ESP_TIMER_IN_IRAM=1
+    # Use esp_timer interruput handler (more precise)
+    - -DCONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD=1
 
 external_components:
   - source:

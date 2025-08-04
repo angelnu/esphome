@@ -12,6 +12,8 @@
     ESP_LOGCONFIG(TAG, prefix "    Bus: %s", format_hex_pretty((msg)->get_source_bus()).c_str()); \
   }
 
+#define bitRead(value, bit)            (((value) >> (bit)) & 0x01)
+
 namespace esphome {
 namespace siedle_inhome_bus {
 

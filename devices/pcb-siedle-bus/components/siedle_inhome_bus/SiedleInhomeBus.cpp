@@ -35,13 +35,15 @@ void SiedleInhomeBus::setup() {
                                          gpio::INTERRUPT_RISING_EDGE);
 
     //Timer interrupt
-    this->bus_timer_ = timerBegin(1000000);
-    auto casted_bus_timer = reinterpret_cast<void (*)(void *)>(&SiedleInhomeBus::s_timer_intr);
-    timerAttachInterruptArg(this->bus_timer_, casted_bus_timer, this);
-    // For ESP32, we can't use dynamic interval calculation because the timerX functions
-    // are not callable from ISR (placed in flash storage).
-    // Here we just use an interrupt firing every 500 µs.
-    timerAlarm(this->bus_timer_, BIT_DURATION_US / TICKS_PER_BIT, true, 0);
+    const esp_timer_create_args_t timer_args = {
+            .callback = reinterpret_cast<void (*)(void *)>(&SiedleInhomeBus::s_timer_intr),
+            .arg = this,
+            // Use interrupt dispatch mode
+            .dispatch_method = ESP_TIMER_ISR,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "siedle_bus_timer"
+    };
+    esp_timer_create(&timer_args, &bus_timer_);
 }
 
 void SiedleInhomeBus::loop() {
@@ -124,6 +126,9 @@ void IRAM_ATTR HOT SiedleInhomeBus::gpio_intr() {
     this->bit_ticks_left_ = TICKS_PER_BIT / 2;
     this->bits_left_ = 32;
 
+    // Start timer
+    esp_timer_start_periodic(bus_timer_, BIT_DURATION_US / TICKS_PER_BIT);
+
 }
 
 void IRAM_ATTR HOT SiedleInhomeBus::s_gpio_intr(SiedleInhomeBus *arg) {
@@ -135,9 +140,9 @@ void SiedleInhomeBus::internal_send_message(SiedleInhomeBusMessage& msg) {
 
     ESP_LOGD(TAG, "Sending %s at %" PRIu32, msg.get_string().c_str(), micros());
     
-    noInterrupts();
+    portDISABLE_INTERRUPTS();
     if (this->bus_status_ != SiedleInhomeBus::idle) {
-        interrupts();
+        portENABLE_INTERRUPTS();
         //Cannot transfer new msg if not idle
         ESP_LOGE(TAG, "internal_send_message called while not idle: %d", this->bus_status_);
         return;
@@ -146,17 +151,18 @@ void SiedleInhomeBus::internal_send_message(SiedleInhomeBusMessage& msg) {
     //Start sending
     this->transferred_msg_ = msg.get_raw();
     this->bus_status_ = SiedleInhomeBus::sending;
-    
-    timerRestart(this->bus_timer_);
-    this->bit_ticks_left_ = TICKS_PER_BIT;
-    this->bits_left_ = 31;
 
     // Enable load to write
     this->load_pin_->digital_write(true);
     bool bit_to_send = bitRead(this->transferred_msg_, this->bits_left_);
     this->tx_pin_->digital_write(bit_to_send);
+    
+    // Set timer
+    this->bit_ticks_left_ = TICKS_PER_BIT;
+    this->bits_left_ = 31;
+    esp_timer_start_periodic(bus_timer_, BIT_DURATION_US / TICKS_PER_BIT);
 
-    interrupts();
+    portENABLE_INTERRUPTS();
 }
 
 /// Timmer interrupt routine, called each BIT_DURATION_US / TICKS_PER_BIT
@@ -224,6 +230,7 @@ void IRAM_ATTR HOT SiedleInhomeBus::timer_intr() {
             // Carrier still detected - wait another tick
             this->bit_ticks_left_ = 1;
         } else {
+            esp_timer_stop(bus_timer_);
             this->bus_status_ = SiedleInhomeBus::idle;
             last_command_complete_at_ = micros();
         }

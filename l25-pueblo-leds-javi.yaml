@@ -7,6 +7,7 @@ substitutions:
   led1_num_leds: "39"
   led2_name: unused
   led2_num_leds: "10"
+  rotate_effect: !include devices/includes/lights-effects/rotate_effects.yaml
 
 packages:
   #Include location specific settings
@@ -57,6 +58,11 @@ binary_sensor:
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
+    on_press:
+      then:
+      - lambda: |-
+          auto my_led = id(led1);
+          ${rotate_effect}
   - platform: remote_receiver
     name: "left_pushbotton right"
     rc_switch_raw:
@@ -67,6 +73,7 @@ binary_sensor:
     on_press:
       then:
       - light.toggle: led1
+  
   # Right pushbutton (ventana)
   - platform: remote_receiver
     name: "right_pushbotton left"
@@ -85,6 +92,11 @@ binary_sensor:
       protocol: 6
     filters:
     - delayed_off: ${delayed_off}
+    on_press:
+      then:
+      - lambda: |-
+          auto my_led = id(led1);
+          ${rotate_effect}
   - platform: remote_receiver
     name: "right_pushbotton right"
     rc_switch_raw:

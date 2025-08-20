@@ -1,0 +1,10 @@
+|-
+  static int effect_index = 0;
+  if (!my_led->remote_values.is_on()) effect_index = 0;
+  my_led->turn_on().set_effect(my_led->get_effects().at(effect_index)->get_name().c_str()).perform();
+
+  effect_index += 1;
+  if (effect_index >= my_led->get_effects().size()) {
+    effect_index = 0;
+  }
+  return;

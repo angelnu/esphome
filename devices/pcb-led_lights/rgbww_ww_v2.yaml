@@ -1,0 +1,33 @@
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v2.yaml
+  #Light effects
+  lights-effects: !include ../includes/lights-effects/rgbw.yaml
+
+light:
+  - platform: rgbww
+    name: "${light_rgbww}"
+    id: my_light
+    red:   output_red
+    green: output_green
+    blue:  output_blue
+    cold_white: output_white_cold
+    warm_white: output_white_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+    effects:
+      !include ../includes/lights-effects/rgbw_effects.yaml
+  - platform: cwww
+    name: "${light_ww}"
+    id: my_light_2
+    cold_white: output2_white_cold
+    warm_white: output2_white_warm
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+
+# toggle_light script (called from base)
+script:
+  - id: toggle_light
+    then:
+    - light.toggle: my_light
+    - light.toggle: my_light_2

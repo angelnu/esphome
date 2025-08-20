@@ -1,41 +1,74 @@
 # USB Power controller
 
-This PCB allows providing 5 V for up to 8 USB devices. Each of them can be disabled via esphome. Each USB has an LED to indicate if power is provided.
+This PCB allows controlling 7 LED stripe channels up to 24V and 10A per channel. I use it to control an RGBCWWW color stripe and a CWWW white stripe with the same device.
 
-- ![Thermostate_PCB_full_view](pictures/pcb-power-usb-overview.png)
+![Overview picture](pictures/esphome-dashboard.png)
 
-- [Aisler PCB project](https://aisler.net/p/BQLUSDIS)
-- [KiCad PCB](kicad/pcb-power-usb/pcb-power-usb.kicad_pro)
-  - ![Schematics Preview](pictures/schematics-power-usb.svg)
-  - ![PCB front Preview](pictures/pcb-power-usb-top.png)
-  - ![PCB rear Preview](pictures/pcb-power-usb-bottom.png)
-- [3D Printed cage](cage):
-  - [Fusion 360 online view](https://a360.co/3qWptNk)
-  - [Fusion 360 archive](cage/pcb-power-usb.f3z)
+[Aisler PCB project](https://aisler.net/p/KIGTGSCT) - I order my PCBs here.
 
-- Parts:
-  - 1x [ESP32-WROOM-32](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
-  - 1x [AMS1117 - 3,3v 1A regulator in SOT-223 format](http://www.advanced-monolithic.com/pdf/ds1117.pdf)
-  - 8x [IRLML0030 - 5A N-MOSFET](https://www.infineon.com/dgdl/Infineon-IRLML0030-DataSheet-v01_01-EN.pdf?fileId=5546d462533600a401535664773825df)
-  - 8x [USB_A_Stewart_SS-52100-001_Horizontal](https://www.digikey.de/en/products/detail/stewart-connector/SS-52100-001/7902377)
-  - 8x 0805 LEDs
-  - 8x 0805 LED resistors (depends on selected LED)
-  - 1x 10 KOhm resistor (reset)
-  - 9x 0805 10 uF capacitor
-  - 1x DC 5.5 x 2.1 mm barrel connector
-    - Bought from [Amazon](https://www.amazon.de/gp/product/B093FTFZ8Q)
-- PINs:
-  - Header top left - external temperature sensors. From top to bottom:
-    - VCC
-    - Data
-    - GND
-- Firmware: [esphome](esphome.io)
-  - You need to modify/create your own esphome definition and include the yaml in this folder matching your PCB
-  - [Example for v1.0](../../s13-legos-shelves.yaml)
+<details>
+<summary>KiCad PCB - schematics and assembly </summary>
 
-# Changelog
+- [KiCad PCB project](KiCad/pcb-led-lights/pcb-led-lights.kicad_pro)
+- ![Schematic Preview](pictures/schematic.png)
+- ![PCB front 3D model](pictures/pcb-top-preview.png)
+- ![PCB rear 3D model](pictures/pcb-bottom-preview.jpg)
+- ![PCB tracks](pictures/pcb-tracks.png)
+- ![PCB front Assembly](pictures/pcb-top.png)
+- ![PCB rear Assembly](pictures/pcb-bottom.png)
+  
+</details>
 
-## v1.0
-  - First version
-  - BUGS:
-    - None so far
+<details>
+<summary>3D Printed Box </summary>
+
+- [3D Printed box](FreeCAD)
+- [FreeCad file](FreeCAD/pcb-led-lights.FCStd)
+  - fix PCB with 3x M2 screws up to 7mm long
+  - use up to 3x 3mm wide screws to fix to the wall
+  - cover slack: 0.15 mm (enough that it holds without screws)
+  - all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to
+    adjust to your case
+- [3MF file - small box](FreeCAD/pcb-led-lights-Box.3mf)
+![cage-render](pictures/cage-preview.png)
+
+</details>
+
+<details>
+<summary>Parts</summary>
+
+- 1x [ESP32-C6 Zero](https://www.waveshare.com/wiki/ESP32-C6-Zero) - this allows for wifi 6 and reduced components to solder as programer, led and antenna are included
+- 1x [AP63203WU-7 Step-Down converter](https://www.mouser.com/datasheet/2/115/DIOD_S_A0007089856_1-2542907.pdf)
+- 12x [Screw Terminal blocks](https://www.amazon.de/YIXISI-Terminal-Schraubklemme-Steckverbinder-Arduino/dp/B087RN8FDZ)
+- 1x [2,9 uH inductor](https://www.mouser.com/datasheet/2/3/ASPI_0628-1775153.pdf)
+- 7x [SUD40N06-25L Power MOSFET](https://www.farnell.com/datasheets/69243.pdf). Can also use [STD35NF06LT4](https://www.st.com/resource/en/datasheet/std35nf06l.pdf)
+- 7x 0805 SMD 47 KOhms resistor
+- 2x 0805 SMD 100 nF capacitor
+- 2x 0805 SMD 22 uF capacitor
+- 1x 0805 SMD 10 uF capacitor
+  
+</details>
+
+<details>
+<summary>Firmware</summary>
+
+- You need to modify/create your own [ESPHome.io](https://esphome.io) definition and include the [yaml in this folder](rgbww_ww_v2.yaml)
+- [Example for v2](TBD)
+
+</details>
+
+
+## ToDos
+
+- [x] v2
+
+## Changelog
+
+### v2
+
+- Complete redesign using an ESP32-C6 for better WiFi and step down to handle 24V (linear regulator was getting to hot in v1)
+
+### v1
+
+- First version
+

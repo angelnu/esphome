@@ -2,7 +2,7 @@
 
 This PCB allows controlling 7 LED stripe channels up to 24V and 10A per channel. I use it to control an RGBCWWW color stripe and a CWWW white stripe with the same device.
 
-![Overview picture](pictures/esphome-dashboard.png)
+![Overview picture](pictures/overview.png)
 
 [Aisler PCB project](https://aisler.net/p/KIGTGSCT) - I order my PCBs here.
 
@@ -12,7 +12,7 @@ This PCB allows controlling 7 LED stripe channels up to 24V and 10A per channel.
 - [KiCad PCB project](KiCad/pcb-led-lights/pcb-led-lights.kicad_pro)
 - ![Schematic Preview](pictures/schematic.png)
 - ![PCB front 3D model](pictures/pcb-top-preview.png)
-- ![PCB rear 3D model](pictures/pcb-bottom-preview.jpg)
+- ![PCB rear 3D model](pictures/pcb-bottom-preview.png)
 - ![PCB tracks](pictures/pcb-tracks.png)
 - ![PCB front Assembly](pictures/pcb-top.png)
 - ![PCB rear Assembly](pictures/pcb-bottom.png)

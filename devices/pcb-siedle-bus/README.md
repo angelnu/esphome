@@ -40,8 +40,24 @@ This PCB allows interacting with a Sidle In-Home bus and automatically trigger a
 <details>
 <summary>Parts</summary>
 
-- 1x [ESP32-WROOM-32 with 8MB Flash](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
-- TBD
+- 1x [U1 - ESP32-WROOM-32 with 8MB Flash](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+- 1x [U2 - Step-down Buck Power MP1584EN Modul](https://www.ebay.de/itm/375340664282)
+- 1x [2 Pin Screw Terminal blocks](https://www.amazon.de/YIXISI-Terminal-Schraubklemme-Steckverbinder-Arduino/dp/B087RN8FDZ)
+- 1x [C2 - 1F 5V Supercapacitor](https://www.ebay.de/itm/126559349843)
+- 2x [C3 - 220uF Elec 8x10.5 mm capacitor](https://www.ebay.de/itm/175443736870)
+- 3x [Q1, Q4, Q5 - IRLML2402 MOSFET Transistor](https://www.ebay.de/itm/114510586115)
+- 2x [Q2, Q3 - BC807 PNP Bipolar Transistor](https://www.ebay.de/itm/284104594986?var=585596351672)
+- 1x [program_port1 - 4 pin 2.54 mm Breakaway Board Connector Header](https://www.ebay.de/itm/272575130016)
+- 1x [R10 - 0805 SMD 12 KOhms resistor (it can be 10K as well)](https://www.ebay.de/itm/305754891633)
+- 5x [R1, R5, R6, 15, R16 - 0805 SMD 10 KOhms resistor](https://www.ebay.de/itm/305754891633)
+- 1x [R7 - 0805 SMD 2 KOhms resistor](https://www.ebay.de/itm/305754891633)
+- 2x [R8, R9 - 0805 SMD 1 KOhms resistor](https://www.ebay.de/itm/305754891633)
+- 1x [R11 - 0805 SMD 200 Ohms resistor](https://www.ebay.de/itm/305754891633)
+- 1x [R3 - 0805 SMD 120 Ohms resistor](https://www.ebay.de/itm/305754891633)
+- 2x [R2, R4 - 0805 SMD 47 Ohms resistor](https://www.ebay.de/itm/305754891633)
+- 1x [R12 - 0805 SMD 10 Ohms resistor](https://www.ebay.de/itm/305754891633)
+- 2x [R13, R14 - 0805 SMD 0 Ohms resistor](https://www.ebay.de/itm/305754891633)
+- 2x [C1, C11 - 0805 SMD 100 nF capacitor](https://www.ebay.de/itm/176105462805)
   
 </details>
 

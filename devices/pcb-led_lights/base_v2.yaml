@@ -6,44 +6,92 @@ esp32:
   framework:
     type: esp-idf  # or arduino
 
-light:
+external_components:
+# use all components from a local folder
+- source:
+    type: local
+    path: components
+  components:
+  - mcpwm
 
-  # - platform: neopixelbus
-  #   type: ${led2_rgb_order}
-  #   variant: WS2811
+light:
+  # - platform: status_led
+  #   name: "status led"
+  #   output: statusoutput
   - platform: esp32_rmt_led_strip
-    rgb_order: RGB
-    pin: 8
-    num_leds: 1
+    rgb_order: rgb
     chipset: ws2812
-    name: "My Light"
+    rmt_symbols: 128
+    id: statusledlight
+    pin: 8
+    name: Status LED RGB
+    num_leds: 1
+    icon: "mdi:led-outline"
+
+wifi:
+  on_connect:
+      - output.turn_off: statusoutput # This triggers a refresh
+  on_disconnect:
+      - output.turn_off: statusoutput # This triggers a refresh
 
 output:
+  - platform: template
+    id: statusoutput
+    type: binary
+    write_action:
+      - if:
+          condition:
+             lambda: return state > 0;
+          then:
+            - light.turn_on: 
+                id: statusledlight
+                red: 1.0
+                green: 0.0
+                blue: 0.0
+                brightness: 60%
+          else:
+          - if:
+              condition:
+                wifi.connected
+              then:
+                - light.turn_on: 
+                    id: statusledlight
+                    red: 0.0
+                    green: 0.0
+                    blue: 1.0
+                    brightness: 30%
+              else:
+                - light.turn_on: 
+                    id: statusledlight
+                    green: 1.0
+                    red: 0.0
+                    blue: 0.0
+                    brightness: 30%
   - platform: ledc
     id: output_red
     frequency: ${pwm_frequency}
-    pin: 1
+    pin: 0
   - platform: ledc
     id: output_green
     frequency: ${pwm_frequency}
-    pin: 2
+    pin: 1
   - platform: ledc
     id: output_blue
     frequency: ${pwm_frequency}
-    pin: 3
+    pin: 2
   - platform: ledc
     id: output_white_warm
     frequency: ${pwm_frequency}
-    pin: 4
+    pin: 3
   - platform: ledc
     id: output_white_cold
     frequency: ${pwm_frequency}
-    pin: 5
+    pin: 4
   - platform: ledc
     id: output2_white_warm
     frequency: ${pwm_frequency}
     pin: 14
-  - platform: ledc
+  - platform: mcpwm
     id: output2_white_cold
     frequency: ${pwm_frequency}
     pin: 18

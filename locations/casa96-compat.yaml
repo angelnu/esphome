@@ -1,0 +1,7 @@
+packages:
+  #Include location specific settings
+  location: !include casa96.yaml
+
+wifi:
+  ssid: !secret wifi_compat_ssid
+  password: !secret wifi_compat_password

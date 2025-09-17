@@ -1,0 +1,6 @@
+packages:
+  #Include location specific settings
+  location: !include pueblo.yaml
+
+wifi:
+  ssid: !secret wifi_ssid

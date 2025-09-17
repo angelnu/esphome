@@ -2,6 +2,10 @@ packages:
   #Include base device definition
   minimal: !include common.yaml
 
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
 web_server:
   version: 3
 

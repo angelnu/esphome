@@ -1,5 +1,5 @@
 substitutions:
-  pwm_frequency: "100 Hz"
+  pwm_frequency: "1000 Hz"
 
 esp32:
   board: esp32-c6-devkitc-1

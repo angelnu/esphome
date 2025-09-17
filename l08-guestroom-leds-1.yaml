@@ -1,7 +1,6 @@
 substitutions:
   devicename: l08-guestroom-leds-1
   friendly_name: Guestroom left front leds
-  pwm_frequency: "1000 Hz"
   light_1: Left
   light_2: Front
   wifi_ip: 192.168.0.6
@@ -10,6 +9,6 @@ packages:
   #Include location specific settings
   location: !include locations/casa96.yaml
   #Include common definitions for home (wifi, web server, etc)
-  settings: !include settings/common.yaml
+  settings: !include settings/common_esp32.yaml
   #Include device definition
-  device: !include devices/lights-LEDEnet/double_wcw_v1_redbroke.yaml
+  device: !include devices/pcb-led_lights/ww_ww_v2.yaml

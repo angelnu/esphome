@@ -1,0 +1,22 @@
+substitutions:
+  devicename: l04-alicia-closet
+  friendly_name: Alicia closet
+  light_1: inside left
+  restore_mode_output_1: ALWAYS_ON 
+  light_2: inside right top
+  restore_mode_output_2: ALWAYS_ON 
+  light_3: inside right bottom
+  restore_mode_output_3: ALWAYS_ON 
+  light_4: outside right
+  light_5: outside center right
+  light_6: outside center left
+  light_7: outside left
+  wifi_ip: "192.168.0.56"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common_esp32.yaml
+  #Include device definition
+  device: !include devices/pcb-led_lights/monochromatic_v2.yaml

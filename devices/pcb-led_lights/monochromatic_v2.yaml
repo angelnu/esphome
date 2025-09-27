@@ -1,0 +1,62 @@
+substitutions:
+  restore_mode: RESTORE_DEFAULT_OFF 
+  restore_mode_output_1: ${restore_mode}
+  restore_mode_output_2: ${restore_mode}
+  restore_mode_output_3: ${restore_mode}
+  restore_mode_output_4: ${restore_mode}
+  restore_mode_output_5: ${restore_mode}
+  restore_mode_output_6: ${restore_mode}
+  restore_mode_output_7: ${restore_mode}
+
+packages:
+  #Include base device definition
+  base_ledenet: !include base_v2.yaml
+
+light:
+  - platform: monochromatic
+    name: "${light_1}"
+    id: my_light_1
+    output: output_red
+    restore_mode: ${restore_mode_output_1}
+  - platform: monochromatic
+    name: "${light_2}"
+    id: my_light_2
+    output: output_green
+    restore_mode: ${restore_mode_output_2}
+  - platform: monochromatic
+    name: "${light_3}"
+    id: my_light_3
+    output: output_blue
+    restore_mode: ${restore_mode_output_3}
+  - platform: monochromatic
+    name: "${light_4}"
+    id: my_light_4
+    output: output_white_warm
+    restore_mode: ${restore_mode_output_4}
+  - platform: monochromatic
+    name: "${light_5}"
+    id: my_light_5
+    output: output_white_cold
+    restore_mode: ${restore_mode_output_5}
+  - platform: monochromatic
+    name: "${light_6}"
+    id: my_light_6
+    output: output2_white_warm
+    restore_mode: ${restore_mode_output_6}
+  - platform: monochromatic
+    name: "${light_7}"
+    id: my_light_7
+    output: output2_white_cold
+    restore_mode: ${restore_mode_output_7}
+
+# toggle_light script (called from base)
+script:
+  - id: toggle_light
+    then:
+    - light.toggle: my_light_1
+    - light.toggle: my_light_2
+    - light.toggle: my_light_3
+    - light.toggle: my_light_4
+    - light.toggle: my_light_5
+    - light.toggle: my_light_6
+    - light.toggle: my_light_7

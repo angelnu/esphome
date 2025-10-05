@@ -1,11 +1,11 @@
 substitutions:
-  devicename: c08-unused
-  friendly_name: c08 unused
+  devicename: c06-bedroom
+  friendly_name: bedroom cover
   # Relay trip limits
   max_power: "3600.0"
   max_temp: "80.0"
 
-  wifi_ip: "192.168.0.49"
+  wifi_ip: "192.168.0.47"
 
 
 packages:

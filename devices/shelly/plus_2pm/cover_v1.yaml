@@ -51,3 +51,11 @@ cover:
     malfunction_action:
       then:
         - logger.log: "Malfunction detected. Relay welded."
+
+script:
+  - id: switch_1_button_script
+    then:
+    - cover.open: my_blind
+  - id: switch_2_button_script
+    then:
+    - cover.close: my_blind

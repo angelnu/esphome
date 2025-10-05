@@ -1,7 +1,7 @@
 substitutions:
 
 esp32:
-  board: esp32doit-devkit-v1
+  board: esp32doit-devkit-v1 # PCB v0.1.9
   framework:
     type: esp-idf
 
@@ -10,21 +10,41 @@ i2c:
   scl: GPIO25
 
 binary_sensor:
-  #reset button on device
-  - platform: gpio
-    id: my_key
+  - id: switch_1_button
+    name: Switch 1
+    platform: gpio
+    pin: GPIO5
+    filters:
+      - delayed_off: 50ms
+    on_press:
+      then:
+        script.execute: switch_1_button_script
+
+  - id: switch_2_button
+    name: Switch 2
+    platform: gpio
+    pin: GPIO18
+    filters:
+      - delayed_off: 50ms
+    on_press:
+      then:
+        script.execute: switch_2_button_script
+
+  - id: reset_button
+    name: reset
+    platform: gpio
     pin:
       number: GPIO4
       inverted: yes
       mode:
         input: true
         pullup: true
+
+    filters:
+      - delayed_off: 50ms
     on_press:
       then:
         - button.press: restart_device
-    filters:
-      - delayed_on_off: 5ms
-    internal: true
 
 sensor:
   #temperature sensor

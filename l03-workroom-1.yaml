@@ -12,3 +12,5 @@ packages:
   settings: !include settings/common_esp32.yaml
   #Include device definition
   device: !include devices/pcb-led_lights/ww_ww_v2.yaml
+  #Include bluetooth
+  bluetooth: !include settings/bluetooth.yaml

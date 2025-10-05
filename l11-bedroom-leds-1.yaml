@@ -1,13 +1,15 @@
 substitutions:
   devicename: l11-bedroom-leds-1
-  friendly_name: Bedroom front leds
-  pwm_frequency: "1000 Hz"
+  friendly_name: Bedroom leds front back
+  light_rgbww: Front
+  light_ww: Back
+  pwm_frequency: "100 Hz"
   wifi_ip: 192.168.0.9
 
 packages:
   #Include location specific settings
   location: !include locations/casa96.yaml
   #Include common definitions for home (wifi, web server, etc)
-  settings: !include settings/common.yaml
+  settings: !include settings/common_esp32.yaml
   #Include device definition
-  device: !include devices/lights-LEDEnet/rgbwcw.yaml
+  device: !include devices/pcb-led_lights/rgbww_ww_v2.yaml

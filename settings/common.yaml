@@ -20,7 +20,7 @@ wifi:
     ssid: ${devicename}
     password: !secret wifi_ap_password
 
-captive_portal:
+#captive_portal:
 
 debug:
   update_interval: 1h

@@ -1,0 +1,32 @@
+substitutions:
+  devicename: esphome_minimal_wemos
+  friendly_name: esphome_minimal_wemos
+  wifi_ip: "192.168.0.54"
+
+packages:
+  #Include location specific settings
+  location: !include locations/casa96.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common_esp32.yaml
+  
+esphome:
+  name: esp32c3
+  friendly_name: luato_test
+  # platformio_options:
+  #   board_build.flash_mode: dio
+
+esp32:
+  board: esp32-c3-devkitm-1
+  # framework:
+  #   type: esp-idf 
+
+# uart:
+# - id: muart1
+#   tx_pin: GPIO13
+#   rx_pin: GPIO16
+#   baud_rate: 9600
+
+# - id: muart2
+#   tx_pin: GPIO14
+#   rx_pin: GPIO17
+#   baud_rate: 9600

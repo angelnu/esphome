@@ -1,6 +1,6 @@
 substitutions:
-  devicename: c07-unused
-  friendly_name: c07 unused
+  devicename: c07-alicia
+  friendly_name: alicia cover
   # Relay trip limits
   max_power: "3600.0"
   max_temp: "80.0"

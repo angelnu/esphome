@@ -6,8 +6,6 @@ substitutions:
 
 esp8266:
   board: d1_mini
-  platform:
-    type: arduino
 
 switch:
   - platform: gpio

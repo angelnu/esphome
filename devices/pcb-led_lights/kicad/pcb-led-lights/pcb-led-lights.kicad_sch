@@ -7,7 +7,7 @@
 	(title_block
 		(title "LED Lights")
 		(date "2025-08-19")
-		(rev "9")
+		(rev "10")
 	)
 	(lib_symbols
 		(symbol "Connector:Screw_Terminal_01x12"
@@ -1138,6 +1138,173 @@
 					(at 0 -3.81 90)
 					(length 1.27)
 					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Diode:US2MA"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "US2MA"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Diode_SMD:D_SMA"
+				(at 0 -4.445 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.onsemi.com/pub/Collateral/US2AA-D.PDF"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "1000V, 1.5A, General Purpose Rectifier Diode, SMA(DO-214AC)"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Sim.Device" "D"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Sim.Pins" "1=K 2=A"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Super Fast"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "D*SMA*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "US2MA_0_1"
+				(polyline
+					(pts
+						(xy -1.27 1.27) (xy -1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "US2MA_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2492,7 +2659,7 @@
 		(at 24.13 116.84)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "610b1731-3aab-48da-98e7-c4ff315aa928")
+		(uuid "6f788581-a7c7-40d8-bd85-178d85ca34bf")
 	)
 	(junction
 		(at 119.38 57.15)
@@ -2699,16 +2866,6 @@
 			(type default)
 		)
 		(uuid "5d8be1da-4acc-4f8a-90bf-ae895a3315d4")
-	)
-	(wire
-		(pts
-			(xy 22.86 116.84) (xy 24.13 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5ed15a9d-14d1-4c3d-9408-3ef8557a0b2b")
 	)
 	(wire
 		(pts
@@ -2971,7 +3128,7 @@
 		(uuid "f85a25c6-2eae-47b9-abf7-45a859a2c124")
 	)
 	(label "VCC"
-		(at 22.86 116.84 0)
+		(at 12.7 119.38 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3920,16 +4077,15 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 22.86 116.84 90)
+		(at 16.51 116.84 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "33860a69-365c-4de2-8d19-e564b5705c50")
 		(property "Reference" "#PWR02"
-			(at 26.67 116.84 0)
+			(at 20.32 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3938,7 +4094,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 19.05 116.8399 90)
+			(at 16.51 115.062 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3947,7 +4103,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 22.86 116.84 0)
+			(at 16.51 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3956,7 +4112,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 22.86 116.84 0)
+			(at 16.51 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3965,7 +4121,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VCC\""
-			(at 22.86 116.84 0)
+			(at 16.51 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4002,7 +4158,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 128.6026 53.34 90)
 			(effects
 				(font
@@ -4134,7 +4290,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 109.5526 77.47 90)
 			(effects
 				(font
@@ -5409,7 +5565,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 128.6026 77.47 90)
 			(effects
 				(font
@@ -5596,6 +5752,92 @@
 		)
 	)
 	(symbol
+		(lib_id "Diode:US2MA")
+		(at 20.32 116.84 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a9f6bd2f-5a1e-4a9a-a4e3-7457a4a3b405")
+		(property "Reference" "D1"
+			(at 20.32 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "US2MA"
+			(at 20.32 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SMA"
+			(at 20.32 112.395 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/US2AA-D.PDF"
+			(at 20.32 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "1000V, 1.5A, General Purpose Rectifier Diode, SMA(DO-214AC)"
+			(at 20.32 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" "D"
+			(at 20.32 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 20.32 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "57d068f9-3182-4bed-a292-5c3a46debda3")
+		)
+		(pin "2"
+			(uuid "5e777c55-7264-4494-b265-ff45523468c6")
+		)
+		(instances
+			(project ""
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
+					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 176.53 57.15 0)
 		(unit 1)
@@ -5745,7 +5987,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 109.5526 53.34 90)
 			(effects
 				(font
@@ -5941,7 +6183,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 147.6526 77.47 90)
 			(effects
 				(font
@@ -6327,7 +6569,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 166.7026 53.34 90)
 			(effects
 				(font
@@ -6394,7 +6636,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "12K"
 			(at 147.6526 53.34 90)
 			(effects
 				(font

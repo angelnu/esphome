@@ -17,3 +17,4 @@ packages:
   settings: !include settings/common_esp32.yaml
   #Include device definition
   device: !include devices/shelly/pro4pm/base_v1.yaml
+  #device: !include devices/shelly/pro4pm/idf_test.yaml

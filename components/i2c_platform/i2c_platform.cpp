@@ -24,6 +24,6 @@ int32_t i2c_platform_read(uint16_t handle, uint8_t *bufp, size_t len) {
 }
 
 //delay mseconds
-void i2c_platform_delay(uint16_t handle, uint16_t wait_ms) { 
-  delay(wait_ms);
-}
+// void i2c_platform_delay(uint16_t handle, uint16_t wait_ms) { 
+//   delay(wait_ms);
+// }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Stream.h"
+//#include "Stream.h"
 #include "esphome/components/uart/uart.h"
 
 class ESPHome_Stream: public Stream {

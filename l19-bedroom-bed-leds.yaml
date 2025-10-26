@@ -11,14 +11,17 @@ packages:
 
 esp32:
   board: nodemcu-32s
+  framework:
+    type: esp-idf
 
 light:
   - name: Long
     id: light_long
-    platform: neopixelbus
-    type: GRBW
-    variant: SK6812
-    #method: ESP32_RMT_1
+    platform: esp32_rmt_led_strip
+    rmt_symbols: 256
+    rgb_order: GRB
+    is_rgbw: true
+    chipset: SK6812
     pin: GPIO21
     num_leds: 197
   
@@ -70,18 +73,18 @@ light:
             // it.size() - Number of LEDs
             // it[num] - Access the LED at index num.
             // Set the LED at num to the given r, g, b values
-            // it[num] = ESPColor(r, g, b);
-            // Get the color at index num (ESPColor instance)
+            // it[num] = Color(r, g, b);
+            // Get the color at index num (Color instance)
             // it[num].get();
 
             // Example: Simple color wipe
             for (int i = it.size() - 1; i > 0; i--) {
               it[i] = it[i - 1].get();
             }
-            it[0] = ESPColor::random_color();
+            it[0] = Color::random_color();
 
             // Bonus: use .range() and .all() to set many LEDs without having to write a loop.
-            it.range(0, 50) = ESPColor(0, 0, 0, 0);
+            it.range(0, 50) = Color(0, 0, 0, 0);
             it.all().fade_to_black(10);
       - addressable_lambda:
           name: "My Custom Effect 2"
@@ -99,7 +102,7 @@ light:
             // again you can use the initial_run variables
             if (initial_run) {
               progress = 0;
-              it.all() = ESPColor(0, 0, 0, 0);
+              it.all() = Color(0, 0, 0, 0);
               // optionally do a return so nothing happens until the next update_interval
               return;
             }
@@ -139,19 +142,21 @@ light:
     effects: *effects
   - name: Mireille Table
     id: mireille_tablet
-    platform: neopixelbus
-    type: GRBW
-    variant: SK6812
-    method: ESP32_RMT_0
+    platform: esp32_rmt_led_strip
+    rmt_symbols: 128
+    rgb_order: GRB
+    is_rgbw: true
+    chipset: SK6812
     pin: GPIO22
     num_leds: 45
     effects: *effects
   - name: Angel Table
     id: angel_tablet
-    platform: neopixelbus
-    type: GRBW
-    variant: SK6812
-    method: ESP32_RMT_1
+    platform: esp32_rmt_led_strip
+    rmt_symbols: 128
+    rgb_order: GRB
+    is_rgbw: true
+    chipset: SK6812
     pin: GPIO23
     num_leds: 31
     effects: *effects

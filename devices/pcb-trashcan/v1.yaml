@@ -15,8 +15,8 @@ substitutions:
 
 esp32:
   board: esp32dev
-  #framework:
-  #  type: esp-idf  # or arduino
+  framework:
+    type: arduino # because stepper
 
 external_components:
 # use all components from a local folder

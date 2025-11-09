@@ -1,10 +1,16 @@
 # USB Power controller
 
-This PCB allows controlling 7 LED stripe channels up to 24V and 10A per channel. I use it to control an RGBCWWW color stripe and a CWWW white stripe with the same device.
+This PCB allows controlling 7 LED strip channels up to 24V and 10A per channel. I use it to control a RGBCWWW color stripe and a CWWW white stripe with the same device.
 
 ![Overview picture](pictures/overview.png)
 
-[Aisler PCB project](https://aisler.net/p/KIGTGSCT) - I order my PCBs here.
+I ordered [20x already assembled PCBs from PCBWay](https://www.pcbway.com/project/shareproject/Strip_LED_Controller_for_ESPHome_e175d1c1.html) as I did not want to solder and check so many myself and I installed the whole house with these. PCBWay was kind to sponsor this PCB so here is the resulting project I ordered:
+
+![Assembly overview](pictures/assembly.jpeg)
+
+I received within a month for ca 16$ each of the 20x board with most of the cost for the components. The PCBs came wrapped individually (right in the picture above) and then in groups of five (pink wrap left in the picture). It took me a couple of hours to put it in the 3D printed box (which I printed myself but can be ordered from PCBWay as well) and upload the firmware via USB C cable (no serial adapter needed).
+
+[Aisler PCB project](https://aisler.net/p/KIGTGSCT) - Alternative PCBs - not tried assembly.
 
 <details>
 <summary>KiCad PCB - schematics and assembly </summary>
@@ -24,11 +30,9 @@ This PCB allows controlling 7 LED stripe channels up to 24V and 10A per channel.
 
 - [3D Printed box](FreeCAD)
 - [FreeCad file](FreeCAD/pcb-led-lights.FCStd)
-  - fix PCB with 3x M2 screws up to 7mm long
-  - use up to 3x 3mm wide screws to fix to the wall
+  - fix PCB with 3x M2 screws up to 7mm long (M2X6mm work great)
   - cover slack: 0.15 mm (enough that it holds without screws)
-  - all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to
-    adjust to your case
+  - all parameters of the box are in the Settings Spreadsheet that you can change with FreeCAD if you need to adjust to your case
 - [3MF file - small box](FreeCAD/pcb-led-lights-Box.3mf)
 ![cage-render](pictures/cage-preview.png)
 

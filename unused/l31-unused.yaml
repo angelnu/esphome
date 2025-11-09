@@ -1,9 +1,9 @@
 substitutions:
-  devicename: l21-unused
+  devicename: l31-unused
   friendly_name: Unused
   light_rgbww: light_rgbww
   light_ww: light_ww
-  wifi_ip: 192.168.0.19
+  wifi_ip: 192.168.0.60
 
 packages:
   #Include location specific settings

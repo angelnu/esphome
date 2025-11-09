@@ -10,6 +10,8 @@ I ordered [20x already assembled PCBs from PCBWay](https://www.pcbway.com/projec
 
 I received within a month for ca 16$ each of the 20x board with most of the cost for the components. The PCBs came wrapped individually (right in the picture above) and then in groups of five (pink wrap left in the picture). It took me a couple of hours to put it in the 3D printed box (which I printed myself but can be ordered from PCBWay as well) and upload the firmware via USB C cable (no serial adapter needed).
 
+The LED from the ESP32 will light green when connecting to Wifi and blue after the connection has been stablished.
+
 [Aisler PCB project](https://aisler.net/p/KIGTGSCT) - Alternative PCBs - not tried assembly.
 
 <details>

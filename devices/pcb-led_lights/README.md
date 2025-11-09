@@ -14,6 +14,8 @@ I received within a month for ca 16$ each of the 20x board with most of the cost
 
 The LED from the ESP32 will light green when connecting to Wifi and blue after the connection has been stablished.
 
+I have also [developed an adapter PCB to connect Ikea wardrobe LEDs with the TRÅDFRI system](https://www.printables.com/model/1427264-conector-for-ikea-tradfri).
+
 [Aisler PCB project](https://aisler.net/p/KIGTGSCT) - Alternative PCBs - not tried assembly.
 
 <details>

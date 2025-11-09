@@ -1,6 +1,8 @@
 # USB Power controller
 
-This PCB allows controlling 7 LED strip channels up to 24V and 10A per channel. I use it to control a RGBCWWW color stripe and a CWWW white stripe with the same device.
+This PCB allows controlling 7 LED strip channels up to 24V and 10A per channel. I use it to control a 5x channel RGBCWWW color led strip and a 2x channel CWWW white led strip with the same device. It uses a ESP32-C6 for the improved Wifi and Bluetooth as they are placed typically in locations with bad coverage such as celings and inside walls. I programmed a custom ESPHome component for the MCPWD as the C6 and other ESP32 variants do not include enough fastled channels.
+
+It also includes a push button input so it can be used (limitedly) without connection if needed. If can also be used as Bluetooth proxy (at its Flash memory size). I intend to extend it later on to use Bluetooth Low Energy switches from Shelly so that it does not depend on the Home Assistant automation being available.
 
 ![Overview picture](pictures/overview.png)
 

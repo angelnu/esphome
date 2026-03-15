@@ -11,10 +11,13 @@ substitutions:
 
 esphome:
   on_boot:
-    priority: 600
-    # ...
-    then:
-      - output.turn_off: devices_reset
+    - priority: 900
+      then:
+        - switch.turn_off: devices_reset
+        - delay: 10ms
+        - switch.turn_on: devices_reset
+    - priority: 0
+      then:
       - light.turn_on:
           id: display_backlight
           brightness: ${backlight_min}
@@ -22,7 +25,23 @@ esphome:
 esp32:
   board: esp32doit-devkit-v1
   framework:
-    type: arduino
+    type: esp-idf
+
+# external_components:
+# # use all components from a local folder
+# - source:
+#     type: local
+#     #path: components
+#     path: ../esphome-fork/esphome/components
+#   components:
+#   - ade7953_base
+#   - ade7953_spi
+#   #- mcp23s17
+
+external_components:
+  - source: github://pr#14824
+    components: [ade7953_base, ade7953_spi]
+    refresh: 1h
 
 # ethernet:
 #   type: LAN8720
@@ -35,17 +54,17 @@ spi:
     clk_pin: GPIO32
     mosi_pin: GPIO33
     miso_pin: GPIO39
-    # Circumvention: the second SPI in HW does not compile. Use HW SPI for display
   - id: spi_bus_2
-    clk_pin: GPIO15
+    clk_pin:
+      number: GPIO15
+      ignore_strapping_warning: true
     mosi_pin: GPIO13
-    #miso_pin: GPIO39
 
 mcp23s17:
   - id: 'mcp23s17_hub'
     spi_id: spi_bus_1
     cs_pin: GPIO16
-    #irq_pin: GPIO35
+    spi_mode: 3 # to match the mode from the ADE7953 and avoid mangled data
     deviceaddress: 0
 
 # bit 0 = input, inverted - Switch3
@@ -66,17 +85,10 @@ mcp23s17:
 # bit 15 = input, inverted - Switch4
 
 output:
-  - platform: gpio
-    id: devices_reset
-    pin:
-      mcp23xxx: mcp23s17_hub
-      # Use pin number 0
-      number: 4
-      mode:
-        output: true
-      inverted: true
   - platform: ledc
-    pin: GPIO12
+    pin:
+      number: GPIO12
+      ignore_strapping_warning: true
     id: display_backlight_output
 
 light:
@@ -144,6 +156,15 @@ switch:
       mode:
         output: true
       inverted: false
+  - platform: gpio
+    id: devices_reset
+    # name: devices_reset
+    pin:
+      mcp23xxx: mcp23s17_hub
+      number: 4
+      allow_other_uses: true
+      mode:
+        output: true
 
 # Individual inputs
 binary_sensor:
@@ -576,15 +597,25 @@ display:
     id: my_display
     spi_id: spi_bus_2
     model: "INITR_BLACKTAB"
-    #reset_pin: D4
-    cs_pin: GPIO0
-    dc_pin: GPIO2
+    auto_clear_enabled: true
+    reset_pin: 
+      mcp23xxx: mcp23s17_hub
+      # Use pin number 0
+      number: 4
+      allow_other_uses: true
+      mode:
+        output: true
+    cs_pin:
+      number: GPIO0
+      ignore_strapping_warning: true
+    dc_pin:
+      number: GPIO2
+      ignore_strapping_warning: true
     rotation: 270
     device_width: 128
     device_height: 160
     col_start: 0
     row_start: 0
-    eight_bit_color: true
     update_interval: 5s
     lambda: |-
       const auto RED = Color(255, 0, 0);
@@ -595,9 +626,6 @@ display:
 
       const auto HEADER_SEPARATOR_HEIGHT = 4;
       const auto HEADER_HIGHT = ${CHANNEL_HIGHT} + HEADER_SEPARATOR_HEIGHT;
-
-      // Clean screen
-      it.fill(COLOR_OFF);
 
       // Temperature
       it.printf(0,
@@ -649,15 +677,3 @@ display:
                   TextAlign::CENTER_RIGHT,
                   "%4.1fW ", id(active_powers)[channel]->state);
       }
-
-      //it.filled_rectangle(0                 , 0                  , it.get_width() / 2, it.get_height() / 2, red);
-      //it.filled_rectangle(it.get_width()/2-1, 0                  , it.get_width() / 2, it.get_height() / 2, green);
-      //it.filled_rectangle(it.get_width()/2-1, it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, blue);
-      //it.filled_rectangle(0                 , it.get_height()/2-1, it.get_width() / 2, it.get_height() / 2, white);
-      
-      //it.rectangle(20, 50, 30, 30, white);
-      //it.rectangle(25, 55, 30, 30, red);
-      //it.rectangle(30, 60, 30, 30, green);
-      //it.rectangle(35, 65, 30, 30, blue);
-
-

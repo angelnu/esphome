@@ -285,6 +285,7 @@ sensor:
     current_pga_gain_b: 2x
     current_gain_a: 0x600000
     current_gain_b: 0x600000
+    use_accumulated_energy_registers: true
     voltage:
       name: Voltage 1
       id: my_voltage_1
@@ -406,6 +407,7 @@ sensor:
     current_pga_gain_b: 2x
     current_gain_a: 0x600000
     current_gain_b: 0x600000
+    use_accumulated_energy_registers: true
     voltage:
       name: Voltage
       id: my_voltage_2
@@ -514,6 +516,59 @@ sensor:
       - multiply: -1
       - delta: 1
     update_interval: 60s
+  
+  - platform: integration
+    id: energy_1
+    name: "${relay_1} Energy"
+    sensor: active_power_id_1
+    restore: yes
+    time_unit: h
+    icon: mdi:meter-electric
+    unit_of_measurement: "kWh"
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    id: energy_2
+    name: "${relay_2} Energy"
+    sensor: active_power_id_2
+    restore: yes
+    time_unit: h
+    icon: mdi:meter-electric
+    unit_of_measurement: "kWh"
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    id: energy_3
+    name: "${relay_3} Energy"
+    sensor: active_power_id_3
+    restore: yes
+    time_unit: h
+    icon: mdi:meter-electric
+    unit_of_measurement: "kWh"
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    id: energy_4
+    name: "${relay_4} Energy"
+    sensor: active_power_id_4
+    restore: yes
+    time_unit: h
+    icon: mdi:meter-electric
+    unit_of_measurement: "kWh"
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
 
   #temperature sensor
   - platform: ntc
@@ -593,10 +648,19 @@ image:
     resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
 
 display:
-  - platform: st7735
+  - platform: mipi_spi
     id: my_display
     spi_id: spi_bus_2
-    model: "INITR_BLACKTAB"
+    model: ST7735
+    dimensions:
+      width: 160
+      height: 128
+      offset_width: 0
+      offset_height: 0
+    transform:
+      swap_xy: true
+      mirror_x: true
+      mirror_y: false
     auto_clear_enabled: true
     reset_pin: 
       mcp23xxx: mcp23s17_hub
@@ -611,11 +675,6 @@ display:
     dc_pin:
       number: GPIO2
       ignore_strapping_warning: true
-    rotation: 270
-    device_width: 128
-    device_height: 160
-    col_start: 0
-    row_start: 0
     update_interval: 5s
     lambda: |-
       const auto RED = Color(255, 0, 0);

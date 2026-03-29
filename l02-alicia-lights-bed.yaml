@@ -1,7 +1,9 @@
 substitutions:
   devicename: l02-alicia-lights-bed
   friendly_name: Alicia Bed Light
-  wifi_ip: "192.168.2.18"
+  wifi_ip: 192.168.2.18 # New: 192.168.25.112
+
+# Pending repair
 
 packages:
   #Include location specific settings

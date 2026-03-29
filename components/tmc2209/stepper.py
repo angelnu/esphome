@@ -68,7 +68,7 @@ CONFIG_SCHEMA = cv.All(
         cv.Optional(CONF_STALL_THRESHOLD, default=0): cv.int_range(min=0,max=255),
         cv.Optional(CONF_MICROSTEPS, default=0): cv.one_of(0,2,4,8,16,32,64,128,256, int=True),
         cv.Optional(CONF_RMS_CURRENT, default="0.8 A"): cv.current,
-        cv.Optional(CONF_COVER): cover.COVER_SCHEMA.extend({
+        cv.Optional(CONF_COVER): cover._COVER_SCHEMA.extend({
                 cv.GenerateID(): cv.declare_id(StepperCover),
         })       
         .extend(cv.polling_component_schema("1s"))

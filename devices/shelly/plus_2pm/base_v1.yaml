@@ -161,14 +161,15 @@ sensor:
                   message: "${friendly_name} ${switch_2} turned off because power exceeded ${max_power}W"
     update_interval: 0.5s
 
-  - platform: total_daily_energy
-    name: "${switch_1} Daily Energy"
-    id: my_total_daily_energy_1
-    power_id: my_active_power_1
-  - platform: total_daily_energy
-    name: "${switch_2} Daily Energy"
-    id: my_total_daily_energy_2
-    power_id: my_active_power_2
+  # Dissabled as not parsing 12.2025
+  # - platform: total_daily_energy
+  #   name: "${switch_1} Daily Energy"
+  #   id: my_total_daily_energy_1
+  #   power_id: my_active_power_1
+  # - platform: total_daily_energy
+  #   name: "${switch_2} Daily Energy"
+  #   id: my_total_daily_energy_2
+  #   power_id: my_active_power_2
 
 status_led:
   pin:

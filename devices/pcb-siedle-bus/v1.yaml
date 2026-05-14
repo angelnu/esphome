@@ -24,6 +24,27 @@ esphome:
     - -DCONFIG_ESP_TIMER_IN_IRAM=1
     # Use esp_timer interruput handler (more precise)
     - -DCONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD=1
+  on_boot:
+    priority: 900.0  # Runs almost immediately after hardware init
+    then:
+      # We force the wifi to stay disabled at the very first moment of software execution
+      - wifi.disable: 
+      - script.execute: boot_delay_logic
+
+# This script handles the logic
+script:
+  - id: boot_delay_logic
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return (esp_reset_reason() == ESP_RST_POWERON);'
+          then:
+            - delay: 20s
+            - logger.log: "Delay finished. Enabling WiFi."
+            - wifi.enable:
+          else:
+            - wifi.enable:
 
 external_components:
   - source:

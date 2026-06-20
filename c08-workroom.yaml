@@ -16,4 +16,4 @@ packages:
   #Include device definition
   device: !include devices/shelly/plus_2pm/cover_v1.yaml
   #Include bluetooth
-  #bluetooth: !include settings/bluetooth.yaml
+  bluetooth: !include settings/bluetooth.yaml

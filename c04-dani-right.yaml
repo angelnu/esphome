@@ -15,3 +15,5 @@ packages:
   settings: !include settings/common_esp32.yaml
   #Include device definition
   device: !include devices/shelly/plus_2pm/cover_v1.yaml
+  #Include bluetooth
+  bluetooth: !include settings/bluetooth.yaml

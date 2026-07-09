@@ -1,7 +1,7 @@
 substitutions:
   # Red
   devicename: s27-taller-breaker-left
-  friendly_name: Short corridor right breaker
+  friendly_name: Taller 
   wifi_ip: 192.168.0.39
 
   relay_1: Bathroom

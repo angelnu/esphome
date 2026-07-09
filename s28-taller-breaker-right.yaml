@@ -1,7 +1,7 @@
 substitutions:
   devicename: s28-taller-breaker-right
   friendly_name: Interruptor derecho garaje
-  wifi_ip: 192.168.104.15
+  wifi_ip: 192.168.104.13
 
   relay_1: relay_1
   relay_2: relay_2

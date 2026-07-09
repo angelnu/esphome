@@ -1,5 +1,5 @@
 substitutions:
-  devicename: s30-garaje-breaker-right
+  devicename: s29-garaje-breaker-left
   friendly_name: Interruptor derecho garaje
   wifi_ip: 192.168.104.15
 

@@ -1,5 +1,5 @@
 substitutions:
-  devicename: s27-taller-breaker-right
+  devicename: s2-taller-breaker-right
   friendly_name: Interruptor izquierdo taller
   wifi_ip: 192.168.104.13
 

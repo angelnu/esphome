@@ -1,7 +1,7 @@
 substitutions:
   devicename: s29-garaje-breaker-left
   friendly_name: Interruptor izquierdo garaje
-  wifi_ip: 192.168.104.15
+  wifi_ip: 192.168.104.14
 
   relay_1: relay_1
   relay_2: relay_2

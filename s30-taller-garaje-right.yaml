@@ -1,0 +1,18 @@
+substitutions:
+  devicename: s28-taller-breaker-right
+  friendly_name: Interruptor derecho taller
+  wifi_ip: 192.168.104.13
+
+  relay_1: relay_1
+  relay_2: relay_2
+  relay_3: relay_3
+  relay_4: relay_4
+  restore_mode: RESTORE_DEFAULT_ON
+
+packages:
+  #Include location specific settings
+  location: !include locations/pueblo.yaml
+  #Include common definitions for home (wifi, web server, etc)
+  settings: !include settings/common_esp32.yaml
+  #Include device definition
+  device: !include devices/shelly/pro4pm/base_v1.yaml

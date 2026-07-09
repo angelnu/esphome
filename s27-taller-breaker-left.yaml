@@ -4,9 +4,9 @@ substitutions:
   friendly_name: Interruptor izquierdo taller
   wifi_ip: 192.168.0.39
 
-  relay_1: Bathroom
-  relay_2: Unknown
-  relay_3: Guestroom
+  relay_1: relay_1
+  relay_2: relay_2
+  relay_3: relay_3
   relay_4: Terrace dryer
   restore_mode: RESTORE_DEFAULT_ON
 

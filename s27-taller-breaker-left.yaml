@@ -1,6 +1,6 @@
 substitutions:
   # Red
-  devicename: s27-taller4-smallcorridor-breaker-right
+  devicename: s27-taller-4-smallcorridor-breaker-right
   friendly_name: Short corridor right breaker
   wifi_ip: 192.168.0.39
 

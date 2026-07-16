@@ -14,11 +14,8 @@ packages:
 
 
 esp32:
-  board: lolin_s2_mini
-  framework:
-    type: esp-idf  # or arduino
+  variant: esp32s2
 
 esphome:
-  platformio_options:
-    board_build.extra_flags:
-      - -DARDUINO_USB_CDC_ON_BOOT=0
+  build_flags:
+    - "-DARDUINO_USB_CDC_ON_BOOT=0"

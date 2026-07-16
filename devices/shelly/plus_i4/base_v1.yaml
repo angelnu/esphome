@@ -9,9 +9,7 @@ substitutions:
   sensor_4_id:   button_4
 
 esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: esp-idf
+  variant: esp32
 
 packages:
   button_1: !include

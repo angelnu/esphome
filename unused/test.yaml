@@ -1,9 +1,8 @@
 ---
 esphome:
   name: test
-  platform: ESP32
-  board: nodemcu-32s
-  build_path: build/test4
+esp32:
+  variant: nodemcu-32s
 
 external_components:
   # - source:

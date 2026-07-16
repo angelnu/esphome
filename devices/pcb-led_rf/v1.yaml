@@ -7,9 +7,11 @@ substitutions:
   led2_rgb_order: RGB
 
 esp32:
-  board: esp32dev
+  variant: esp32
   framework:
-    type: esp-idf  # or arduino
+    advanced:
+      minimum_chip_revision: "3.1"
+      sram1_as_iram: true
 
 remote_receiver:
   pin:

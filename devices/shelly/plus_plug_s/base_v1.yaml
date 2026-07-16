@@ -16,9 +16,7 @@ esphome:
     - script.execute: set_rgb
 
 esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: esp-idf
+  variant: esp32
 
 globals:
   - id: rgb_ready

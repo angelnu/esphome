@@ -9,9 +9,7 @@ substitutions:
 
 
 esp32:
-  board: esp32dev
-  framework:
-    type: esp-idf  # or arduino
+  variant: esp32
 
 i2c:
   sda: 2

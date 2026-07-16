@@ -13,8 +13,9 @@ packages:
 
 esphome:
     name: my-cam
-    platform: ESP32
-    board: esp32dev
+
+esp32:
+    variant: esp32
 
 esp32_camera:
   name: "My Cam"

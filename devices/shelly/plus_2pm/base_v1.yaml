@@ -4,6 +4,9 @@ esp32:
   board: esp32doit-devkit-v1 # PCB v0.1.9
   framework:
     type: esp-idf
+    advanced:
+      minimum_chip_revision: "3.0"
+      sram1_as_iram: true
 
 i2c:
   sda: GPIO26

@@ -13,6 +13,8 @@ packages:
   device: !include common_v1.yaml
 
 esp32:
-  board: esp32dev
+  variant: esp32
   framework:
-    type: esp-idf  # or arduino
+    advanced:
+      minimum_chip_revision: "3.0"
+      sram1_as_iram: true

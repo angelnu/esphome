@@ -1,7 +1,8 @@
 esp32:
-  board: esp32dev
+  variant: esp32
   framework:
-    type: esp-idf  # or arduino
+    advanced:
+      sram1_as_iram: true
     
 switch:
   - name: ${switch_1}

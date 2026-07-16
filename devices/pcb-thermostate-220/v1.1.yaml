@@ -1,7 +1,5 @@
 esp32:
-  board: esp32dev
-  framework:
-    type: esp-idf  # or arduino
+  variant: esp32
 
 one_wire:
   - platform: gpio

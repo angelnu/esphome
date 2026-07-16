@@ -2,9 +2,7 @@ substitutions:
   pwm_frequency: "100 Hz"
 
 esp32:
-  board: esp32dev
-  framework:
-    type: esp-idf  # or arduino
+  variant: esp32
 
 output:
   - platform: ledc

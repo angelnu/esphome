@@ -14,15 +14,14 @@ substitutions:
   error_theshold: 1min
 
 esp32:
-  board: esp32dev
+  variant: esp32
+  toolchain: platformio
   framework:
     type: arduino # because stepper
 
 external_components:
 # use all components from a local folder
-- source:
-    type: local
-    path: components
+- source: components
   components:
   - tmc2209 # Stepper
   - vl53l1x # Lidar

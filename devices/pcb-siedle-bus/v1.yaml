@@ -10,10 +10,12 @@ substitutions:
   client_2_name: client_2
 
 esp32:
-  board: esp32dev
+  variant: esp32
   flash_size: 8MB
   framework:
-    type: esp-idf
+    advanced:
+      minimum_chip_revision: "3.0"
+      sram1_as_iram: true
 
 esphome:
   platformio_options:
@@ -25,7 +27,7 @@ esphome:
     # Use esp_timer interruput handler (more precise)
     - -DCONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD=1
   on_boot:
-    priority: 900.0  # Runs almost immediately after hardware init
+    priority: 200.0 # Runs after wifi init at pio 250
     then:
       # We force the wifi to stay disabled at the very first moment of software execution
       - wifi.disable: 

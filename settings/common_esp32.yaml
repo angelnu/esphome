@@ -11,6 +11,8 @@ web_server:
 
 ota:
   - platform: http_request
+  - platform: esphome
+    allow_partition_access: true
 
 http_request:
   verify_ssl: false

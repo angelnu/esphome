@@ -23,25 +23,10 @@ esphome:
           brightness: ${backlight_min}
 
 esp32:
-  board: esp32doit-devkit-v1
+  variant: esp32
   framework:
-    type: esp-idf
-
-# external_components:
-# # use all components from a local folder
-# - source:
-#     type: local
-#     #path: components
-#     path: ../esphome-fork/esphome/components
-#   components:
-#   - ade7953_base
-#   - ade7953_spi
-#   #- mcp23s17
-
-external_components:
-  - source: github://pr#14824
-    components: [ade7953_base, ade7953_spi]
-    refresh: 1h
+    advanced:
+      sram1_as_iram: true
 
 # ethernet:
 #   type: LAN8720
@@ -638,11 +623,13 @@ font:
     size: 15
 
 image:
-  - file: mdi:wifi
+  - platform: file
+    file: mdi:wifi
     type: binary
     id: wifi_icon
     resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
-  - file: mdi:home-assistant
+  - platform: file
+    file: mdi:home-assistant
     type: binary
     id: home_assistant_icon
     resize: ${CHANNEL_HIGHT}x${CHANNEL_HIGHT}
@@ -657,6 +644,8 @@ display:
       height: 128
       offset_width: 0
       offset_height: 0
+      pad_width: 0
+      pad_height: 0
     transform:
       swap_xy: true
       mirror_x: true

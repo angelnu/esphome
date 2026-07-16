@@ -2,9 +2,7 @@ substitutions:
   pwm_frequency: "1000 Hz"
 
 esp32:
-  board: esp32-c6-devkitc-1
-  framework:
-    type: esp-idf  # or arduino
+  variant: esp32c6
 
 external_components:
 # use all components from a local folder

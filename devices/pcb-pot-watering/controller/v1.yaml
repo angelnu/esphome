@@ -2,7 +2,7 @@
 esphome:
   name: ${devicename}
   platform: ESP32
-  board: esp32dev
+  variant: esp32
   build_path: build/${devicename}
   includes:
     # soil

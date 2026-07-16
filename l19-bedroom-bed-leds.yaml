@@ -10,7 +10,7 @@ packages:
   settings: !include settings/common_esp32.yaml
 
 esp32:
-  board: nodemcu-32s
+  variant: nodemcu-32s
   framework:
     type: esp-idf
 

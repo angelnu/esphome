@@ -6,6 +6,7 @@ substitutions:
   friendly_name: trashcan
   #IP for device
   wifi_ip: "192.168.0.23"
+  comment: "This only builds local and with arduino"
 
 packages:
   #Include location specific settings

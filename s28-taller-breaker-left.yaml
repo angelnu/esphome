@@ -6,7 +6,7 @@ substitutions:
   relay_1: 1 Vacio
   relay_2: Enchufes Pajar
   relay_3: Luces
-  relay_4: Caldera
+  relay_4: Caldera 
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

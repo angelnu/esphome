@@ -3,7 +3,7 @@ substitutions:
   friendly_name: Interruptor derecho taller
   wifi_ip: 192.168.104.12
 
-  relay_1: 1 Piscina 
+  relay_1: 1 Piscina Pa
   relay_2: 2 Vacio
   relay_3: 3 Vacio
   relay_4: 4 Vacio

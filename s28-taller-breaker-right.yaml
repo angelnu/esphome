@@ -3,10 +3,10 @@ substitutions:
   friendly_name: Interruptor izquierdo taller
   wifi_ip: 192.168.104.13
 
-  relay_1: 1 vacio
-  relay_2: 2 enchufes
-  relay_3: 3 luces
-  relay_4: 4 caldera
+  relay_1: 1 Vacio
+  relay_2: 2 Enchufes Pajar
+  relay_3: 3 Luces
+  relay_4: 4 Caldera
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

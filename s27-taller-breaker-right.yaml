@@ -4,7 +4,7 @@ substitutions:
   wifi_ip: 192.168.104.12
 
   relay_1: 1 Vacio
-  relay_2: relay_2
+  relay_2: 1 Vacio
   relay_3: relay_3
   relay_4: relay_4
   restore_mode: RESTORE_DEFAULT_ON

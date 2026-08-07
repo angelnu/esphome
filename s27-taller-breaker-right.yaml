@@ -3,8 +3,8 @@ substitutions:
   friendly_name: Interruptor derecho taller
   wifi_ip: 192.168.104.12
 
-  relay_1: 1 Vacio
-  relay_2: 2 Vacio
+  relay_1: Vacio
+  relay_2: Vacio
   relay_3: 3 Vacio
   relay_4: 4 Vacio
   restore_mode: RESTORE_DEFAULT_ON

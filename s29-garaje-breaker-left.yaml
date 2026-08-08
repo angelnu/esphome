@@ -3,9 +3,9 @@ substitutions:
   friendly_name: Interruptor izquierdo garaje
   wifi_ip: 192.168.104.14
 
-  relay_1: relay_1
+  relay_1: 1 vacio
   relay_2: relay_2
-  relay_3: relay_3
+  relay_3: luces izquierda
   relay_4: enchufes izquierda
   restore_mode: RESTORE_DEFAULT_ON
 

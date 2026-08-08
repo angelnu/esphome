@@ -6,7 +6,7 @@ substitutions:
   relay_1: 1 vacio
   relay_2: 2 vacio
   relay_3: Luces Izquierda
-  relay_4: Lnchufes izquierda
+  relay_4: Lnchufes Iz
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

@@ -5,7 +5,7 @@ substitutions:
 
   relay_1: Compresor
   relay_2: Enchufes De
-  relay_3: luces derecha
+  relay_3: Luces Derec
   relay_4: cocina
   restore_mode: RESTORE_DEFAULT_ON
 

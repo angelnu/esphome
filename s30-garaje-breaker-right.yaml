@@ -4,7 +4,7 @@ substitutions:
   wifi_ip: 192.168.104.15
 
   relay_1: compresor
-  relay_2: enchufes derecha
+  relay_2: Enchufes De
   relay_3: luces derecha
   relay_4: cocina
   restore_mode: RESTORE_DEFAULT_ON

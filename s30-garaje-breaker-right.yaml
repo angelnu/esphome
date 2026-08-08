@@ -6,7 +6,7 @@ substitutions:
   relay_1: Compresor
   relay_2: Enchufes D
   relay_3: Luces Dere
-  relay_4: cocina
+  relay_4: Cocina
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

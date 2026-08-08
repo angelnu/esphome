@@ -3,7 +3,7 @@ substitutions:
   friendly_name: Interruptor derecho garaje
   wifi_ip: 192.168.104.15
 
-  relay_1: compresor
+  relay_1: Compresor
   relay_2: Enchufes De
   relay_3: luces derecha
   relay_4: cocina

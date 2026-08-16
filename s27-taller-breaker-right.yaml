@@ -4,7 +4,7 @@ substitutions:
   wifi_ip: 192.168.104.12
 
   relay_1: Piscina Parking
-  relay_2: 
+  relay_2: Exterior
   relay_3: 3 Vacio
   relay_4: 4 Vacio
   restore_mode: RESTORE_DEFAULT_ON

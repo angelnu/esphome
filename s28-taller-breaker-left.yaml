@@ -6,7 +6,7 @@ substitutions:
   relay_1: Garage
   relay_2: Enchufes
   relay_3: Luces
-  relay_4: Caldera Termo
+  relay_4: Caldera
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

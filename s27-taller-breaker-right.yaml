@@ -6,7 +6,7 @@ substitutions:
   relay_1: Parking
   relay_2: E Exterior
   relay_3: E Cocina
-  relay_4: 4 Vacio
+  relay_4: Pajar
   restore_mode: RESTORE_DEFAULT_ON
 
 packages:

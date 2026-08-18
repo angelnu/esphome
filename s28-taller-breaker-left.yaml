@@ -4,7 +4,7 @@ substitutions:
   wifi_ip: 192.168.104.13
 
   relay_1: Garage
-  relay_2: Enchufes Pajar
+  relay_2: Enchufes
   relay_3: Luces
   relay_4: Caldera Termo
   restore_mode: RESTORE_DEFAULT_ON

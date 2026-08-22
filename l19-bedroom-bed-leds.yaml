@@ -17,8 +17,7 @@ light:
     id: light_long
     platform: esp32_rmt_led_strip
     rmt_symbols: 256
-    rgb_order: GRB
-    is_rgbw: true
+    channel_colors: GRBW
     chipset: SK6812
     pin: GPIO21
     num_leds: 197
@@ -142,8 +141,7 @@ light:
     id: mireille_tablet
     platform: esp32_rmt_led_strip
     rmt_symbols: 128
-    rgb_order: GRB
-    is_rgbw: true
+    channel_colors: GRBW
     chipset: SK6812
     pin: GPIO22
     num_leds: 45
@@ -152,8 +150,7 @@ light:
     id: angel_tablet
     platform: esp32_rmt_led_strip
     rmt_symbols: 128
-    rgb_order: GRB
-    is_rgbw: true
+    channel_colors: GRBW
     chipset: SK6812
     pin: GPIO23
     num_leds: 31

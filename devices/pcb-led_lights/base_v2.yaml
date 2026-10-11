@@ -1,6 +1,16 @@
 substitutions:
   pwm_frequency: "1000 Hz"
 
+# Dedup guard: only a real open->close cycle (a published OFF followed by an ON)
+# triggers the toggle script. The delayed_on filter re-publishes ON after every
+# raw pin bounce that returns quickly (absorbed by delayed_off, so no OFF is
+# published); without this guard each duplicate ON fires on_press and
+# double-toggles the lights.
+globals:
+  - id: button_press_pending
+    type: bool
+    initial_value: 'false'
+
 esp32:
   variant: esp32c6
 
@@ -103,8 +113,20 @@ binary_sensor:
     mode: INPUT_PULLUP
     inverted: true
   filters:
-  - delayed_on: 100ms
-  - delayed_off: 100ms
+  - delayed_on: 300ms
+  - delayed_off: 300ms
   on_press:
     then:
-    - script.execute: toggle_light
+    - if:
+        condition:
+          lambda: 'return id(button_press_pending);'
+        then:
+          - globals.set:
+              id: button_press_pending
+              value: 'false'
+          - script.execute: toggle_light
+  on_release:
+    then:
+    - globals.set:
+        id: button_press_pending
+        value: 'true'

@@ -85,6 +85,39 @@ the same functionality. Verified: config valid + full compile on ESPHome 2026.10
   `trashcan range status` (data-ready errors no longer exist; use range_status /
   recovery_count). Update any HA automations referencing the old entity ids.
 
+#### 2026-10 — Motion control: direction fix, lidar-based stop, calibration
+
+On-hardware follow-up hardening of the reworked config.
+
+- **Direction fix**: the old custom component's `inverted: true` and the official
+  component's `inverse_direction: true` have OPPOSITE polarity. With
+  `inverse_direction: true` a positive target drove the bucket IN, so "door open"
+  jammed it against the closed stop and it never came out. Use
+  `inverse_direction: false` (+ = out).
+- **Position comes from the trashcan lidar, not the step count**: the belt slips
+  under load, so the driver's INDEX count drifts from the real bucket position.
+  The position used by the logic is derived from the lidar distance
+  (`(dist - dist_in) * (max_step - min_step) / (dist_out - dist_in)`) and is
+  recomputed at the start of every move (also fixes the hand-pushed-bucket case).
+- **Smooth early stop, no over-drive**: while a move runs, a 100 ms interval
+  re-aims the motor target at `current + dir * distance_still_to_go` (from the
+  lidar) so the stepper's built-in deceleration (`deceleration: 400`) brings it
+  smoothly to a stop exactly at the limit. Within `trashcan_end_margin_mm` (25 mm)
+  of the limit the CURRENT IS CUT (tmc2209 disable) so the last few mm are done by
+  momentum. The driver is disabled whenever a move ends, so the bucket is free to
+  be pushed by hand.
+- **Belt/mechanical protection**: the same interval stops the motor if, while
+  commanded, the INDEX position has not advanced for >500 ms, or the RAW lidar
+  distance has not changed by >=2 mm for >1200 ms (belt slipping / jammed).
+- **End-position calibration**: the `calibrate` button now drives slowly
+  (200 steps/s) to BOTH mechanical stops and records the real lidar distances into
+  the persisted globals `dist_in` / `dist_out` (it also keeps `min_step` /
+  `max_step` as coarse safety bounds). Re-run after any mechanical change.
+- **Speed / acceleration**: `max_speed` 1000 steps/s; per-direction acceleration
+  (`stepper_out_acceleration` 300, `stepper_in_acceleration` 1000) - gentle going
+  out (heavy bucket, avoid belt slip), aggressive going in (the bucket is already
+  moving when "helping to close" fires).
+
 **Backports** used to run the 2026.11 official `tmc2209` on ESPHome 2026.10.0
 (each marked in the vendored code): `cv.key_requires`, `cg.add_pin`,
 `MockObjEnum.options(prefix=)`, `uart.new_uart_component`/`cg.new_bus_component`,

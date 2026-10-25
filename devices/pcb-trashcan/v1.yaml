@@ -1,8 +1,16 @@
 
 substitutions:
-  stepper_max_speed: "700" # In steps/s (200 steps: 1 rotation. 40 steps ca 1 cm)
-  stepper_max_acceleration: "100" # In steps/s
-  stepper_stall_threshold: "20" # Higher value makes stall detection more sensible
+  stepper_max_speed: "1000" # In steps/s (200 steps: 1 rotation. 40 steps ca 1 cm)
+  stepper_out_acceleration: "300" # In steps/s^2 - out
+  # Bucket position mapping from the trashcan lidar (mm): dist when fully IN/OUT.
+  trashcan_dist_in: "89"
+  trashcan_dist_out: "487"
+  stepper_in_acceleration: "1000" # In steps/s^2 - aggressive: bucket is already moving when we drive it in
+  stepper_stop_deceleration: "400" # finite: smooth built-in deceleration; smaller = starts earlier
+  stepper_calibration_speed: "200" # slow speed used while calibrating the end positions
+  trashcan_steps_per_mm: "5.28" # (max_step-min_step)/(dist_out-dist_in) = 2100/398
+  trashcan_end_margin_mm: "25" # safety backstop: cut the current this close to each limit
+  stepper_stall_threshold: "5" # Lower = less sensitive (avoid false stalls); raise for reliable homing
   door_distance_throttle: 1s # Avoids sending too frequently while door is moving
   door_distance_min_delta: "10" # In mm
   door_open_distance: "500" # In mm
@@ -13,6 +21,7 @@ substitutions:
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
   vl53_timing_budget: 200ms # Integration time per measurement
   vl53_inter_measurement: 210ms # Continuous-ranging cadence (must be > timing budget + 4ms)
+  vl53_update_interval: 100ms # Poll faster than the frame rate (fewer missed frames)
   error_theshold: 1min
 
 esp32:
@@ -49,13 +58,66 @@ globals:
     type: int
     restore_value: false
     initial_value: '0'
+  # Logical "trashcan is out" state (position from INDEX counting drifts, so do
+  # not use current_position for the 'fully closed' check).
+  - id: trashcan_out
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  # "commanded but not moving" monitor (mimics the original: if the bucket does
+  # not move, stop trying). DIAG/StallGuard is unreliable here (heavy load).
+  - id: mon_last_pos
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: mon_last_change_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+  - id: mon_dist
+    type: float
+    restore_value: false
+    initial_value: '0'
+  - id: mon_dist_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+  - id: blocked
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: armed
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  # Calibrated end positions, in lidar mm (see the `calibrate` script). The logic
+  # stops the motor this close to (dist_in + margin) / (dist_out - margin).
+  - id: dist_in
+    type: float
+    restore_value: true
+    initial_value: '${trashcan_dist_in}'
+  - id: dist_out
+    type: float
+    restore_value: true
+    initial_value: '${trashcan_dist_out}'
+  # Direction of the current move (+1 = out, -1 = in), set when a move starts. Used
+  # by the watchdog instead of guessing from the positions (which drift).
+  - id: move_dir
+    type: int
+    restore_value: false
+    initial_value: '0'
 
 esphome:
   on_boot:
     # Driver fine-tuning that used to live in the custom component's setup().
     - tmc2209.configure:
         id: my_stepper
-        inverse_direction: true
+        # Direction was inverted vs the old component: with the official
+        # component `inverse_direction: true` made + = IN, so door-open
+        # (set_target(max_step)) jammed the bucket against the closed stop.
+        # The old custom component used `inverted: true` (which was + = OUT),
+        # so we must NOT inverse here -> + = OUT.
+        inverse_direction: false
     - tmc2209.currents:
         id: my_stepper
         standstill_mode: freewheeling
@@ -63,13 +125,18 @@ esphome:
     - tmc2209.stallguard:
         id: my_stepper
         threshold: ${stepper_stall_threshold}
-        tcool_threshold: 1048575 # 2^20-1: StallGuard active from very low speed
+        tcool_threshold: 312 # StallGuard active above ~150 steps/s (avoid false stalls during the low-speed ramp)
+    # Ignore the sensors until they have settled (~5 s), then react.
+    - delay: 5s
+    - globals.set:
+        id: armed
+        value: 'true'
 
 stepper:
 - platform: tmc2209
   id: my_stepper
   max_speed: ${stepper_max_speed}
-  acceleration: ${stepper_max_acceleration}
+  acceleration: ${stepper_out_acceleration}
   rsense: 0.11
   address: 0
   microsteps: 1
@@ -78,36 +145,25 @@ stepper:
   index_pin: GPIO23 # position feedback from the driver's internal step generator
   diag_pin: GPIO27 # stall / driver error
   on_stall:
-    # Backport: `stepper.stop` is ESPHome >= 2026.11; stop by setting the target
-    # to the current position instead.
-    - stepper.set_target:
-        id: my_stepper
-        target: !lambda 'return id(my_stepper)->current_position;'
-    - if:
-        condition:
-          lambda: 'return id(calib_phase) == 1;'
-        then:
-        - globals.set:
-            id: max_step
-            value: !lambda 'return id(my_stepper)->current_position;'
-        - globals.set:
-            id: calib_phase
-            value: '3'
-        - script.execute: calibrate_close
-    - if:
-        condition:
-          lambda: 'return id(calib_phase) == 2;'
-        then:
-        - globals.set:
-            id: min_step
-            value: !lambda 'return id(my_stepper)->current_position;'
-        - globals.set:
-            id: calib_phase
-            value: '0'
+    # DIAG/StallGuard is spurious here (heavy load at full-step => SG_RESULT ~0),
+    # so it is only logged; stopping is done by the "not moving" monitor below.
+    - lambda: 'ESP_LOGV("tmc2209", "stall pos=%d tgt=%d phase=%d", id(my_stepper)->current_position, id(my_stepper)->target_position, id(calib_phase));'
 
 script:
   - id: calibrate
     then:
+      - stepper.set_acceleration:
+          id: my_stepper
+          acceleration: ${stepper_out_acceleration}
+      - stepper.set_deceleration:
+          id: my_stepper
+          deceleration: ${stepper_stop_deceleration}
+      - stepper.set_speed:
+          id: my_stepper
+          speed: ${stepper_calibration_speed}
+      - globals.set:
+          id: move_dir
+          value: '1'
       - globals.set:
           id: calib_phase
           value: '1'
@@ -120,6 +176,9 @@ script:
   - id: calibrate_close
     then:
       - delay: 500ms
+      - globals.set:
+          id: move_dir
+          value: '-1'
       - globals.set:
           id: calib_phase
           value: '2'
@@ -144,7 +203,7 @@ vl53l1x_pololu:
   distance_mode: short
   timing_budget: ${vl53_timing_budget}
   inter_measurement: ${vl53_inter_measurement}
-  update_interval: ${vl53_inter_measurement}
+  update_interval: ${vl53_update_interval}
 - id: trashcan_lidar
   i2c_id: bus_trashcan
   enable_pin: GPIO26 # XSHUT
@@ -152,7 +211,7 @@ vl53l1x_pololu:
   distance_mode: short
   timing_budget: ${vl53_timing_budget}
   inter_measurement: ${vl53_inter_measurement}
-  update_interval: ${vl53_inter_measurement}
+  update_interval: ${vl53_update_interval}
 
 sensor:
 - platform: vl53l1x_pololu
@@ -185,9 +244,13 @@ sensor:
         condition:
           and:
           - lambda: return x == ${door_open_distance};
-          - lambda: return (id(my_stepper)->current_position == id(min_step)); #Fully closed
+          - lambda: return !id(trashcan_out);
+          - lambda: return id(armed);
           - lambda: return (id(calib_phase) == 0);
         then:
+        - globals.set:
+            id: trashcan_out
+            value: 'true'
         - logger.log: "Door opened and trashcan inside -> get it out!"
         # Write to logbook
         - homeassistant.service:
@@ -197,9 +260,32 @@ sensor:
               message: "Door opened and trashcan inside -> get it out!"
               entity_id: sensor.${friendly_name}_distance_door
               domain: logbook
+        - lambda: |-
+            // Recompute the bucket position from the trashcan lidar before moving:
+            // the bucket can be pushed by hand (or the belt slips), so the INDEX count
+            // no longer matches reality -> derive it from the distance.
+            float d = id(trashcan_lidar).get_distance();
+            float span = id(dist_out) - id(dist_in);
+            int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
+            if (p < id(min_step)) p = id(min_step);
+            if (p > id(max_step)) p = id(max_step);
+            id(my_stepper)->report_position(p);
+            ESP_LOGD("trashcan", "lidar pos: d=%.0f -> p=%d (min=%d max=%d)", d, p, id(min_step), id(max_step));
+        - globals.set:
+            id: move_dir
+            value: '1'
+        - stepper.set_acceleration:
+            id: my_stepper
+            acceleration: ${stepper_out_acceleration}
+        - stepper.set_deceleration:
+            id: my_stepper
+            deceleration: ${stepper_stop_deceleration}
+        # Drive out continuously; the interval cuts the current (lidar-based) a few
+        # cm before fully open and the bucket coasts the rest. max_step+500 is only
+        # a safety bound (the belt slips, so the step count runs ahead of the lidar).
         - stepper.set_target:
             id: my_stepper
-            target: !lambda return id(max_step);
+            target: !lambda return id(max_step) + 500;
 
 - platform: vl53l1x_pololu
   vl53l1x_pololu_id: trashcan_lidar
@@ -227,8 +313,13 @@ sensor:
             and:
             - lambda: 'return (x <= -${trashcan_speed_min_delta});'
             - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
+            - lambda: 'return id(armed);'
+            - lambda: 'return (id(trashcan_lidar).get_distance() > id(dist_in) + 100);' # bucket must be out
             - lambda: 'return (id(calib_phase) == 0);'
           then:
+          - globals.set:
+              id: trashcan_out
+              value: 'false'
           - logger.log: "Helping to close"
           # Write to logbook
           - homeassistant.service:
@@ -241,15 +332,142 @@ sensor:
                 message: Helping to close. Speed is {{ my_speed }}.
               variables:
                 my_speed: !lambda return x;
+          - lambda: |-
+              // Recompute the bucket position from the trashcan lidar before moving:
+              // the bucket can be pushed by hand (or the belt slips), so the INDEX count
+              // no longer matches reality -> derive it from the distance.
+              float d = id(trashcan_lidar).get_distance();
+              float span = id(dist_out) - id(dist_in);
+              int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
+              if (p < id(min_step)) p = id(min_step);
+              if (p > id(max_step)) p = id(max_step);
+              id(my_stepper)->report_position(p);
+              ESP_LOGD("trashcan", "lidar pos: d=%.0f -> p=%d (min=%d max=%d)", d, p, id(min_step), id(max_step));
+          - globals.set:
+              id: move_dir
+              value: '-1'
+          - stepper.set_acceleration:
+              id: my_stepper
+              acceleration: ${stepper_in_acceleration}
+          - stepper.set_deceleration:
+              id: my_stepper
+              deceleration: ${stepper_stop_deceleration}
+          # Drive in continuously; the interval cuts the current (lidar-based) a few
+          # cm before fully closed and the bucket coasts in. min_step-500 is only a
+          # safety bound.
           - stepper.set_target:
               id: my_stepper
-              target: !lambda return id(min_step);
+              target: !lambda return id(min_step) - 500;
   acceleration:
     name: trashcan acceleration
     id: trashcan_acceleration
     filters:
     - delta: ${trashcan_acceleration_min_delta}
 
+interval:
+  # Movement watchdog. While a move is commanded (pos != tgt) stop the motor when
+  # nothing actually moves:
+  #  - the INDEX position has not advanced for >500 ms (step generator halted), or
+  #  - the RAW trashcan lidar distance has not changed by >=2 mm for >1200 ms
+  #    (bucket stuck: belt slipping, or it already reached a mechanical stop).
+  # It uses the FRESH lidar value (not the throttled sensor) and a short window so
+  # a jam is caught within ~0.7 s and the belt is not ground against the stop.
+  # When a move finishes the driver is disabled (current cut) so the bucket is
+  # released to coast / be pushed. Baselines reset while idle.
+  - interval: 100ms
+    then:
+      - lambda: |-
+          int pos = id(my_stepper)->current_position;
+          int tgt = id(my_stepper)->target_position;
+          float dist = id(trashcan_lidar).get_distance();
+          if (pos == tgt) {
+            // Move finished: CUT THE CURRENT (disable the driver) so the bucket is
+            // released - it coasts to the end stop and can be pushed by hand.
+            if (id(my_stepper)->is_enabled()) id(my_stepper)->set_enabled(false);
+            id(mon_last_pos) = pos;
+            id(mon_last_change_ms) = millis();
+            id(mon_dist) = dist;
+            id(mon_dist_ms) = millis();
+            id(blocked) = false;
+          } else if (dist < 1.0f) {
+            // No lidar data yet: keep the baselines fresh, do not flag.
+            id(mon_last_pos) = pos;
+            id(mon_last_change_ms) = millis();
+            id(mon_dist) = dist;
+            id(mon_dist_ms) = millis();
+            id(blocked) = false;
+          } else {
+            int dir = id(move_dir);
+            if (dir == 0) dir = (tgt > pos) ? 1 : -1;
+            bool calibrating = (id(calib_phase) != 0);
+            float to_go = (dir > 0) ? (float)(id(dist_out) - dist)
+                                    : (float)(dist - id(dist_in));
+            if (!calibrating && to_go <= ${trashcan_end_margin_mm}) {
+              // Reached the cut point (lidar-based, robust to belt slip): stop and
+              // cut the current; the bucket coasts the last few cm on its own.
+              ESP_LOGD("trashcan", "lidar end reached d=%.0f dir=%d -> cut current", dist, dir);
+              id(my_stepper)->set_enabled(false);
+              id(blocked) = false;
+            } else {
+              if (!calibrating) {
+                // Aim the motor at the limit, computed from the LIDAR, and re-aim
+                // it every poll. The stepper's built-in deceleration then brings it
+                // SMOOTHLY to a stop exactly when the bucket reaches the limit - no
+                // jerks, independent of belt slip (the step count may drift, but the
+                // target is always "the physical distance still to go").
+                int32_t rem = (int32_t)(to_go * ${trashcan_steps_per_mm});
+                if (rem < 1) rem = 1;
+                id(my_stepper)->set_target(pos + dir * rem);
+              }
+              if (pos != id(mon_last_pos)) { id(mon_last_pos) = pos; id(mon_last_change_ms) = millis(); }
+              float d = dist - id(mon_dist);
+              if (d < 0.0f) d = -d;
+              if (d >= 2.0f) { id(mon_dist) = dist; id(mon_dist_ms) = millis(); }
+              id(blocked) = ((millis() - id(mon_last_change_ms) > 500) ||
+                             (millis() - id(mon_dist_ms) > 1200));
+            }
+          }
+          ESP_LOGV("mon", "pos=%d tgt=%d dist=%.1f en=%d blocked=%d", pos, tgt, dist, id(my_stepper)->is_enabled(), id(blocked));
+      - if:
+          condition:
+            lambda: 'return id(blocked);'
+          then:
+          - logger.log: "Nothing moving -> stop"
+          - stepper.set_target:
+              id: my_stepper
+              target: !lambda 'return id(my_stepper)->current_position;'
+          - if:
+              condition:
+                lambda: 'return id(calib_phase) == 1;'
+              then:
+              - globals.set:
+                  id: max_step
+                  value: !lambda 'return id(my_stepper)->current_position;'
+              - globals.set:
+                  id: dist_out
+                  value: !lambda 'return id(trashcan_lidar).get_distance();'
+              - logger.log: "CAL: recorded dist_out"
+              - globals.set:
+                  id: calib_phase
+                  value: '3'
+              - script.execute: calibrate_close
+          - if:
+              condition:
+                lambda: 'return id(calib_phase) == 2;'
+              then:
+              - globals.set:
+                  id: min_step
+                  value: !lambda 'return id(my_stepper)->current_position;'
+              - globals.set:
+                  id: dist_in
+                  value: !lambda 'return id(trashcan_lidar).get_distance();'
+              - logger.log: "CAL: recorded dist_in"
+              - stepper.set_speed:
+                  id: my_stepper
+                  speed: ${stepper_max_speed}
+              - globals.set:
+                  id: calib_phase
+                  value: '0'
 # Example configuration entry
 button:
   - platform: template

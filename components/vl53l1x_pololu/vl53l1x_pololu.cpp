@@ -7,9 +7,7 @@ namespace vl53l1x_pololu {
 
 static const char *const TAG = "vl53l1x_pololu";
 
-// No fresh ranging frame for this long => sensor hung => re-initialise in place.
-// Continuous ranging delivers a frame every inter-measurement period, so this is
-// generous; a live sensor never trips it.
+// No fresh ranging frame for this long => sensor hung => power-cycle + re-init.
 static const uint32_t FREEZE_TIMEOUT_MS = 5000;
 
 bool VL53L1XPololuComponent::start_ranging_() {
@@ -26,7 +24,7 @@ bool VL53L1XPololuComponent::start_ranging_() {
 }
 
 void VL53L1XPololuComponent::setup() {
-  // XSHUT: release the sensor from reset (some boards wire it to a GPIO).
+  // XSHUT: release the sensor from reset (boards that wire it to a GPIO).
   if (this->enable_pin_ != nullptr) {
     this->enable_pin_->setup();
     this->enable_pin_->digital_write(true);
@@ -47,53 +45,67 @@ void VL53L1XPololuComponent::setup() {
   this->ok_ = true;
 }
 
-void VL53L1XPololuComponent::loop() {
-  if (!this->ok_)
-    return;
+void VL53L1XPololuComponent::read_frame_() {
+  const uint32_t now = millis();
+  const uint16_t d = this->sensor_.read(false);  // reads results + clears interrupt
+  this->last_status_ = this->sensor_.ranging_data.range_status;
+  this->frame_count_++;
+  this->last_frame_ms_ = now;
 
-  if (this->sensor_.dataReady()) {
-    this->last_distance_ = this->sensor_.read(false);  // reads results + clears interrupt
-    this->last_status_ = this->sensor_.ranging_data.range_status;
-    this->frame_count_++;
-    this->last_frame_ms_ = millis();
-    return;
-  }
-
-  // Freeze recovery: no fresh frame for FREEZE_TIMEOUT_MS => re-init in place.
-  if (millis() - this->last_frame_ms_ > FREEZE_TIMEOUT_MS) {
-    ESP_LOGW(TAG, "No ranging frame for %ums — re-initialising sensor",
-             (unsigned) (millis() - this->last_frame_ms_));
-    this->sensor_.stopContinuous();  // best effort
-    if (this->sensor_.init() && this->start_ranging_()) {
-      this->recovery_count_++;
-      if (this->recovery_count_sensor_ != nullptr)
-        this->recovery_count_sensor_->publish_state(this->recovery_count_);
-      ESP_LOGW(TAG, "Sensor recovered (total recoveries: %u)", (unsigned) this->recovery_count_);
-    } else {
-      ESP_LOGE(TAG, "Re-init failed; will retry");
+  // Speed/acceleration from consecutive frames over the real elapsed time.
+  if (this->speed_have_last_) {
+    const float dt_ms = (float) (now - this->speed_last_ms_);
+    if (dt_ms > 0.0f) {
+      const float new_speed = ((float) d - (float) this->speed_last_dist_) / dt_ms;  // mm/ms == m/s
+      const float new_accel = 1000.0f * (new_speed - this->speed_) / dt_ms;          // m/s^2
+      this->speed_ = new_speed;
+      this->acceleration_ = new_accel;
+      if (this->speed_sensor_ != nullptr)
+        this->speed_sensor_->publish_state(new_speed);
+      if (this->acceleration_sensor_ != nullptr)
+        this->acceleration_sensor_->publish_state(new_accel);
     }
-    this->last_frame_ms_ = millis();
   }
+  this->speed_last_dist_ = d;
+  this->speed_last_ms_ = now;
+  this->speed_have_last_ = true;
+  this->last_distance_ = d;
+}
+
+void VL53L1XPololuComponent::recover_() {
+  // Power-cycle the sensor when XSHUT is wired: releases a locked bus and boots clean.
+  if (this->enable_pin_ != nullptr) {
+    this->enable_pin_->digital_write(false);
+    delay(3);
+    this->enable_pin_->digital_write(true);
+    delay(3);
+  } else {
+    this->sensor_.stopContinuous();  // best effort
+  }
+  if (this->sensor_.init() && this->start_ranging_()) {
+    this->recovery_count_++;
+    if (this->recovery_count_sensor_ != nullptr)
+      this->recovery_count_sensor_->publish_state(this->recovery_count_);
+    ESP_LOGW(TAG, "Sensor recovered (total recoveries: %u)", (unsigned) this->recovery_count_);
+  } else {
+    ESP_LOGE(TAG, "Re-init failed; will retry");
+  }
+  this->speed_have_last_ = false;  // reset the speed baseline after a reset
 }
 
 void VL53L1XPololuComponent::update() {
   if (!this->ok_)
     return;
-  // Speed/acceleration from consecutive published distances over the update
-  // interval. mm/ms == m/s, so accel is 1000*(v-v_prev)/dt_ms in m/s^2.
-  const float dt_ms = (float) this->get_update_interval();
-  if (this->speed_have_last_ && dt_ms > 0.0f) {
-    const float new_speed = ((float) this->last_distance_ - (float) this->speed_last_distance_) / dt_ms;
-    const float new_accel = 1000.0f * (new_speed - this->speed_) / dt_ms;
-    this->speed_ = new_speed;
-    this->acceleration_ = new_accel;
-    if (this->speed_sensor_ != nullptr)
-      this->speed_sensor_->publish_state(new_speed);
-    if (this->acceleration_sensor_ != nullptr)
-      this->acceleration_sensor_->publish_state(new_accel);
+
+  // One frame per polling cycle (see the header note about loop() flooding).
+  if (this->sensor_.dataReady()) {
+    this->read_frame_();
+  } else if (millis() - this->last_frame_ms_ > FREEZE_TIMEOUT_MS) {
+    ESP_LOGW(TAG, "No ranging frame for %ums — re-initialising sensor",
+             (unsigned) (millis() - this->last_frame_ms_));
+    this->recover_();
+    this->last_frame_ms_ = millis();
   }
-  this->speed_last_distance_ = this->last_distance_;
-  this->speed_have_last_ = true;
 
   if (this->distance_sensor_ != nullptr)
     this->distance_sensor_->publish_state(this->last_distance_);

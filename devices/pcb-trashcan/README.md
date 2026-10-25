@@ -124,6 +124,10 @@ On-hardware follow-up hardening of the reworked config (all tuning values live i
   globals `dist_in` / `dist_out` (measured here: 87 / 491 mm); it also keeps
   `min_step` / `max_step` as coarse safety bounds. Re-run after any mechanical
   change.
+- **Framework**: builds and runs on **ESP-IDF** (`esp32.framework.type: esp-idf`).
+  The Arduino framework was only needed by the removed custom components;
+  the official `tmc2209`/`tmc22xx` and the community `vl53l1x_pololu` are
+  framework-agnostic. Verified on hardware (door -> out, push -> close).
 - **Speed / acceleration**: `max_speed` 1000 steps/s; per-direction acceleration
   (`stepper_out_acceleration` 300, `stepper_in_acceleration` 1000) - gentle going
   out (heavy bucket, avoid belt slip), aggressive going in (the bucket is already

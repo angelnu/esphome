@@ -9,19 +9,25 @@ substitutions:
   stepper_stop_deceleration: "400" # finite: smooth built-in deceleration; smaller = starts earlier
   stepper_calibration_speed: "200" # slow speed used while calibrating the end positions
   trashcan_steps_per_mm: "5.28" # (max_step-min_step)/(dist_out-dist_in) = 2100/398
-  trashcan_end_margin_mm: "25" # safety backstop: cut the current this close to each limit
+  trashcan_end_margin_mm: "20" # safety backstop: cut the current this close to each limit
   stepper_stall_threshold: "5" # Lower = less sensitive (avoid false stalls); raise for reliable homing
   door_distance_throttle: 1s # Avoids sending too frequently while door is moving
   door_distance_min_delta: "10" # In mm
   door_open_distance: "500" # In mm
   door_close_distance: "200" # In mm
-  trashcan_speed_min_delta: "0.05" # Min delta (in m/s) before we consider it moving
+  trashcan_speed_min_delta: "0.15" # Min inward speed (m/s) to trigger "helping to close" (noise-proof)
   trashcan_acceleration_min_delta: "0.2" # in m/s²
   trashcan_distance_min_delta: "5" # Min delta in mm before publishing
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
   vl53_timing_budget: 200ms # Integration time per measurement
   vl53_inter_measurement: 210ms # Continuous-ranging cadence (must be > timing budget + 4ms)
   vl53_update_interval: 100ms # Poll faster than the frame rate (fewer missed frames)
+  # The TRASHCAN lidar drives the end-of-travel stop, so it must be FAST: a long
+  # integration time / inter-measurement adds lag, and the bucket moves between
+  # frames (=> the motor is cut too late). Short mode tolerates a short budget.
+  vl53_tc_timing_budget: "50ms"
+  vl53_tc_inter_measurement: "60ms"
+  vl53_tc_update_interval: 30ms
   error_theshold: 1min
 
 esp32:
@@ -104,6 +110,12 @@ globals:
   # by the watchdog instead of guessing from the positions (which drift).
   - id: move_dir
     type: int
+    restore_value: false
+    initial_value: '0'
+  # millis() before which "helping to close" is ignored (set a few seconds after an
+  # OUT move, so the settle/noise does not close the bucket by itself).
+  - id: close_ok_at
+    type: uint32_t
     restore_value: false
     initial_value: '0'
 
@@ -209,9 +221,9 @@ vl53l1x_pololu:
   enable_pin: GPIO26 # XSHUT
   address: 0x29
   distance_mode: short
-  timing_budget: ${vl53_timing_budget}
-  inter_measurement: ${vl53_inter_measurement}
-  update_interval: ${vl53_update_interval}
+  timing_budget: ${vl53_tc_timing_budget}
+  inter_measurement: ${vl53_tc_inter_measurement}
+  update_interval: ${vl53_tc_update_interval}
 
 sensor:
 - platform: vl53l1x_pololu
@@ -315,6 +327,7 @@ sensor:
             - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
             - lambda: 'return id(armed);'
             - lambda: 'return (id(trashcan_lidar).get_distance() > id(dist_in) + 100);' # bucket must be out
+            - lambda: 'return (millis() > id(close_ok_at));' # and the bucket must have settled after coming out
             - lambda: 'return (id(calib_phase) == 0);'
           then:
           - globals.set:
@@ -408,6 +421,7 @@ interval:
               ESP_LOGD("trashcan", "lidar end reached d=%.0f dir=%d -> cut current", dist, dir);
               id(my_stepper)->set_enabled(false);
               id(blocked) = false;
+              if (dir > 0) id(close_ok_at) = millis() + 1000;  // short settle before auto-close
             } else {
               if (!calibrating) {
                 // Aim the motor at the limit, computed from the LIDAR, and re-aim

@@ -1,6 +1,10 @@
+substitutions:
+  comment: ""
+
 esphome:
   name: ${devicename}
   friendly_name: ${friendly_name}
+  comment: ${comment}
   build_path: build/${devicename}
 
 wifi:

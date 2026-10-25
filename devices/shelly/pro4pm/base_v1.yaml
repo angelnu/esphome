@@ -342,6 +342,8 @@ sensor:
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
+      - clamp:
+          min_value: 0
       - delta: 1
       on_value:
         then:
@@ -355,6 +357,8 @@ sensor:
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
+      - clamp:
+          min_value: 0
       - delta: 1
       on_value:
         then:
@@ -463,6 +467,8 @@ sensor:
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
+      - clamp:
+          min_value: 0
       - delta: 1
       on_value:
         then:
@@ -476,6 +482,8 @@ sensor:
       # active_power is inverted, so multiply by -1
       filters:
       - multiply: -1
+      - clamp:
+          min_value: 0
       - delta: 1
       on_value:
         then:

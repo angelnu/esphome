@@ -202,6 +202,51 @@ script:
           id: my_stepper
           target: -1000000
 
+  - id: open_trashcan
+    then:
+      - if:
+          condition:
+            and:
+            - lambda: 'return !id(trashcan_out);'
+            - lambda: 'return id(armed);'
+            - lambda: 'return (id(calib_phase) == 0);'
+          then:
+          - globals.set:
+              id: trashcan_out
+              value: 'true'
+          - logger.log: "Door opened (debounced) and trashcan inside -> get it out!"
+          - homeassistant.service:
+              service: logbook.log
+              data:
+                name: "${devicename}_open_door"
+                message: "Door opened and trashcan inside -> get it out!"
+                entity_id: sensor.${friendly_name}_distance_door
+                domain: logbook
+          - lambda: |-
+              // Recompute the bucket position from the trashcan lidar before moving.
+              float d = id(trashcan_lidar).get_distance();
+              float span = id(dist_out) - id(dist_in);
+              int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
+              if (p < id(min_step)) p = id(min_step);
+              if (p > id(max_step)) p = id(max_step);
+              id(my_stepper)->report_position(p);
+              ESP_LOGD("trashcan", "lidar pos: d=%.0f -> p=%d", d, p);
+          - globals.set:
+              id: move_dir
+              value: '1'
+          - globals.set:
+              id: move_started_ms
+              value: !lambda 'return millis();'
+          - stepper.set_acceleration:
+              id: my_stepper
+              acceleration: ${stepper_out_acceleration}
+          - stepper.set_deceleration:
+              id: my_stepper
+              deceleration: ${stepper_stop_deceleration}
+          - stepper.set_target:
+              id: my_stepper
+              target: !lambda return id(max_step) + 500;
+
 i2c:
 - id: bus_door
   sda: GPIO21
@@ -254,57 +299,6 @@ sensor:
   - lambda: if (x >= ${door_open_distance}) return ${door_open_distance}; if (x >= ${door_close_distance}) return ${door_close_distance}; else return 0;
   - filter_out: ${door_close_distance}
   - delta: 1
-  on_value:
-    then:
-    - if:
-        condition:
-          and:
-          - lambda: return x == ${door_open_distance};
-          - lambda: return !id(trashcan_out);
-          - lambda: return id(armed);
-          - lambda: return (id(calib_phase) == 0);
-        then:
-        - globals.set:
-            id: trashcan_out
-            value: 'true'
-        - logger.log: "Door opened and trashcan inside -> get it out!"
-        # Write to logbook
-        - homeassistant.service:
-            service: logbook.log
-            data:
-              name: "${devicename}_open_door"
-              message: "Door opened and trashcan inside -> get it out!"
-              entity_id: sensor.${friendly_name}_distance_door
-              domain: logbook
-        - lambda: |-
-            // Recompute the bucket position from the trashcan lidar before moving:
-            // the bucket can be pushed by hand (or the belt slips), so the INDEX count
-            // no longer matches reality -> derive it from the distance.
-            float d = id(trashcan_lidar).get_distance();
-            float span = id(dist_out) - id(dist_in);
-            int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
-            if (p < id(min_step)) p = id(min_step);
-            if (p > id(max_step)) p = id(max_step);
-            id(my_stepper)->report_position(p);
-            ESP_LOGD("trashcan", "lidar pos: d=%.0f -> p=%d (min=%d max=%d)", d, p, id(min_step), id(max_step));
-        - globals.set:
-            id: move_dir
-            value: '1'
-        - globals.set:
-            id: move_started_ms
-            value: !lambda 'return millis();'
-        - stepper.set_acceleration:
-            id: my_stepper
-            acceleration: ${stepper_out_acceleration}
-        - stepper.set_deceleration:
-            id: my_stepper
-            deceleration: ${stepper_stop_deceleration}
-        # Drive out continuously; the interval cuts the current (lidar-based) a few
-        # cm before fully open and the bucket coasts the rest. max_step+500 is only
-        # a safety bound (the belt slips, so the step count runs ahead of the lidar).
-        - stepper.set_target:
-            id: my_stepper
-            target: !lambda return id(max_step) + 500;
 
 - platform: vl53l1x_pololu
   vl53l1x_pololu_id: trashcan_lidar
@@ -386,6 +380,21 @@ sensor:
     id: trashcan_acceleration
     filters:
     - delta: ${trashcan_acceleration_min_delta}
+
+binary_sensor:
+  # Debounced "door is open": the raw door lidar must read >= door_open_distance
+  # for ~400 ms before we start getting the bucket out (avoids spurious single
+  # samples triggering a move).
+  - platform: template
+    name: "${friendly_name} door open"
+    id: door_open_bs
+    device_class: door
+    lambda: 'return id(door_lidar).get_distance() >= ${door_open_distance};'
+    filters:
+    - delayed_on: 400ms
+    - delayed_off: 300ms
+    on_press:
+      - script.execute: open_trashcan
 
 interval:
   # Movement watchdog. While a move is commanded (pos != tgt) stop the motor when

@@ -112,15 +112,25 @@ On-hardware follow-up hardening of the reworked config (all tuning values live i
   headroom left for a heavier bucket) of the limit the CURRENT IS CUT (`tmc2209`
   disable) so the last few cm are done by momentum. The driver is also disabled
   whenever a move ends, so the bucket is free to be pushed by hand.
-- **HARD SAFETY guards** (in the same 100 ms interval): a move is aborted - the
-  current is cut and the driver disabled - if it runs longer than
+- **HARD SAFETY guards** (checked in the same 100 ms interval): a move is aborted -
+  the current is cut and the driver disabled - if it runs longer than
   `move_timeout_ms` (7000 ms, i.e. slightly more than a normal open), or if it is
-  an OUT move while the door lidar reads CLOSED (`< door_close_distance`, 200 mm).
-  This prevents driving out with the door closed and any runaway move.
-- **Debounced "door open" trigger**: the OUT move is started by a template
-  `binary_sensor` (`trashcan door open`) that requires the RAW door lidar to read
-  open for ~400 ms (`delayed_on`) before firing, so a single spurious sample
-  cannot start a move. The trigger calls the `open_trashcan` script.
+  an OUT move while the door is *really* closed (a VALID reading - `range_status`
+  0 - below `door_close_distance` 200 mm). A garbled door reading with a bad range
+  status is NOT treated as "closed", so it cannot abort a legitimate OUT.
+- **"Door open" trigger (validity-based, edge-triggered)**: `open_trashcan` runs
+  only on the rising edge of the `trashcan door open` template `binary_sensor`. The
+  VL53L1X on the door bus glitches to small distances (0/50/250 mm) with an INVALID
+  `range_status` even while the door is open. Those glitches must not be read as
+  "closed": they used to toggle the sensor OFF->ON and re-trigger the bucket, and
+  could also start a move with the door shut. So "closed" is defined as a VALID
+  reading (`range_status` 0) at/below `door_close_distance`; **everything else is
+  "open"**. 500 ms on/off delays reject single bad frames, and `open_trashcan`
+  refuses to start while a move is already running (`current_position !=
+  target_position`). The door lidar's `range_status` is exposed by the component
+  (`get_range_status()`) for these checks.
+- **Manual `close_trashcan` button**: drives the bucket back IN (same action as
+  "helping to close") - handy to retract the bucket by hand or over the API.
 - **Belt/mechanical protection**: the same interval stops the motor if, while
   commanded, the INDEX position has not advanced for >500 ms, or the RAW lidar
   distance has not changed by >=2 mm for >1200 ms (belt slipping / jammed).

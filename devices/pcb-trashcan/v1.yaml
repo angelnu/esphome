@@ -202,6 +202,41 @@ script:
           id: my_stepper
           target: -1000000
 
+  - id: close_trashcan
+    # Drive the bucket IN (used by "helping to close" and the close button). The
+    # interval cuts the current (lidar-based) shortly before fully closed and the
+    # bucket coasts in; min_step-500 is only a safety bound.
+    then:
+      - globals.set:
+          id: trashcan_out
+          value: 'false'
+      - lambda: |-
+          // Recompute the bucket position from the trashcan lidar before moving:
+          // the bucket can be pushed by hand (or the belt slips), so the INDEX count
+          // no longer matches reality -> derive it from the distance.
+          float d = id(trashcan_lidar).get_distance();
+          float span = id(dist_out) - id(dist_in);
+          int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
+          if (p < id(min_step)) p = id(min_step);
+          if (p > id(max_step)) p = id(max_step);
+          id(my_stepper)->report_position(p);
+          ESP_LOGD("trashcan", "close: lidar pos d=%.0f -> p=%d", d, p);
+      - globals.set:
+          id: move_dir
+          value: '-1'
+      - globals.set:
+          id: move_started_ms
+          value: !lambda 'return millis();'
+      - stepper.set_acceleration:
+          id: my_stepper
+          acceleration: ${stepper_in_acceleration}
+      - stepper.set_deceleration:
+          id: my_stepper
+          deceleration: ${stepper_stop_deceleration}
+      - stepper.set_target:
+          id: my_stepper
+          target: !lambda return id(min_step) - 500;
+
   - id: open_trashcan
     then:
       - if:
@@ -210,6 +245,7 @@ script:
             - lambda: 'return !id(trashcan_out);'
             - lambda: 'return id(armed);'
             - lambda: 'return (id(calib_phase) == 0);'
+            - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' # no move in progress
           then:
           - globals.set:
               id: trashcan_out
@@ -334,8 +370,7 @@ sensor:
           - globals.set:
               id: trashcan_out
               value: 'false'
-          - logger.log: "Helping to close"
-          # Write to logbook
+          - logger.log: "Helping to close (speed)"
           - homeassistant.service:
               service: logbook.log
               data:
@@ -346,35 +381,7 @@ sensor:
                 message: Helping to close. Speed is {{ my_speed }}.
               variables:
                 my_speed: !lambda return x;
-          - lambda: |-
-              // Recompute the bucket position from the trashcan lidar before moving:
-              // the bucket can be pushed by hand (or the belt slips), so the INDEX count
-              // no longer matches reality -> derive it from the distance.
-              float d = id(trashcan_lidar).get_distance();
-              float span = id(dist_out) - id(dist_in);
-              int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
-              if (p < id(min_step)) p = id(min_step);
-              if (p > id(max_step)) p = id(max_step);
-              id(my_stepper)->report_position(p);
-              ESP_LOGD("trashcan", "lidar pos: d=%.0f -> p=%d (min=%d max=%d)", d, p, id(min_step), id(max_step));
-          - globals.set:
-              id: move_dir
-              value: '-1'
-          - globals.set:
-              id: move_started_ms
-              value: !lambda 'return millis();'
-          - stepper.set_acceleration:
-              id: my_stepper
-              acceleration: ${stepper_in_acceleration}
-          - stepper.set_deceleration:
-              id: my_stepper
-              deceleration: ${stepper_stop_deceleration}
-          # Drive in continuously; the interval cuts the current (lidar-based) a few
-          # cm before fully closed and the bucket coasts in. min_step-500 is only a
-          # safety bound.
-          - stepper.set_target:
-              id: my_stepper
-              target: !lambda return id(min_step) - 500;
+          - script.execute: close_trashcan
   acceleration:
     name: trashcan acceleration
     id: trashcan_acceleration
@@ -382,17 +389,23 @@ sensor:
     - delta: ${trashcan_acceleration_min_delta}
 
 binary_sensor:
-  # Debounced "door is open": the raw door lidar must read >= door_open_distance
-  # for ~400 ms before we start getting the bucket out (avoids spurious single
-  # samples triggering a move).
+  # "Door is open": the door lidar is NOT giving a valid short (closed) reading.
+  # The VL53L1X glitches to small values (0/50/250 mm) with an INVALID range status
+  # while the door is open; those glitches must NOT be read as "closed" (they used
+  # to toggle this sensor OFF->ON and re-trigger the bucket). So "closed" requires a
+  # VALID reading (status 0) at/below door_close_distance; anything else is "open".
+  # 500 ms on/off delays reject single bad frames.
   - platform: template
     name: "${friendly_name} door open"
     id: door_open_bs
     device_class: door
-    lambda: 'return id(door_lidar).get_distance() >= ${door_open_distance};'
+    lambda: |-
+      bool valid_closed = (id(door_lidar).get_range_status() == 0) &&
+                          (id(door_lidar).get_distance() <= ${door_close_distance});
+      return !valid_closed;
     filters:
-    - delayed_on: 400ms
-    - delayed_off: 300ms
+    - delayed_on: 500ms
+    - delayed_off: 500ms
     on_press:
       - script.execute: open_trashcan
 
@@ -437,7 +450,10 @@ interval:
             // HARD SAFETY GUARDS (never drive out with the door closed; never drive
             // longer than move_timeout_ms). These cut the current immediately.
             bool timed_out = (millis() - id(move_started_ms) > ${move_timeout_ms});
-            bool door_closed = (id(door_lidar).get_distance() < ${door_close_distance});
+            // Only a VALID short reading means the door is really closed; a glitch
+            // to a small value with a bad range status must not abort an OUT move.
+            bool door_closed = (id(door_lidar).get_range_status() == 0) &&
+                               (id(door_lidar).get_distance() < ${door_close_distance});
             if (timed_out || (dir > 0 && door_closed)) {
               ESP_LOGW("trashcan", "SAFETY STOP (timeout=%d door_closed=%d dir=%d) -> cut current",
                        timed_out, door_closed, dir);
@@ -517,3 +533,8 @@ button:
     id: calibrate_button
     on_press:
       - script.execute: calibrate
+  - platform: template
+    name: close_trashcan
+    id: close_trashcan_button
+    on_press:
+      - script.execute: close_trashcan

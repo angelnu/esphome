@@ -35,6 +35,8 @@ class VL53L1XPololuComponent : public PollingComponent, public i2c::I2CDevice {
   // to get a FRESH bucket position (the driver INDEX count drifts when the
   // bucket is moved by hand).
   float get_distance() const { return (float) this->last_distance_; }
+  // Range status of the last frame (0 = valid; see VL53L1X::RangeStatus).
+  uint8_t get_range_status() const { return this->last_status_; }
   void set_distance_mode(uint8_t mode) { distance_mode_ = mode; }            // 0=short,1=medium,2=long
   void set_timing_budget_us(uint32_t us) { timing_budget_us_ = us; }
   void set_inter_measurement_ms(uint32_t ms) { inter_measurement_ms_ = ms; }

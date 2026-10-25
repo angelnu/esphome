@@ -33,8 +33,6 @@ substitutions:
 esp32:
   variant: esp32
   toolchain: platformio
-  framework:
-    type: esp-idf
 
 external_components:
 # use all components from a local folder

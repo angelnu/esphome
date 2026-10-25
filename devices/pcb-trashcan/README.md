@@ -112,6 +112,11 @@ On-hardware follow-up hardening of the reworked config (all tuning values live i
   headroom left for a heavier bucket) of the limit the CURRENT IS CUT (`tmc2209`
   disable) so the last few cm are done by momentum. The driver is also disabled
   whenever a move ends, so the bucket is free to be pushed by hand.
+- **HARD SAFETY guards** (in the same 100 ms interval): a move is aborted - the
+  current is cut and the driver disabled - if it runs longer than
+  `move_timeout_ms` (7000 ms, i.e. slightly more than a normal open), or if it is
+  an OUT move while the door lidar reads CLOSED (`< door_close_distance`, 200 mm).
+  This prevents driving out with the door closed and any runaway move.
 - **Belt/mechanical protection**: the same interval stops the motor if, while
   commanded, the INDEX position has not advanced for >500 ms, or the RAW lidar
   distance has not changed by >=2 mm for >1200 ms (belt slipping / jammed).

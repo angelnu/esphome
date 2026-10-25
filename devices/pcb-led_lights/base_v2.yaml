@@ -1,6 +1,7 @@
 substitutions:
   pwm_frequency: "1000 Hz"
 
+<<<<<<< HEAD
 # Dedup guard: only a real open->close cycle (a published OFF followed by an ON)
 # triggers the toggle script. The delayed_on filter re-publishes ON after every
 # raw pin bounce that returns quickly (absorbed by delayed_off, so no OFF is
@@ -10,9 +11,23 @@ globals:
   - id: button_press_pending
     type: bool
     initial_value: 'false'
+=======
+# Rate-limit guard: presses within 1s of the last toggle are ignored. The
+# delayed_on_off filter publishes one clean ON per press and cancels the
+# pending OFF when the raw pin returns quickly, so raw pin bounces produce no
+# phantom OFF/ON cycles; without this guard each duplicate ON (raw pin bounce
+# ~2s after the light changes state) fired on_press again and double-toggled
+# the lights.
+globals:
+  - id: last_toggle_ms
+    type: uint32_t
+    initial_value: '0'
+>>>>>>> c043aca (pcb-led_lights base: esp-idf framework; fix button double-toggle (delayed_on_off 50ms + 1s rate-limit))
 
 esp32:
-  variant: esp32c6
+  board: esp32-c6-devkitc-1
+  framework:
+    type: esp-idf  # or arduino
 
 external_components:
 # use all components from a local folder
@@ -51,7 +66,7 @@ output:
           condition:
              lambda: return state > 0;
           then:
-            - light.turn_on: 
+            - light.turn_on:
                 id: statusledlight
                 red: 1.0
                 green: 0.0
@@ -62,14 +77,14 @@ output:
               condition:
                 wifi.connected
               then:
-                - light.turn_on: 
+                - light.turn_on:
                     id: statusledlight
                     red: 0.0
                     green: 0.0
                     blue: 1.0
                     brightness: 30%
               else:
-                - light.turn_on: 
+                - light.turn_on:
                     id: statusledlight
                     green: 1.0
                     red: 0.0
@@ -113,12 +128,17 @@ binary_sensor:
     mode: INPUT_PULLUP
     inverted: true
   filters:
+<<<<<<< HEAD
   - delayed_on: 300ms
   - delayed_off: 300ms
+=======
+  - delayed_on_off: 50ms
+>>>>>>> c043aca (pcb-led_lights base: esp-idf framework; fix button double-toggle (delayed_on_off 50ms + 1s rate-limit))
   on_press:
     then:
     - if:
         condition:
+<<<<<<< HEAD
           lambda: 'return id(button_press_pending);'
         then:
           - globals.set:
@@ -130,3 +150,9 @@ binary_sensor:
     - globals.set:
         id: button_press_pending
         value: 'true'
+=======
+          lambda: 'return millis() - id(last_toggle_ms) > 1000;'
+        then:
+          - lambda: 'id(last_toggle_ms) = millis();'
+          - script.execute: toggle_light
+>>>>>>> c043aca (pcb-led_lights base: esp-idf framework; fix button double-toggle (delayed_on_off 50ms + 1s rate-limit))

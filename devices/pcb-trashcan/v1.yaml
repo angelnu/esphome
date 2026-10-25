@@ -4,13 +4,15 @@ substitutions:
   stepper_max_acceleration: "100" # In steps/s
   stepper_stall_threshold: "20" # Higher value makes stall detection more sensible
   door_distance_throttle: 1s # Avoids sending too frequently while door is moving
-  door_distance_min_delta: "10" #In mm
-  door_open_distance: "500" #In mm
-  door_close_distance: "200" #In mm
+  door_distance_min_delta: "10" # In mm
+  door_open_distance: "500" # In mm
+  door_close_distance: "200" # In mm
   trashcan_speed_min_delta: "0.05" # Min delta (in m/s) before we consider it moving
   trashcan_acceleration_min_delta: "0.2" # in m/s²
   trashcan_distance_min_delta: "5" # Min delta in mm before publishing
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
+  vl53_timing_budget: 200ms # Integration time per measurement
+  vl53_inter_measurement: 210ms # Continuous-ranging cadence (must be > timing budget + 4ms)
   error_theshold: 1min
 
 esp32:
@@ -23,33 +25,107 @@ external_components:
 # use all components from a local folder
 - source: components
   components:
-  - tmc2209 # Stepper
-  - vl53l1x # Lidar
-  - i2c_platform # Wrapper for lidar library
+  - tmc22xx # official ESPHome TMC22xx base (vendored until ESPHome 2026.11)
+  - tmc2209 # official ESPHome TMC2209 stepper (vendored until ESPHome 2026.11)
+  - vl53l1x_pololu # community VL53L1X (Pololu port) + speed/acceleration
 
 uart:
   tx_pin: GPIO17
   rx_pin: GPIO16
   baud_rate: 115200
 
+globals:
+  # Door travel limits discovered by the calibrate script (persisted).
+  - id: min_step
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: max_step
+    type: int
+    restore_value: true
+    initial_value: '2100'
+  # 0 = idle, 1 = calibrating open, 2 = calibrating close, 3 = transient (stall settle)
+  - id: calib_phase
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+esphome:
+  on_boot:
+    # Driver fine-tuning that used to live in the custom component's setup().
+    - tmc2209.configure:
+        id: my_stepper
+        inverse_direction: true
+    - tmc2209.currents:
+        id: my_stepper
+        standstill_mode: freewheeling
+        hold_current: 0A
+    - tmc2209.stallguard:
+        id: my_stepper
+        threshold: ${stepper_stall_threshold}
+        tcool_threshold: 1048575 # 2^20-1: StallGuard active from very low speed
+
 stepper:
 - platform: tmc2209
-  # stepper has 200 steps per revolution
   id: my_stepper
   max_speed: ${stepper_max_speed}
   acceleration: ${stepper_max_acceleration}
-  freewheeling_mode: freewheeling
-  r_sense: 0.11
-  inverted: true #steps in
-  enable_pin: GPIO19
-  index_pin: GPIO23 #not used
-  diag_pin: GPIO27 #not used
-  step_pin: GPIO18
-  dir_pin: GPIO5
-  stall_threshold: ${stepper_stall_threshold}
-  #cover:
-  #  name: "${friendly_name} cover"
-  #  id: my_cover
+  rsense: 0.11
+  address: 0
+  microsteps: 1
+  run_current: 0.8A
+  enn_pin: GPIO19
+  index_pin: GPIO23 # position feedback from the driver's internal step generator
+  diag_pin: GPIO27 # stall / driver error
+  on_stall:
+    # Backport: `stepper.stop` is ESPHome >= 2026.11; stop by setting the target
+    # to the current position instead.
+    - stepper.set_target:
+        id: my_stepper
+        target: !lambda 'return id(my_stepper)->current_position;'
+    - if:
+        condition:
+          lambda: 'return id(calib_phase) == 1;'
+        then:
+        - globals.set:
+            id: max_step
+            value: !lambda 'return id(my_stepper)->current_position;'
+        - globals.set:
+            id: calib_phase
+            value: '3'
+        - script.execute: calibrate_close
+    - if:
+        condition:
+          lambda: 'return id(calib_phase) == 2;'
+        then:
+        - globals.set:
+            id: min_step
+            value: !lambda 'return id(my_stepper)->current_position;'
+        - globals.set:
+            id: calib_phase
+            value: '0'
+
+script:
+  - id: calibrate
+    then:
+      - globals.set:
+          id: calib_phase
+          value: '1'
+      - stepper.report_position:
+          id: my_stepper
+          position: 0
+      - stepper.set_target:
+          id: my_stepper
+          target: 1000000
+  - id: calibrate_close
+    then:
+      - delay: 500ms
+      - globals.set:
+          id: calib_phase
+          value: '2'
+      - stepper.set_target:
+          id: my_stepper
+          target: -1000000
 
 i2c:
 - id: bus_door
@@ -60,32 +136,46 @@ i2c:
   sda: GPIO32
   scl: GPIO33
 
-sensor:
-- platform: vl53l1x
-  name: door distance
-  id: door_distance
+vl53l1x_pololu:
+- id: door_lidar
   i2c_id: bus_door
+  enable_pin: GPIO25 # XSHUT
   address: 0x29
-  enable_pin: GPIO25
-  interrupt_pin: GPIO34
-  update_interval: 210ms
-  long_range: false
-  errors:
-    name: door errors
-    id: door_errors
+  distance_mode: short
+  timing_budget: ${vl53_timing_budget}
+  inter_measurement: ${vl53_inter_measurement}
+  update_interval: ${vl53_inter_measurement}
+- id: trashcan_lidar
+  i2c_id: bus_trashcan
+  enable_pin: GPIO26 # XSHUT
+  address: 0x29
+  distance_mode: short
+  timing_budget: ${vl53_timing_budget}
+  inter_measurement: ${vl53_inter_measurement}
+  update_interval: ${vl53_inter_measurement}
+
+sensor:
+- platform: vl53l1x_pololu
+  vl53l1x_pololu_id: door_lidar
+  distance:
+    name: door distance
+    id: door_distance
+    filters:
+    - throttle: ${door_distance_throttle}
+    - delta: ${door_distance_min_delta}
+  range_status:
+    name: door range status
+    id: door_range_status
     filters:
     - delta: 1
     - throttle: ${error_theshold}
-  filters:
-  - throttle: ${door_distance_throttle}
-  - delta: ${door_distance_min_delta}
-    
+
 - platform: template
   name: filtered door distance
   id: filtered_filtered_distance
-  lambda: return id(door_distance).raw_state;
+  lambda: return id(door_distance).get_raw_state();
   update_interval: 210ms
-  filters:  
+  filters:
   - lambda: if (x >= ${door_open_distance}) return ${door_open_distance}; if (x >= ${door_close_distance}) return ${door_close_distance}; else return 0;
   - filter_out: ${door_close_distance}
   - delta: 1
@@ -95,46 +185,33 @@ sensor:
         condition:
           and:
           - lambda: return x == ${door_open_distance};
-          - lambda: return (id(my_stepper).current_position == id(my_stepper).get_min_step()); #Fully closed
-          - lambda: return !id(my_stepper).is_calibrating();
+          - lambda: return (id(my_stepper)->current_position == id(min_step)); #Fully closed
+          - lambda: return (id(calib_phase) == 0);
         then:
-        - logger.log: "Door opened and trashcan inside -> get it out!" 
+        - logger.log: "Door opened and trashcan inside -> get it out!"
         # Write to logbook
         - homeassistant.service:
             service: logbook.log
             data:
               name: "${devicename}_open_door"
-              message: "Door opened and trashcan inside -> get it out!" 
+              message: "Door opened and trashcan inside -> get it out!"
               entity_id: sensor.${friendly_name}_distance_door
               domain: logbook
         - stepper.set_target:
             id: my_stepper
-            target: !lambda return id(my_stepper).get_max_step();
-  # on_value_range:
-  #   above: 100
-  #   then:
-  #   - if:
-  #       condition:
-  #         and:
-  #         - lambda: 'return (id(my_stepper).current_position == id(my_stepper).get_min_step);' #Fully closed
-  #         - lambda: 'return !id(my_stepper).is_calibrating();'
-  #       then:
-  #       - logger.log: "Door opened and trashcan inside -> get it out!" 
-  #       - stepper.set_target:
-  #           id: my_stepper
-  #           target: !lambda return id(my_stepper).get_max_step();
-- platform: vl53l1x
-  name: "trashcan distance"
-  id: trashcan_distance
-  i2c_id: bus_trashcan
-  address: 0x29
-  enable_pin: GPIO26
-  interrupt_pin: GPIO35
-  update_interval: 210 ms
-  long_range: false
-  errors:
-    name: trashcan errors
-    id: trashcan_errors
+            target: !lambda return id(max_step);
+
+- platform: vl53l1x_pololu
+  vl53l1x_pololu_id: trashcan_lidar
+  distance:
+    name: "trashcan distance"
+    id: trashcan_distance
+    filters:
+    - throttle: ${trashcan_distance_throttle}
+    - delta: ${trashcan_distance_min_delta}
+  range_status:
+    name: trashcan range status
+    id: trashcan_range_status
     filters:
     - delta: 1
     - throttle: ${error_theshold}
@@ -145,36 +222,14 @@ sensor:
     - delta: ${trashcan_speed_min_delta}
     on_raw_value:
       then:
-      # - if:
-      #     condition:
-      #       and:
-      #       - lambda: 'return (x >= ${trashcan_speed_min_delta});'
-      #       - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
-      #       - lambda: 'return !id(my_stepper).is_calibrating();'
-      #     then:
-      #     - logger.log: "Helping to open" 
-      #     # Write to logbook
-      #     - homeassistant.service:
-      #         service: logbook.log
-      #         data:
-      #           name: "${devicename}_helping_open"
-      #           entity_id: sensor.${friendly_name}_speed_trashcan
-      #           domain: logbook
-      #         data_template:
-      #           message: Helping to open. Speed is {{ my_speed }}.
-      #         variables:
-      #           my_speed: return x;
-      #     - stepper.set_target:
-      #         id: my_stepper
-      #         target: !lambda return id(my_stepper).get_max_step();
       - if:
           condition:
             and:
             - lambda: 'return (x <= -${trashcan_speed_min_delta});'
-            - lambda: 'return (id(my_stepper).current_position == id(my_stepper).target_position);' #Stopped
-            - lambda: 'return !id(my_stepper).is_calibrating();'
+            - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
+            - lambda: 'return (id(calib_phase) == 0);'
           then:
-          - logger.log: "Helping to close" 
+          - logger.log: "Helping to close"
           # Write to logbook
           - homeassistant.service:
               service: logbook.log
@@ -185,27 +240,20 @@ sensor:
               data_template:
                 message: Helping to close. Speed is {{ my_speed }}.
               variables:
-                my_speed: return x;
+                my_speed: !lambda return x;
           - stepper.set_target:
               id: my_stepper
-              target: !lambda return id(my_stepper).get_min_step();
+              target: !lambda return id(min_step);
   acceleration:
     name: trashcan acceleration
     id: trashcan_acceleration
     filters:
     - delta: ${trashcan_acceleration_min_delta}
-  filters:
-  - throttle: ${trashcan_distance_throttle}
-  - delta: ${trashcan_distance_min_delta}
 
-  # Example configuration entry
+# Example configuration entry
 button:
   - platform: template
     name: calibrate
-    id: calibrate
+    id: calibrate_button
     on_press:
-      - stepper.calibrate: my_stepper
-  #- platform: template
-  #  name: "${friendly_name} stop"
-  #  on_press:
-  #    - cover.stop: my_cover
+      - script.execute: calibrate

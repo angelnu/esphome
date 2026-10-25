@@ -1,90 +1,57 @@
 #pragma once
 
-#include "esphome/core/component.h"
-#include "esphome/core/hal.h"
-#include "esphome/components/stepper/stepper.h"
-#include "esphome/components/uart/uart.h"
-//Stream wrapper for esphome
-#include "esphome_stream.h"
-//Stepper library for TMC chipsets
-#include "TMCStepper.h"
+#include "esphome/components/tmc22xx/tmc22xx.h"
 
-#include <limits> 
+namespace esphome::tmc2209 {
 
-namespace esphome {
-namespace tmc2209 {
+using tmc22xx::RegisterField;
 
-class TMC2209 : public stepper::Stepper, public uart::UARTDevice, public Component {
+// StallGuard and CoolStep registers, which the TMC2208 does not have
+static constexpr uint8_t REG_TCOOLTHRS = 0x14;
+static constexpr uint8_t REG_SGTHRS = 0x40;
+static constexpr uint8_t REG_SG_RESULT = 0x41;
+static constexpr uint8_t REG_COOLCONF = 0x42;
+
+static constexpr RegisterField TCOOLTHRS{REG_TCOOLTHRS, 0, 20, false};
+static constexpr RegisterField SGTHRS{REG_SGTHRS, 0, 8, false};
+static constexpr RegisterField SG_RESULT{REG_SG_RESULT, 0, 10, false};
+static constexpr RegisterField SEMIN{REG_COOLCONF, 0, 4, false};
+static constexpr RegisterField SEUP{REG_COOLCONF, 5, 2, false};
+static constexpr RegisterField SEMAX{REG_COOLCONF, 8, 4, false};
+static constexpr RegisterField SEDN{REG_COOLCONF, 13, 2, false};
+static constexpr RegisterField SEIMIN{REG_COOLCONF, 15, 1, false};
+
+class TMC2209Stepper : public tmc22xx::TMC22XXStepper {
  public:
-  void set_r_sense(float r_sense) { r_sense_ = r_sense; }
-  void set_freewheeling_mode(uint8_t freewheeling_mode) { freewheeling_mode_ = freewheeling_mode; }
-  void set_inverted(bool inverted) { inverted_ = inverted; }
-  void set_enable_pin(GPIOPin *enable_pin) { enable_pin_ = enable_pin; }
-  void set_index_pin(InternalGPIOPin *index_pin) { index_pin_ = index_pin; }
-  void set_diag_pin(GPIOPin *diag_pin) { diag_pin_ = diag_pin; }
-  void set_step_pin(GPIOPin *step_pin) { step_pin_ = step_pin; }
-  void set_dir_pin(GPIOPin *dir_pin) { dir_pin_ = dir_pin; }
-  void set_driver_address(uint8_t driver_address) { driver_address_ = driver_address; }
-  void set_stall_threshold(uint8_t stall_threshold) { stall_threshold_ = stall_threshold; }
-  void set_microsteps(uint16_t microsteps) { microsteps_ = microsteps; }
-  void set_rms_current(float rms_current) { rms_current_ = rms_current; }
-
-  void setup() override;
   void dump_config() override;
-  void loop() override;
-  float get_setup_priority() const override { return setup_priority::DATA; }
 
-  void    set_min_step(int32_t min_step) { min_step_ = min_step; }
-  int32_t get_min_step()                 { return      min_step_;}
-  void    set_max_step(int32_t max_step) { max_step_ = max_step; }
-  int32_t get_max_step()                 { return      max_step_;}
-
-  void calibrate();
-  bool is_calibrating() { return is_calibrating_; }
-
- protected:
-  static void index_gpio_intr(TMC2209 *stepper);
-  volatile uint32_t index_counter_=0;
-
-  bool get_dir() { return (this->target_position > this->current_position); } // true -> advance, false -> retrocede 
-
-  float r_sense_;
-  uint8_t freewheeling_mode_{0};
-  bool inverted_{false};
-  GPIOPin *enable_pin_{nullptr};
-  InternalGPIOPin *index_pin_{nullptr};
-  ISRInternalGPIOPin index_isr_pin_{nullptr};
-  GPIOPin *diag_pin_{nullptr};
-  GPIOPin *step_pin_{nullptr};
-  GPIOPin *dir_pin_{nullptr};
-  uint8_t driver_address_{0};
-  uint8_t stall_threshold_{0};
-  uint16_t microsteps_{0};
-  float rms_current_{1.0};
-
-  int32_t min_step_ = 0; //std::numeric_limits<int32_t>::min();
-  int32_t max_step_ =  2100; //std::numeric_limits<int32_t>::max();
-  bool is_calibrating_ = false;
-  enum is_stallguard_status_t{DISSABLED, ENABLING, ENABLED};
-  is_stallguard_status_t is_stallguard_status = DISSABLED;
-  
-  HighFrequencyLoopRequester high_freq_;
-
-  TMC2209Stepper *driver_ptr_{nullptr};
-  ESPHome_Stream *stream_{nullptr};
-};
-
-template<typename... Ts> class CalibrateAction : public Action<Ts...> {
- public:
-  explicit CalibrateAction(TMC2209 *parent) : parent_(parent) {}
-
-  void play(Ts... x) override {
-    this->parent_->calibrate();
+  /// Called when DIAG reports a stall. StallGuard only works in StealthChop, between TCOOLTHRS and TPWMTHRS.
+  template<typename F> void add_on_stall_callback(F &&callback) {
+    this->stall_callback_.add(std::forward<F>(callback));
   }
 
+  /// A stall is reported when the StallGuard result drops below twice this value.
+  void set_stallguard_threshold(uint8_t threshold) { this->write_field(SGTHRS, threshold); }
+  uint8_t get_stallguard_threshold() const { return extract_field(this->sgthrs_, SGTHRS); }
+  /// Lower velocity limit, as TSTEP, for CoolStep and the StallGuard output on DIAG.
+  void set_tcool_threshold(uint32_t threshold) { this->write_field(TCOOLTHRS, threshold); }
+  void set_semin(uint8_t semin) { this->write_field(SEMIN, semin); }
+  void set_semax(uint8_t semax) { this->write_field(SEMAX, semax); }
+  void set_seup(uint8_t seup) { this->write_field(SEUP, seup); }
+  void set_sedn(uint8_t sedn) { this->write_field(SEDN, sedn); }
+  void set_seimin(bool seimin) { this->write_field(SEIMIN, seimin); }
+
  protected:
-  TMC2209 *parent_;
+  uint8_t expected_version() const override { return 0x21; }
+  uint32_t *shadow_register(uint8_t reg) override;
+  void restore_registers() override;
+  void on_diag_without_error() override { this->stall_callback_.call(); }
+
+  LazyCallbackManager<void()> stall_callback_;
+  // Write-only registers with their power-on values
+  uint32_t tcoolthrs_{0};
+  uint32_t sgthrs_{0};
+  uint32_t coolconf_{0};
 };
 
-}  // namespace tmc2209
-}  // namespace esphome
+}  // namespace esphome::tmc2209

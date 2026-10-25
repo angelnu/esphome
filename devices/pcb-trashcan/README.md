@@ -54,3 +54,49 @@ TBD: picture
   - First version
   - BUGS:
     - TBD
+#### 2026-10 — Firmware rework (ESPHome components)
+
+Replaced the hand-written ESPHome components with official/community ones, keeping
+the same functionality. Verified: config valid + full compile on ESPHome 2026.10.0.
+
+- **Stepper** → official ESPHome `tmc2209` (+ its base component `tmc22xx`),
+  vendored under `components/` from the ESPHome `dev` branch (2026.11.0-dev)
+  until 2026.11.0 is released. Covers both driver modes we use: UART speed
+  control (VACTUAL) with position counting on the `INDEX` pin, and StallGuard
+  homing via `diag_pin` + `on_stall` + the `tmc2209.stallguard` action.
+- **Lidar (both VL53L1X)** → community `vl53l1x_pololu`
+  (https://github.com/jasonwbarnett/esphome-vl53l1x-pololu, Pololu port, native
+  ESPHome I2C, continuous ranging + in-place freeze recovery). One instance per
+  I2C bus (`MULTI_CONF`).
+- **Removed**: `components/tmc2209` (custom), `components/vl53l1x` +
+  `components/i2c_platform` (ST-API/I2C bridge), `libraries/VL53L1X` (ST ULD),
+  and the unused `stepper_cover`.
+- **Ported to YAML**: the custom `stepper.calibrate` action is now a script
+  (`on_stall` + `stepper.report_position` + persisted globals `min_step`/`max_step`,
+  two-phase open/close with a stall-settle guard); driver tuning moved to
+  `esphome: on_boot` (`tmc2209.configure inverse_direction`, `tmc2209.currents
+  standstill_mode: freewheeling + hold_current: 0`, `tmc2209.stallguard
+  threshold + tcool_threshold`).
+- **Lidar speed/acceleration** (the "helping to open/close when pushed" feature)
+  was ported INTO the community component, and `enable_pin` (XSHUT GPIO25/26)
+  support was added so the sensor is released from reset before `init()`.
+  Candidate for an upstream PR to the community repo.
+- **HA entity rename**: `door errors` / `trashcan errors` → `door range status` /
+  `trashcan range status` (data-ready errors no longer exist; use range_status /
+  recovery_count). Update any HA automations referencing the old entity ids.
+
+**Backports** used to run the 2026.11 official `tmc2209` on ESPHome 2026.10.0
+(each marked in the vendored code): `cv.key_requires`, `cg.add_pin`,
+`MockObjEnum.options(prefix=)`, `uart.new_uart_component`/`cg.new_bus_component`,
+`Component::status_comm_result()`, `UARTDevice::discard_available()`; plus YAML
+`stepper.stop` → `stepper.set_target` (current_position) and `Sensor::raw_state`
+→ `get_raw_state()`.
+
+**TODO when ESPHome 2026.11.0 is released**
+- Delete `components/tmc22xx` and `components/tmc2209` and drop them from
+  `external_components` in `devices/pcb-trashcan/v1.yaml` — they become built-in.
+  No further YAML change is needed; the backports disappear.
+- Keep `components/vl53l1x_pololu` (community + our speed/acceleration/additions).
+- Optionally revert the YAML stop-as-`set_target` back to `stepper.stop`.
+- Validate on hardware: `calibrate` button, direction, `stallguard`/`tcool`,
+  and both lidars reading correctly.

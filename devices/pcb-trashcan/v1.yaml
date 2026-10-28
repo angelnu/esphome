@@ -245,7 +245,6 @@ script:
             - lambda: 'return !id(trashcan_out);'
             - lambda: 'return id(armed);'
             - lambda: 'return (id(calib_phase) == 0);'
-            - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' # no move in progress
           then:
           - globals.set:
               id: trashcan_out
@@ -410,7 +409,7 @@ binary_sensor:
       - script.execute: open_trashcan
 
 interval:
-  # Movement watchdog. While a move is commanded (pos != tgt) stop the motor when
+  # Movement watchdog.. While a move is commanded (pos != tgt) stop the motor when
   # nothing actually moves:
   #  - the INDEX position has not advanced for >500 ms (step generator halted), or
   #  - the RAW trashcan lidar distance has not changed by >=2 mm for >1200 ms
@@ -425,10 +424,17 @@ interval:
           int pos = id(my_stepper)->current_position;
           int tgt = id(my_stepper)->target_position;
           float dist = id(trashcan_lidar).get_distance();
+          bool calibrating_idle = (id(calib_phase) != 0);
           if (pos == tgt) {
             // Move finished: CUT THE CURRENT (disable the driver) so the bucket is
             // released - it coasts to the end stop and can be pushed by hand.
             if (id(my_stepper)->is_enabled()) id(my_stepper)->set_enabled(false);
+            // Re-sync the logical "bucket is out" state from the physical position
+            // (the flag can go stale after an interrupted/partial move).
+            if (!calibrating_idle && dist > 5.0f) {
+              if (dist <= id(dist_in) + 30.0f) id(trashcan_out) = false;
+              else if (dist >= id(dist_out) - 30.0f) id(trashcan_out) = true;
+            }
             id(mon_last_pos) = pos;
             id(mon_last_change_ms) = millis();
             id(mon_dist) = dist;

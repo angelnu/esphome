@@ -125,10 +125,16 @@ On-hardware follow-up hardening of the reworked config (all tuning values live i
   "closed": they used to toggle the sensor OFF->ON and re-trigger the bucket, and
   could also start a move with the door shut. So "closed" is defined as a VALID
   reading (`range_status` 0) at/below `door_close_distance`; **everything else is
-  "open"**. 500 ms on/off delays reject single bad frames, and `open_trashcan`
-  refuses to start while a move is already running (`current_position !=
-  target_position`). The door lidar's `range_status` is exposed by the component
-  (`get_range_status()`) for these checks.
+  "open"**. 500 ms on/off delays reject single bad frames. The door lidar's
+  `range_status` is exposed by the component (`get_range_status()`) for these
+  checks. The trigger is edge-only (a rising edge), so while the bucket is out and
+  the door stays open there is no re-trigger. (An earlier `current_position !=
+  target_position` guard was removed: after a lidar-based cut the step target is
+  not re-synced immediately, so that guard intermittently blocked a legitimate
+  open.)
+- **State re-sync**: whenever the bucket is at rest (no move in progress) the
+  logical `trashcan_out` flag is re-derived from the trashcan lidar, so it cannot
+  go stale after an interrupted/partial move and block the next open.
 - **Manual `close_trashcan` button**: drives the bucket back IN (same action as
   "helping to close") - handy to retract the bucket by hand or over the API.
 - **Belt/mechanical protection**: the same interval stops the motor if, while

@@ -16,6 +16,7 @@ substitutions:
   door_distance_min_delta: "10" # In mm
   door_open_distance: "500" # In mm
   door_close_distance: "200" # In mm
+  door_very_open_distance: "1000" #In mm - unmistakably open (~2 m); accepted even if the frame is flagged
   trashcan_speed_min_delta: "0.15" # Min inward speed (m/s) to trigger "helping to close" (noise-proof)
   trashcan_acceleration_min_delta: "0.2" # in m/s²
   trashcan_distance_min_delta: "5" # Min delta in mm before publishing
@@ -388,23 +389,25 @@ sensor:
     - delta: ${trashcan_acceleration_min_delta}
 
 binary_sensor:
-  # "Door is open": the door lidar is NOT giving a valid short (closed) reading.
-  # The VL53L1X glitches to small values (0/50/250 mm) with an INVALID range status
-  # while the door is open; those glitches must NOT be read as "closed" (they used
-  # to toggle this sensor OFF->ON and re-trigger the bucket). So "closed" requires a
-  # VALID reading (status 0) at/below door_close_distance; anything else is "open".
-  # 500 ms on/off delays reject single bad frames.
+  # "Door is open": a GENUINE far reading - NOT "the door lidar is not reading a
+  # valid closed distance". The lidar constantly emits frames with an INVALID range
+  # status (and freezes); the old "anything that is not a valid close = open" logic
+  # turned every such glitch into an "open", which drove the bucket out while the
+  # door was SHUT. Here "open" requires the distance to really be far
+  # (>= door_open_distance; a real open reads ~2 m) on a VALID frame - or an
+  # unmistakably far reading even if the frame is flagged - plus 1 s on/off delays
+  # so a single bad frame cannot fake an open. Near/invalid frames are ignored.
   - platform: template
     name: "${friendly_name} door open"
     id: door_open_bs
     device_class: door
     lambda: |-
-      bool valid_closed = (id(door_lidar).get_range_status() == 0) &&
-                          (id(door_lidar).get_distance() <= ${door_close_distance});
-      return !valid_closed;
+      float d = id(door_lidar).get_distance();
+      bool valid = (id(door_lidar).get_range_status() == 0);
+      return (d >= ${door_open_distance}) && (valid || d >= ${door_very_open_distance});
     filters:
-    - delayed_on: 500ms
-    - delayed_off: 500ms
+    - delayed_on: 1s
+    - delayed_off: 1s
     on_press:
       - script.execute: open_trashcan
 

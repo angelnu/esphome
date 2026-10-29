@@ -297,7 +297,14 @@ vl53l1x_pololu:
   i2c_id: bus_door
   enable_pin: GPIO25 # XSHUT
   address: 0x29
-  distance_mode: short
+  # long: with the door OPEN the sensor sees the wall up to ~3 m. In 'short'
+  # (max ~1.3 m) that wall is beyond range, so an open door is indistinguishable
+  # from a sensor failure (both come back with an invalid range status). 'long'
+  # (max ~3.6-4 m, and more at the 200 ms timing budget used here) reads the wall
+  # as a VALID far value, so "far object" and "sensor failure" can be told apart.
+  # The closed door (~50 mm) stays readable: the VL53L1X minimum is ~40 mm in
+  # every distance mode, well below the closed reading.
+  distance_mode: long
   timing_budget: ${vl53_timing_budget}
   inter_measurement: ${vl53_inter_measurement}
   update_interval: ${vl53_update_interval}

@@ -287,7 +287,7 @@ i2c:
 - id: bus_door
   sda: GPIO21
   scl: GPIO22
-  frequency: 10kHz
+  frequency: 100kHz # was 10kHz: the slow bus locked the VL53L1X (it froze ~every 30 min)
 - id: bus_trashcan
   sda: GPIO32
   scl: GPIO33
@@ -324,7 +324,15 @@ sensor:
     id: door_range_status
     filters:
     - delta: 1
-    - throttle: ${error_theshold}
+  # Diagnostics: the door lidar used to freeze (~every 30 min) and power-cycle
+  # itself over XSHUT. These let us see whether that stops after raising the bus
+  # clock (frames should keep climbing, recovery count should stay put).
+  recovery_count:
+    name: door recovery count
+    id: door_recovery_count
+  frames:
+    name: door frames
+    id: door_frames
 
 - platform: template
   name: filtered door distance

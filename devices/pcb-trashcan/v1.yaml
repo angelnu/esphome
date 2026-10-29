@@ -365,6 +365,15 @@ sensor:
     filters:
     - delta: 1
     - throttle: ${error_theshold}
+  # Diagnostics (mirror of the door lidar): the bucket lidar also has the 5 s
+  # freeze watchdog that power-cycles it over XSHUT. Expose its counters so we can
+  # confirm it stays at 0 too (recovery count flat = healthy, frames climbing).
+  recovery_count:
+    name: trashcan recovery count
+    id: trashcan_recovery_count
+  frames:
+    name: trashcan frames
+    id: trashcan_frames
   speed:
     name: trashcan speed
     id: speed_trashcan

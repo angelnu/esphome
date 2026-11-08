@@ -70,6 +70,14 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  # Door-cycle latch: after an OUT, the bucket is only allowed out again once the
+  # door has been GENUINELY closed and then opened again. Blocks a re-trigger while
+  # the door stays open (a hand/arm across the door lidar, or a lidar glitch, makes
+  # door_open_bs flap OFF->ON and used to send the bucket straight back out).
+  - id: door_closed_seen
+    type: bool
+    restore_value: false
+    initial_value: 'false'
   # "commanded but not moving" monitor (mimics the original: if the bucket does
   # not move, stop trying). DIAG/StallGuard is unreliable here (heavy load).
   - id: mon_last_pos
@@ -433,7 +441,36 @@ binary_sensor:
     - delayed_on: 1s
     - delayed_off: 1s
     on_press:
-      - script.execute: open_trashcan
+      # Consume the re-arm latch on EVERY door-open edge, then (only if the door had
+      # been seen genuinely closed) drive the bucket out. Consuming here - not inside
+      # open_trashcan - also clears it when the bucket is already out, so a later
+      # edge while the door stays open can never re-fire.
+      - if:
+          condition:
+            lambda: 'return id(door_closed_seen);'
+          then:
+          - script.execute: open_trashcan
+      - globals.set:
+          id: door_closed_seen
+          value: 'false'
+
+  # "Door is genuinely closed": a VALID short reading (the door itself at ~50 mm) held
+  # for 2 s. This re-arms the door-open trigger above. A hand/arm across the opening,
+  # or a lidar glitch, does not stay this close and VALID for 2 s - so it cannot fake
+  # a "close" and let the bucket be sent out again mid-open.
+  - platform: template
+    name: "${friendly_name} door closed"
+    id: door_closed_bs
+    lambda: |-
+      return (id(door_lidar).get_range_status() == 0) &&
+             (id(door_lidar).get_distance() < ${door_close_distance});
+    filters:
+    - delayed_on: 2s
+    - delayed_off: 500ms
+    on_press:
+      - globals.set:
+          id: door_closed_seen
+          value: 'true'
 
 interval:
   # Movement watchdog.. While a move is commanded (pos != tgt) stop the motor when

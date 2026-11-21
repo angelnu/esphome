@@ -16,33 +16,24 @@ substitutions:
   door_distance_min_delta: "10" # In mm
   door_open_distance: "500" # In mm
   door_close_distance: "200" # In mm
-  door_very_open_distance: "1000" #In mm - unmistakably open (~2 m); accepted even if the frame is flagged
   trashcan_speed_min_delta: "0.15" # Min inward speed (m/s) to trigger "helping to close" (noise-proof)
-  trashcan_acceleration_min_delta: "0.2" # in m/s²
   trashcan_distance_min_delta: "5" # Min delta in mm before publishing
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
   vl53_timing_budget: 200ms # Integration time per measurement
-  vl53_inter_measurement: 210ms # Continuous-ranging cadence (must be > timing budget + 4ms)
   vl53_update_interval: 100ms # Poll faster than the frame rate (fewer missed frames)
   # The TRASHCAN lidar drives the end-of-travel stop, so it must be FAST: a long
-  # integration time / inter-measurement adds lag, and the bucket moves between
-  # frames (=> the motor is cut too late). Short mode tolerates a short budget.
+  # integration time adds lag, and the bucket moves between measurements (=> the
+  # motor is cut too late). Short mode tolerates a short budget.
   vl53_tc_timing_budget: "50ms"
-  vl53_tc_inter_measurement: "60ms"
   vl53_tc_update_interval: 30ms
-  error_theshold: 1min
 
 esp32:
   variant: esp32
   toolchain: platformio
 
-external_components:
-# use all components from a local folder
-- source: components
-  components:
-  - tmc22xx # official ESPHome TMC22xx base (vendored until ESPHome 2026.11)
-  - tmc2209 # official ESPHome TMC2209 stepper (vendored until ESPHome 2026.11)
-  - vl53l1x_pololu # community VL53L1X (Pololu port) + speed/acceleration
+# No external_components: the tmc2209/tmc22xx stepper and the vl53l1x lidar are
+# built into ESPHome 2026.11.0 - the vendored/community copies under components/
+# were deleted with this migration.
 
 uart:
   tx_pin: GPIO17
@@ -223,7 +214,12 @@ script:
           // Recompute the bucket position from the trashcan lidar before moving:
           // the bucket can be pushed by hand (or the belt slips), so the INDEX count
           // no longer matches reality -> derive it from the distance.
-          float d = id(trashcan_lidar).get_distance();
+          float raw = id(trashcan_lidar).get_raw_state();
+          if (isnan(raw)) {
+            ESP_LOGW("trashcan", "no valid lidar reading -> keep current position");
+            return;
+          }
+          float d = raw * 1000.0f;  // the official vl53l1x reports meters
           float span = id(dist_out) - id(dist_in);
           int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
           if (p < id(min_step)) p = id(min_step);
@@ -268,7 +264,12 @@ script:
                 domain: logbook
           - lambda: |-
               // Recompute the bucket position from the trashcan lidar before moving.
-              float d = id(trashcan_lidar).get_distance();
+              float raw = id(trashcan_lidar).get_raw_state();
+              if (isnan(raw)) {
+                ESP_LOGW("trashcan", "no valid lidar reading -> keep current position");
+                return;
+              }
+              float d = raw * 1000.0f;  // the official vl53l1x reports meters
               float span = id(dist_out) - id(dist_in);
               int32_t p = id(min_step) + (int32_t) lroundf((d - id(dist_in)) * (id(max_step) - id(min_step)) / span);
               if (p < id(min_step)) p = id(min_step);
@@ -300,11 +301,21 @@ i2c:
   sda: GPIO32
   scl: GPIO33
 
-vl53l1x_pololu:
-- id: door_lidar
+sensor:
+# Both lidars: the OFFICIAL vl53l1x component (ESPHome 2026.11.0). It ranges in
+# single-shot mode - one measurement and one publish per update tick - and
+# publishes NaN for frames with an invalid range status. There is no freeze
+# watchdog any more (the pololu one power-cycled a frozen sensor over XSHUT;
+# the freeze was fixed by the 100 kHz door bus clock, see the 2026-10 notes).
+# It reports METERS: the `multiply: 1000` filter converts the published value
+# back to mm so every threshold and the persisted calibration globals keep
+# their mm values. "Frame not valid" is now `isnan(get_raw_state())`.
+- platform: vl53l1x
+  name: door distance
+  id: door_distance
   i2c_id: bus_door
-  enable_pin: GPIO25 # XSHUT
   address: 0x29
+  enable_pin: GPIO25 # XSHUT
   # long: with the door OPEN the sensor sees the wall up to ~3 m. In 'short'
   # (max ~1.3 m) that wall is beyond range, so an open door is indistinguishable
   # from a sensor failure (both come back with an invalid range status). 'long'
@@ -314,88 +325,93 @@ vl53l1x_pololu:
   # every distance mode, well below the closed reading.
   distance_mode: long
   timing_budget: ${vl53_timing_budget}
-  inter_measurement: ${vl53_inter_measurement}
   update_interval: ${vl53_update_interval}
-- id: trashcan_lidar
+  unit_of_measurement: "mm"
+  accuracy_decimals: 0
+  filters:
+  - multiply: 1000 # the component reports meters
+  - throttle: ${door_distance_throttle}
+  - delta: ${door_distance_min_delta}
+
+# The bucket lidar's SPEED (the "helping to close when pushed" feature) is
+# critical for the correct operation and must derive from the UNFILTERED
+# publish stream (one sample per measurement), so the raw sensor is internal
+# and the published entity plus the speed sensor are copies of it. The pololu
+# component computed it per ranging frame as (d - last_d)/dt (mm/ms == m/s)
+# over the real elapsed time; the lambda below replicates that math exactly
+# over consecutive publishes. A NaN frame (invalid range) resets the baseline
+# instead of feeding garbage into the derivative. (The acceleration sensor was
+# dropped - unused and publishing on every frame.)
+- platform: vl53l1x
+  id: trashcan_lidar
+  internal: true
   i2c_id: bus_trashcan
-  enable_pin: GPIO26 # XSHUT
   address: 0x29
+  enable_pin: GPIO26 # XSHUT
   distance_mode: short
   timing_budget: ${vl53_tc_timing_budget}
-  inter_measurement: ${vl53_tc_inter_measurement}
   update_interval: ${vl53_tc_update_interval}
 
-sensor:
-- platform: vl53l1x_pololu
-  vl53l1x_pololu_id: door_lidar
-  distance:
-    name: door distance
-    id: door_distance
-    filters:
-    - throttle: ${door_distance_throttle}
-    - delta: ${door_distance_min_delta}
-  range_status:
-    name: door range status
-    id: door_range_status
-    filters:
-    - delta: 1
-
-- platform: template
-  name: filtered door distance
-  id: filtered_filtered_distance
-  lambda: return id(door_distance).get_raw_state();
-  update_interval: 210ms
+- platform: copy
+  name: "trashcan distance"
+  id: trashcan_distance
+  source_id: trashcan_lidar
+  unit_of_measurement: "mm"
+  accuracy_decimals: 0
   filters:
-  - lambda: if (x >= ${door_open_distance}) return ${door_open_distance}; if (x >= ${door_close_distance}) return ${door_close_distance}; else return 0;
-  - filter_out: ${door_close_distance}
-  - delta: 1
+  - multiply: 1000 # the component reports meters
+  - throttle: ${trashcan_distance_throttle}
+  - delta: ${trashcan_distance_min_delta}
 
-- platform: vl53l1x_pololu
-  vl53l1x_pololu_id: trashcan_lidar
-  distance:
-    name: "trashcan distance"
-    id: trashcan_distance
-    filters:
-    - throttle: ${trashcan_distance_throttle}
-    - delta: ${trashcan_distance_min_delta}
-  range_status:
-    name: trashcan range status
-    id: trashcan_range_status
-    filters:
-    - delta: 1
-    - throttle: ${error_theshold}
-  speed:
-    name: trashcan speed
-    id: speed_trashcan
-    filters:
-    - delta: ${trashcan_speed_min_delta}
-    on_raw_value:
-      then:
-      - if:
-          condition:
-            and:
-            - lambda: 'return (x <= -${trashcan_speed_min_delta});'
-            - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
-            - lambda: 'return id(armed);'
-            - lambda: 'return (id(trashcan_lidar).get_distance() > id(dist_in) + 100);' # bucket must be out
-            - lambda: 'return (millis() > id(close_ok_at));' # and the bucket must have settled after coming out
-            - lambda: 'return (id(calib_phase) == 0);'
-          then:
-          - globals.set:
-              id: trashcan_out
-              value: 'false'
-          - logger.log: "Helping to close (speed)"
-          - homeassistant.service:
-              service: logbook.log
-              data:
-                name: "${devicename}_helping_close"
-                entity_id: sensor.${friendly_name}_speed_trashcan
-                domain: logbook
-              data_template:
-                message: Helping to close. Speed is {{ my_speed }}.
-              variables:
-                my_speed: !lambda return x;
-          - script.execute: close_trashcan
+- platform: copy
+  name: trashcan speed
+  id: speed_trashcan
+  source_id: trashcan_lidar
+  unit_of_measurement: "m/s"
+  accuracy_decimals: 2
+  icon: mdi:speedometer
+  filters:
+  - lambda: |-
+      static float last_dist = NAN;
+      static uint32_t last_ms = 0;
+      if (isnan(x)) { last_dist = NAN; return {}; }  // invalid frame: reset the baseline
+      const float d = x * 1000.0f;  // the published state is meters -> mm
+      if (isnan(last_dist)) { last_dist = d; last_ms = millis(); return {}; }
+      const float dt_ms = (float) (millis() - last_ms);
+      if (dt_ms <= 0.0f) return {};
+      const float v = (d - last_dist) / dt_ms;  // mm/ms == m/s (as the pololu component did)
+      last_dist = d;
+      last_ms = millis();
+      return v;
+  - delta: ${trashcan_speed_min_delta}
+  on_raw_value:
+    then:
+    - if:
+        condition:
+          and:
+          - lambda: 'return (x <= -${trashcan_speed_min_delta});'
+          - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
+          - lambda: 'return id(armed);'
+          - lambda: 'return (id(trashcan_lidar).get_raw_state() * 1000.0f > id(dist_in) + 100);' # bucket must be out
+          - lambda: 'return (millis() > id(close_ok_at));' # and the bucket must have settled after coming out
+          - lambda: 'return (id(calib_phase) == 0);'
+        then:
+        - globals.set:
+            id: trashcan_out
+            value: 'false'
+        - logger.log: "Helping to close (speed)"
+        - homeassistant.service:
+            service: logbook.log
+            data:
+              name: "${devicename}_helping_close"
+              entity_id: sensor.${friendly_name}_speed_trashcan
+              domain: logbook
+            data_template:
+              message: Helping to close. Speed is {{ my_speed }}.
+            variables:
+              my_speed: !lambda return x;
+        - script.execute: close_trashcan
+
 
 binary_sensor:
   # "Door is open": a GENUINE far reading - NOT "the door lidar is not reading a
@@ -403,17 +419,17 @@ binary_sensor:
   # status (and freezes); the old "anything that is not a valid close = open" logic
   # turned every such glitch into an "open", which drove the bucket out while the
   # door was SHUT. Here "open" requires the distance to really be far
-  # (>= door_open_distance; a real open reads ~2 m) on a VALID frame - or an
-  # unmistakably far reading even if the frame is flagged - plus 1 s on/off delays
+  # (>= door_open_distance; a real open reads ~2 m) on a VALID (non-NaN) frame -
+  # invalid frames come back as NaN and are ignored - plus 1 s on/off delays
   # so a single bad frame cannot fake an open. Near/invalid frames are ignored.
   - platform: template
     name: "${friendly_name} door open"
     id: door_open_bs
     device_class: door
     lambda: |-
-      float d = id(door_lidar).get_distance();
-      bool valid = (id(door_lidar).get_range_status() == 0);
-      return (d >= ${door_open_distance}) && (valid || d >= ${door_very_open_distance});
+      float raw = id(door_distance).get_raw_state();
+      if (isnan(raw)) return false;  // invalid frame: not "open"
+      return (raw * 1000.0f) >= ${door_open_distance};
     filters:
     - delayed_on: 1s
     - delayed_off: 1s
@@ -439,8 +455,8 @@ binary_sensor:
     name: "${friendly_name} door closed"
     id: door_closed_bs
     lambda: |-
-      return (id(door_lidar).get_range_status() == 0) &&
-             (id(door_lidar).get_distance() < ${door_close_distance});
+      float raw = id(door_distance).get_raw_state();
+      return !isnan(raw) && (raw * 1000.0f) < ${door_close_distance};
     filters:
     - delayed_on: 2s
     - delayed_off: 500ms
@@ -464,7 +480,10 @@ interval:
       - lambda: |-
           int pos = id(my_stepper)->current_position;
           int tgt = id(my_stepper)->target_position;
-          float dist = id(trashcan_lidar).get_distance();
+          float raw = id(trashcan_lidar).get_raw_state();
+          // 0 = no valid lidar reading (invalid/NaN frames are "no data", exactly
+          // what the community component reported before its first frame).
+          float dist = isnan(raw) ? 0.0f : raw * 1000.0f;
           bool calibrating_idle = (id(calib_phase) != 0);
           if (pos == tgt) {
             // Move finished: CUT THE CURRENT (disable the driver) so the bucket is
@@ -499,8 +518,8 @@ interval:
             bool timed_out = (millis() - id(move_started_ms) > ${move_timeout_ms});
             // Only a VALID short reading means the door is really closed; a glitch
             // to a small value with a bad range status must not abort an OUT move.
-            bool door_closed = (id(door_lidar).get_range_status() == 0) &&
-                               (id(door_lidar).get_distance() < ${door_close_distance});
+            float draw = id(door_distance).get_raw_state();
+            bool door_closed = !isnan(draw) && (draw * 1000.0f) < ${door_close_distance};
             if (timed_out || (dir > 0 && door_closed)) {
               ESP_LOGW("trashcan", "SAFETY STOP (timeout=%d door_closed=%d dir=%d) -> cut current",
                        timed_out, door_closed, dir);
@@ -550,7 +569,9 @@ interval:
                   value: !lambda 'return id(my_stepper)->current_position;'
               - globals.set:
                   id: dist_out
-                  value: !lambda 'return id(trashcan_lidar).get_distance();'
+                  value: !lambda |-
+                    float r = id(trashcan_lidar).get_raw_state();
+                    return isnan(r) ? (float) id(dist_out) : r * 1000.0f;  // keep the old value on an invalid frame
               - logger.log: "CAL: recorded dist_out"
               - globals.set:
                   id: calib_phase
@@ -565,7 +586,9 @@ interval:
                   value: !lambda 'return id(my_stepper)->current_position;'
               - globals.set:
                   id: dist_in
-                  value: !lambda 'return id(trashcan_lidar).get_distance();'
+                  value: !lambda |-
+                    float r = id(trashcan_lidar).get_raw_state();
+                    return isnan(r) ? (float) id(dist_in) : r * 1000.0f;  // keep the old value on an invalid frame
               - logger.log: "CAL: recorded dist_in"
               - stepper.set_speed:
                   id: my_stepper

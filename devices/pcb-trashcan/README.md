@@ -159,18 +159,58 @@ On-hardware follow-up hardening of the reworked config (all tuning values live i
   out (heavy bucket, avoid belt slip), aggressive going in (the bucket is already
   moving when "helping to close" fires).
 
-**Backports** used to run the 2026.11 official `tmc2209` on ESPHome 2026.10.0
-(each marked in the vendored code): `cv.key_requires`, `cg.add_pin`,
-`MockObjEnum.options(prefix=)`, `uart.new_uart_component`/`cg.new_bus_component`,
-`Component::status_comm_result()`, `UARTDevice::discard_available()`; plus YAML
-`stepper.stop` → `stepper.set_target` (current_position) and `Sensor::raw_state`
-→ `get_raw_state()`.
+#### 2026-11 - ESPHome 2026.11.0: all components built-in (no vendored code)
 
-**TODO when ESPHome 2026.11.0 is released**
-- Delete `components/tmc22xx` and `components/tmc2209` and drop them from
-  `external_components` in `devices/pcb-trashcan/v1.yaml` — they become built-in.
-  No further YAML change is needed; the backports disappear.
-- Keep `components/vl53l1x_pololu` (community + our speed/acceleration/additions).
-- Optionally revert the YAML stop-as-`set_target` back to `stepper.stop`.
-- Validate on hardware: `calibrate` button, direction, `stallguard`/`tcool`,
-  and both lidars reading correctly.
+2026.11.0 shipped both the `tmc2209` stepper and a new official `vl53l1x` lidar
+component, so the vendored/community copies are gone and the device runs on
+standard components only (no `external_components`).
+
+- **Stepper** -> built-in `tmc2209`/`tmc22xx`. `components/tmc2209` and
+  `components/tmc22xx` (the vendored official dev-branch copies) were deleted;
+  the 2026.10 backports disappeared with them. No YAML change was needed - the
+  vendored code was the official 2026.11 code.
+- **Lidar (both VL53L1X)** -> built-in `vl53l1x` (esphome#13605). The community
+  `vl53l1x_pololu` copy was deleted. Differences handled in the port:
+  - **Speed** (critical for the "helping to close when pushed" feature): the
+    official component has no speed sub-sensor, so it is now a `copy` sensor
+    of the (internal, unfiltered) raw lidar that replicates the pololu math
+    exactly - `(d - last_d)/dt` (mm/ms == m/s) over consecutive publishes and
+    real elapsed time, with the baseline reset on an invalid (NaN) frame. The
+    trigger threshold (`trashcan_speed_min_delta` 0.15 m/s) and conditions are
+    unchanged. The `acceleration` sensor was already dropped (unused, it
+    published on every frame) and is not ported.
+  - The official component works in **single-shot mode**: one measurement and
+    one publish per `update_interval` (not continuous ranging). The trashcan
+    lidar still publishes every ~60 ms (30 ms interval, 50 ms budget), the
+    door lidar every ~210 ms (100 ms interval, 200 ms budget) - same cadence
+    as the pololu's inter-measurement settings.
+  - **Unit**: the official component reports METERS; a `multiply: 1000` filter
+    (plus `unit_of_measurement: "mm"`) keeps every threshold, the published
+    entities and the persisted `dist_in`/`dist_out` calibration globals in mm
+    - no recalibration needed after the OTA.
+  - **Validity**: "frame not valid" is now `isnan(get_raw_state())` instead of
+    `get_range_status() != 0`; all door-open/closed and safety lambdas were
+    rewritten. An invalid frame is never "door closed" (it cannot abort an OUT
+    move) and never "door open". The `door_very_open_distance` escape hatch (a
+    flagged but far frame) has no equivalent - the official component has no
+    distance on an invalid frame - and was removed; long mode reads a real
+    open (~2 m) as a VALID value, so this should not matter.
+  - **Lost entities** (no equivalent in the official component; update any HA
+    automations referencing them): `door range status`, `trashcan range
+    status`, `door recovery count`, `trashcan recovery count`, `door frames`,
+    `trashcan frames`.
+  - **Lost: the freeze watchdog** - a frozen lidar is no longer power-cycled
+    over XSHUT; the official component recovers a hung measurement itself
+    (NaN + restart at the next tick) but a wedged I2C bus stays wedged until
+    reboot. Watch `door distance` going unavailable - if freezes return,
+    revisit (e.g. pin the pololu component back or add a watchdog).
+  - **Lost: `inter_measurement`** - not configurable on the official component.
+- Dashboard image: k8s-gitops already bumped `esphome` to `2026.11.0`
+  (renovate PR angelnu/k8s-gitops#6553) - the built-in components require it.
+- Validated offline: `esphome config` (2026.11.0) valid; the speed/acceleration
+  lambdas unit-tested against the pololu algorithm (frame sequences: static
+  bucket, constant push, NaN gaps, baseline reset).
+- **TODO on hardware**: flash + verify `calibrate` button, direction,
+  `stallguard`/`tcool`, both lidars reading correctly, and above all the
+  "helping to close" trigger: push the bucket gently while out and watch the
+  `trashcan speed` entity (~-0.2 to -0.5 m/s) drive the bucket back in.

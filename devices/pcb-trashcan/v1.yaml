@@ -29,9 +29,8 @@ substitutions:
 
 esp32:
   variant: esp32
-  toolchain: platformio
 
-# No external_components: the tmc2209/tmc22xx stepper and the vl53l1x lidar are
+# No external components: the tmc2209/tmc22xx stepper and the vl53l1x lidar are
 # built into ESPHome 2026.11.0 - the vendored/community copies under components/
 # were deleted with this migration.
 
@@ -596,7 +595,6 @@ interval:
               - globals.set:
                   id: calib_phase
                   value: '0'
-# Example configuration entry
 button:
   - platform: template
     name: calibrate

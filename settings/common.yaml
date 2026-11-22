@@ -51,8 +51,6 @@ api:
 time:
   - platform: homeassistant
     timezone: Europe/Berlin
-  - platform: sntp
-    timezone: Europe/Berlin
     # on_time:
     #   # Every 30 minutes
     #   - seconds: 0

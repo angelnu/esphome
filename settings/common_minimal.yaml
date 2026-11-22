@@ -15,7 +15,12 @@ wifi:
 
 ota:
   - platform: esphome
+    # Migration install: the plaintext leg answers the running firmware's
+    # password prompt; the build authenticates with the api block's key.
+    # Drop the password once every device has been re-flashed.
     password: !secret ota_password
+    encryption:
+      allow_plaintext_upload: true
 
 logger:
   #level: VERY_VERBOSE
@@ -30,6 +35,10 @@ api:
   id: api_id
   encryption:
     key: !secret api_key
+
+time:
+  - platform: sntp
+    timezone: Europe/Berlin
 
 # Restart Button
 button:

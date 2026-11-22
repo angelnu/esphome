@@ -29,6 +29,7 @@ substitutions:
 
 esp32:
   variant: esp32
+  toolchain: esp-idf
 
 # No external components: the tmc2209/tmc22xx stepper and the vl53l1x lidar are
 # built into ESPHome 2026.11.0 - the vendored/community copies under components/

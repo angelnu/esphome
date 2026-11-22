@@ -41,7 +41,7 @@ esphome:
     then:
     - globals.set:
         id: meter_${id}_total
-        value: !lambda "return id(meter_${id}_total_sensor).raw_state;"
+        value: !lambda "return id(meter_${id}_total_sensor).get_raw_state();"
 
 api:
   services:

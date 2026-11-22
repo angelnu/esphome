@@ -127,6 +127,14 @@ globals:
     type: uint32_t
     restore_value: false
     initial_value: '0'
+  # Lidar distance when the last move finished (the stop). The helping-close
+  # trigger requires the bucket to have moved DOWN from here by >=30mm: a
+  # lidar noise spike oscillates the derivative without moving the bucket,
+  # a real hand push moves it 35-60mm.
+  - id: settle_dist
+    type: float
+    restore_value: false
+    initial_value: '0'
 
 esphome:
   on_boot:
@@ -406,6 +414,7 @@ sensor:
           - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
           - lambda: 'return id(armed);'
           - lambda: 'return (id(trashcan_lidar).get_raw_state() * 1000.0f > id(dist_in) + 100);' # bucket must be out
+          - lambda: 'return (id(settle_dist) - id(trashcan_lidar).get_raw_state() * 1000.0f) >= 30.0f;' # and really pushed down
           - lambda: 'return (millis() > id(close_ok_at));' # and the bucket must have settled after coming out
           - lambda: 'return (id(calib_phase) == 0);'
         then:
@@ -534,12 +543,14 @@ interval:
               ESP_LOGW("trashcan", "SAFETY STOP (timeout=%d door_closed=%d dir=%d) -> cut current",
                        timed_out, door_closed, dir);
               id(my_stepper)->set_enabled(false);
+              id(settle_dist) = dist;
               id(blocked) = false;
             } else if (!calibrating && to_go <= ((dir > 0) ? ${trashcan_end_margin_out_mm} : ${trashcan_end_margin_in_mm})) {
               // Reached the cut point (lidar-based, robust to belt slip): stop and
               // cut the current; the bucket coasts the last few cm on its own.
               ESP_LOGD("trashcan", "lidar end reached d=%.0f dir=%d -> cut current", dist, dir);
               id(my_stepper)->set_enabled(false);
+              id(settle_dist) = dist;
               id(blocked) = false;
               if (dir > 0) id(close_ok_at) = millis() + 1000;  // short settle before auto-close
             } else {

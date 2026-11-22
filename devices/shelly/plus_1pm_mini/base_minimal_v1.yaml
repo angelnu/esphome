@@ -6,15 +6,9 @@ esphome:
     board_build.flash_mode: dio
 esp32:
   variant: esp32c3
-external_components:
-  # support for full OTA
-  - source:
-      type: git
-      url: https://github.com/angelnu/esphome-1
-      ref: extend_ota
-    components: [ota]
-    refresh: 3600s
 ota:
-  unprotected_writes: True
+  - platform: esphome
+    # Allow OTA updates to rewrite the partition table (repair via full image upload)
+    allow_partition_access: true
 logger:
   hardware_uart: USB_SERIAL_JTAG

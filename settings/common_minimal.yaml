@@ -15,12 +15,11 @@ wifi:
 
 ota:
   - platform: esphome
-    # Migration install: the plaintext leg answers the running firmware's
-    # password prompt; the build authenticates with the api block's key.
-    # Drop the password once every device has been re-flashed.
-    password: !secret ota_password
+    # OTA authenticated with the shared api key (Noise protocol). No password
+    # and no plaintext fallback: every device now runs a build with this block,
+    # so a plaintext password prompt is never served.
     encryption:
-      allow_plaintext_upload: true
+      key: !secret api_key
 
 logger:
   #level: VERY_VERBOSE

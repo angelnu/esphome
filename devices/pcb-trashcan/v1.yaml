@@ -147,6 +147,14 @@ esphome:
     - globals.set:
         id: armed
         value: 'true'
+    - if:
+        # A door already closed at boot must re-arm the bucket-out trigger too.
+        condition:
+          lambda: 'return !id(door_bs).state;'
+        then:
+        - globals.set:
+            id: door_closed_seen
+            value: 'true'
 
 stepper:
 - platform: tmc2209
@@ -422,22 +430,31 @@ binary_sensor:
   # (>= door_open_distance; a real open reads ~2 m) on a VALID (non-NaN) frame -
   # invalid frames come back as NaN and are ignored - plus 1 s on/off delays
   # so a single bad frame cannot fake an open. Near/invalid frames are ignored.
+  # The door as ONE boolean: it is always in one of the two states. ON = open
+  # (a far reading held 1 s), OFF = genuinely closed (a valid short reading -
+  # the door itself at ~50 mm - held 2 s; that 2 s close is what re-arms the
+  # bucket-out trigger: a hand/arm across the opening, or a lidar glitch, does
+  # not stay valid and this close for 2 s, so it cannot fake a close and send
+  # the bucket out mid-open). Invalid and mid-range frames keep the current
+  # state instead of flickering the entity.
   - platform: template
-    name: "${friendly_name} door open"
-    id: door_open_bs
+    name: "${friendly_name} door"
+    id: door_bs
     device_class: door
     lambda: |-
       float raw = id(door_distance).get_raw_state();
-      if (isnan(raw)) return false;  // invalid frame: not "open"
-      return (raw * 1000.0f) >= ${door_open_distance};
+      if (isnan(raw)) return id(door_bs).state;  // invalid frame: keep the state
+      if ((raw * 1000.0f) >= ${door_open_distance}) return true;
+      if ((raw * 1000.0f) < ${door_close_distance}) return false;
+      return id(door_bs).state;  // mid-range: the door is moving, keep the state
     filters:
     - delayed_on: 1s
-    - delayed_off: 1s
+    - delayed_off: 2s
     on_press:
-      # Consume the re-arm latch on EVERY door-open edge, then (only if the door had
-      # been seen genuinely closed) drive the bucket out. Consuming here - not inside
-      # open_trashcan - also clears it when the bucket is already out, so a later
-      # edge while the door stays open can never re-fire.
+      # Consume the re-arm latch on EVERY door-open edge, then (only if the door
+      # had been seen genuinely closed) drive the bucket out. Consuming here -
+      # not inside open_trashcan - also clears it when the bucket is already
+      # out, so a later edge while the door stays open can never re-fire.
       - if:
           condition:
             lambda: 'return id(door_closed_seen);'
@@ -446,21 +463,9 @@ binary_sensor:
       - globals.set:
           id: door_closed_seen
           value: 'false'
-
-  # "Door is genuinely closed": a VALID short reading (the door itself at ~50 mm) held
-  # for 2 s. This re-arms the door-open trigger above. A hand/arm across the opening,
-  # or a lidar glitch, does not stay this close and VALID for 2 s - so it cannot fake
-  # a "close" and let the bucket be sent out again mid-open.
-  - platform: template
-    name: "${friendly_name} door closed"
-    id: door_closed_bs
-    lambda: |-
-      float raw = id(door_distance).get_raw_state();
-      return !isnan(raw) && (raw * 1000.0f) < ${door_close_distance};
-    filters:
-    - delayed_on: 2s
-    - delayed_off: 500ms
-    on_press:
+    on_release:
+      # The entity only turns OFF on a valid short reading held 2 s: that IS
+      # the genuine close that re-arms the door-open trigger above.
       - globals.set:
           id: door_closed_seen
           value: 'true'

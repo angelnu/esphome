@@ -10,7 +10,7 @@ sensor:
       number: ${pin_number}
       inverted: ${pin_inverted}
       mode: ${pin_mode}
-      ignore_strapping_warning: true
+      ignore_strapping_warning: ${ignore_strapping_warning}
     unit_of_measurement: ${unit_of_measurement}
     name: ${meter_sensor_name} usage
     id: meter_${id}

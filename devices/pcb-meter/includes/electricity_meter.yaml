@@ -7,6 +7,7 @@ packages:
       meter_sensor_id: ${meter_sensor_id}
       
       pin_number: ${pin_number}
+      ignore_strapping_warning: ${ignore_strapping_warning}
       pin_inverted: true
       pin_mode: INPUT
       internal_filter: 50ms

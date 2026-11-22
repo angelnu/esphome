@@ -12,6 +12,7 @@ packages:
       meter_sensor_name: electricity right
       meter_sensor_id: electricity_right
       pin_number: 19
+      ignore_strapping_warning: 'false'
 
   sensor_2: !include
     file: includes/gas_meter.yaml
@@ -20,6 +21,7 @@ packages:
       meter_sensor_name: Gas right
       meter_sensor_id: gas_right
       pin_number: 18
+      ignore_strapping_warning: 'false'
 
   sensor_3: !include
     file: includes/electricity_meter.yaml
@@ -28,6 +30,7 @@ packages:
       meter_sensor_name: Electricity center
       meter_sensor_id: electricity_center
       pin_number: 5
+      ignore_strapping_warning: true
 
   sensor_4: !include
     file: includes/gas_meter.yaml
@@ -36,6 +39,7 @@ packages:
       meter_sensor_name: Gas_center
       meter_sensor_id: gas_center
       pin_number: 17
+      ignore_strapping_warning: 'false'
 
 preferences:
   flash_write_interval: 1 hours

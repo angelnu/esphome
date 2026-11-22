@@ -23,6 +23,7 @@ ota:
       allow_plaintext_upload: true
 
 logger:
+  level: VERBOSE # TEMP diagnosis: the movement monitor logs at V
   #level: VERY_VERBOSE
   #level: INFO
 

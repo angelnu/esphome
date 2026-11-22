@@ -384,7 +384,7 @@ sensor:
       last_ms = millis();
       return v;
   - delta: ${trashcan_speed_min_delta}
-  on_raw_value:
+  on_value:
     then:
     - if:
         condition:

@@ -37,6 +37,7 @@ binary_sensor:
     pin:
       number: 8
       mode: INPUT_PULLDOWN
+      ignore_strapping_warning: true
     on_press:
       light.turn_on: light_led
     on_release:

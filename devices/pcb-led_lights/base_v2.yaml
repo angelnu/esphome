@@ -34,7 +34,9 @@ light:
     chipset: ws2812
     rmt_symbols: 128
     id: statusledlight
-    pin: 8
+    pin:
+      number: 8
+      ignore_strapping_warning: true
     name: Status LED RGB
     num_leds: 1
     icon: "mdi:led-outline"
@@ -97,7 +99,9 @@ output:
   - platform: ledc
     id: output_white_cold
     frequency: ${pwm_frequency}
-    pin: 4
+    pin:
+      number: 4
+      ignore_strapping_warning: true
   - platform: ledc
     id: output2_white_warm
     frequency: ${pwm_frequency}

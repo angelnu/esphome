@@ -8,7 +8,9 @@ switch:
   - name: ${switch_1}
     id: switch_1
     platform: gpio
-    pin: GPIO5
+    pin:
+      number: GPIO5
+      ignore_strapping_warning: true
     restore_mode: ${restore_mode}
   - name: ${switch_2}
     id: switch_2
@@ -18,7 +20,9 @@ switch:
   - name: ${switch_3}
     id: switch_3
     platform: gpio
-    pin: GPIO15
+    pin:
+      number: GPIO15
+      ignore_strapping_warning: true
     restore_mode: ${restore_mode}
   - name: ${switch_4}
     id: switch_4

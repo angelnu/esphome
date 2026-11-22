@@ -7,13 +7,17 @@ esp32:
 output:
   - id: output_1
     platform: ledc
-    pin: GPIO5
+    pin:
+      number: GPIO5
+      ignore_strapping_warning: true
   - id: output_2
     platform: ledc
     pin: GPIO14
   - id: output_3
     platform: ledc
-    pin: GPIO15
+    pin:
+      number: GPIO15
+      ignore_strapping_warning: true
   - id: output_4
     platform: ledc
     pin: GPIO16

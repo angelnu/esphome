@@ -3,7 +3,9 @@ esp32:
 
 one_wire:
   - platform: gpio
-    pin: GPIO02
+    pin:
+      number: GPIO02
+      ignore_strapping_warning: true
     id: dallas_bus_1
   - platform: gpio
     pin: GPIO04
@@ -38,7 +40,9 @@ output:
     pin: GPIO23
     id: relay_2_out
   - platform: gpio
-    pin: GPIO05
+    pin:
+      number: GPIO05
+      ignore_strapping_warning: true
     id: led_out
     
 switch:

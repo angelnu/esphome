@@ -19,7 +19,9 @@ switch:
   - platform: gpio
     name: "${switch_2}"
     id: relay_2
-    pin: GPIO12
+    pin:
+      number: GPIO12
+      ignore_strapping_warning: true
     restore_mode: RESTORE_DEFAULT_OFF
     interlock: *interlock
     interlock_wait_time: 200ms

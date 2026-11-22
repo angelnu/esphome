@@ -16,7 +16,9 @@ binary_sensor:
   - id: switch_1_button
     name: Switch 1
     platform: gpio
-    pin: GPIO5
+    pin:
+      number: GPIO5
+      ignore_strapping_warning: true
     filters:
       - delayed_off: 50ms
     on_press:
@@ -178,3 +180,4 @@ status_led:
   pin:
     number: GPIO0
     inverted: true
+    ignore_strapping_warning: true

@@ -31,10 +31,6 @@ api:
   encryption:
     key: !secret api_key
 
-time:
-  - platform: sntp
-    timezone: Europe/Berlin
-
 # Restart Button
 button:
   - platform: restart

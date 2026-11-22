@@ -22,6 +22,7 @@ substitutions:
   door_open_distance: "500" # In mm
   door_close_distance: "200" # In mm
   trashcan_speed_min_delta: "0.08" # Min inward speed (m/s) to trigger "helping to close" (~2.4x the lidar sample noise)
+  trashcan_push_gate_mm: "15" # Bucket must move DOWN this far from the last settle before "helping to close" arms (2x the worst-case sample jitter sum)
   trashcan_distance_min_delta: "5" # Min delta in mm before publishing
   trashcan_distance_throttle: 1s # Avoids sending too frequently while trashcan is moving
   vl53_timing_budget: 200ms # Integration time per measurement
@@ -128,9 +129,10 @@ globals:
     restore_value: false
     initial_value: '0'
   # Lidar distance when the last move finished (the stop). The helping-close
-  # trigger requires the bucket to have moved DOWN from here by >=30mm: a
-  # lidar noise spike oscillates the derivative without moving the bucket,
-  # a real hand push moves it 35-60mm.
+  # trigger requires the bucket to have moved DOWN from here by
+  # trashcan_push_gate_mm: a lidar noise spike oscillates the derivative
+  # without moving the bucket (worst case ~8mm between two samples), a real
+  # hand push moves it well past the gate.
   - id: settle_dist
     type: float
     restore_value: false
@@ -414,7 +416,7 @@ sensor:
           - lambda: 'return (id(my_stepper)->current_position == id(my_stepper)->target_position);' #Stopped
           - lambda: 'return id(armed);'
           - lambda: 'return (id(trashcan_lidar).get_raw_state() * 1000.0f > id(dist_in) + 100);' # bucket must be out
-          - lambda: 'return (id(settle_dist) - id(trashcan_lidar).get_raw_state() * 1000.0f) >= 30.0f;' # and really pushed down
+          - lambda: 'return (id(settle_dist) - id(trashcan_lidar).get_raw_state() * 1000.0f) >= ${trashcan_push_gate_mm};' # and really pushed down
           - lambda: 'return (millis() > id(close_ok_at));' # and the bucket must have settled after coming out
           - lambda: 'return (id(calib_phase) == 0);'
         then:

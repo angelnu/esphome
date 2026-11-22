@@ -10,7 +10,12 @@ substitutions:
   stepper_calibration_speed: "200" # slow speed used while calibrating the end positions
   move_timeout_ms: "7000" # HARD SAFETY: never drive longer than this per move
   trashcan_steps_per_mm: "5.28" # (max_step-min_step)/(dist_out-dist_in) = 2100/398
-  trashcan_end_margin_mm: "35" # safety backstop: cut the current this close to each limit (the official vl53l1x reads ~15-25mm short of the pololu calibration)
+  # End-of-travel cut margins, per direction. The official vl53l1x reads
+  # ~15-25mm short of the pololu calibration, so OUT needs a wide margin to
+  # cut before the bucket grinds against the end stop; IN cuts ~20mm before
+  # the real closed stop so the coast finishes the close.
+  trashcan_end_margin_out_mm: "35"
+  trashcan_end_margin_in_mm: "8"
   stepper_stall_threshold: "5" # Lower = less sensitive (avoid false stalls); raise for reliable homing
   door_distance_throttle: 1s # Avoids sending too frequently while door is moving
   door_distance_min_delta: "10" # In mm
@@ -530,7 +535,7 @@ interval:
                        timed_out, door_closed, dir);
               id(my_stepper)->set_enabled(false);
               id(blocked) = false;
-            } else if (!calibrating && to_go <= ${trashcan_end_margin_mm}) {
+            } else if (!calibrating && to_go <= ((dir > 0) ? ${trashcan_end_margin_out_mm} : ${trashcan_end_margin_in_mm})) {
               // Reached the cut point (lidar-based, robust to belt slip): stop and
               // cut the current; the bucket coasts the last few cm on its own.
               ESP_LOGD("trashcan", "lidar end reached d=%.0f dir=%d -> cut current", dist, dir);

@@ -1,15 +1,16 @@
 #pragma once
 
 #include "esphome/core/defines.h"
+#include <format>
 
 #define LOG_SIEDLE_MESSAGE(prefix, msg) \
   if ((msg) != nullptr) { \
     ESP_LOGCONFIG(TAG, prefix "Message:"); \
-    ESP_LOGCONFIG(TAG, prefix "  Command: %s", format_hex_pretty((msg)->get_command()).c_str()); \
-    ESP_LOGCONFIG(TAG, prefix "  Destination: %s", format_hex_pretty((msg)->get_destination()).c_str()); \
-    ESP_LOGCONFIG(TAG, prefix "    Bus: %s", format_hex_pretty((msg)->get_destination_bus()).c_str()); \
-    ESP_LOGCONFIG(TAG, prefix "  Source: %s", format_hex_pretty((msg)->get_source()).c_str()); \
-    ESP_LOGCONFIG(TAG, prefix "    Bus: %s", format_hex_pretty((msg)->get_source_bus()).c_str()); \
+    ESP_LOGCONFIG(TAG, prefix "  Command: %s", std::format("0x{{:02X}}", (msg)->get_command()).c_str()); \
+    ESP_LOGCONFIG(TAG, prefix "  Destination: %s", std::format("0x{{:02X}}", (msg)->get_destination()).c_str()); \
+    ESP_LOGCONFIG(TAG, prefix "    Bus: %s", std::format("0x{{:02X}}", (msg)->get_destination_bus()).c_str()); \
+    ESP_LOGCONFIG(TAG, prefix "  Source: %s", std::format("0x{{:02X}}", (msg)->get_source()).c_str()); \
+    ESP_LOGCONFIG(TAG, prefix "    Bus: %s", std::format("0x{{:02X}}", (msg)->get_source_bus()).c_str()); \
   }
 
 #define bitRead(value, bit)            (((value) >> (bit)) & 0x01)

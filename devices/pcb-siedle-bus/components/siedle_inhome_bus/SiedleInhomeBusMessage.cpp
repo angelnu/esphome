@@ -38,11 +38,11 @@ namespace siedle_inhome_bus {
   std::string SiedleInhomeBusMessage::get_string() {
     return std::format(
       "Command: {}, Destination: {}:{}, Source: {}:{}",
-      format_hex_pretty(get_command()),
-      format_hex_pretty(get_destination_bus()),
-      format_hex_pretty(get_destination()),
-      format_hex_pretty(get_source_bus()),
-      format_hex_pretty(get_source())
+      std::format("0x{:02X}", get_command()),
+      std::format("0x{:02X}", get_destination_bus()),
+      std::format("0x{:02X}", get_destination()),
+      std::format("0x{:02X}", get_source_bus()),
+      std::format("0x{:02X}", get_source())
     );
   };
 
@@ -50,17 +50,17 @@ namespace siedle_inhome_bus {
     bool is_unexpected = false;
 
     if ( get_msg_prolog() != MSG_PROLOG) {
-      ESP_LOGW(TAG, "Unexpected prolog 0x%s", format_hex_pretty(get_msg_prolog()).c_str());
+      ESP_LOGW(TAG, "Unexpected prolog 0x%s", std::format("{:02X}", get_msg_prolog()).c_str());
       is_unexpected = true;
     }
     
     if ( get_msg_middle() != MSG_MIDDLE) {
-      ESP_LOGW(TAG, "Unexpected middle 0x%s", format_hex_pretty(get_msg_middle()).c_str());
+      ESP_LOGW(TAG, "Unexpected middle 0x%s", std::format("{:02X}", get_msg_middle()).c_str());
       is_unexpected = true;
     }
     
     if ( get_msg_epilog() != MSG_EPILOG) {
-      ESP_LOGW(TAG, "Unexpected epilog 0x%s", format_hex_pretty(get_msg_epilog()).c_str());
+      ESP_LOGW(TAG, "Unexpected epilog 0x%s", std::format("{:02X}", get_msg_epilog()).c_str());
       is_unexpected = true;
     }
 

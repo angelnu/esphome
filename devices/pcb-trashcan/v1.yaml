@@ -37,9 +37,12 @@ esp32:
   variant: esp32
   toolchain: esp-idf
 
-# No external components: the tmc2209/tmc22xx stepper and the vl53l1x lidar are
-# built into ESPHome 2026.11.0 - the vendored/community copies under components/
-# were deleted with this migration.
+# The tmc2209 stepper and the vl53l1x lidar are official components since
+# ESPHome 2026.11.0. The `derivative` speed sensor below is merged upstream
+# (esphome#23349) but not yet in a release -> pull it from dev until 2026.12.
+external_components:
+- source: github://esphome/esphome@dev
+  components: [derivative]
 
 uart:
   tx_pin: GPIO17
@@ -386,26 +389,24 @@ sensor:
   - throttle: ${trashcan_distance_throttle}
   - delta: ${trashcan_distance_min_delta}
 
-- platform: copy
+# The bucket lidar's SPEED ("helping to close when pushed") must derive from the
+# UNFILTERED publish stream (one sample per measurement), so the raw sensor stays
+# internal and the published entities are copies of it. The speed now comes from
+# the official `derivative` component (esphome#23349): it computes delta/dt over
+# consecutive publishes with the exact semantics the hand-written lambda used to
+# replicate from the pololu component (first reading after boot only sets the
+# baseline, a NaN frame resets it, dt==0 keeps it). time_unit s turns the meter
+# source into m/s, so the min-delta substitutions keep their values. (The
+# acceleration sensor stays dropped - unused and publishing on every frame.)
+- platform: derivative
   name: trashcan speed
   id: speed_trashcan
-  source_id: trashcan_lidar
+  sensor: trashcan_lidar
+  time_unit: s
   unit_of_measurement: "m/s"
   accuracy_decimals: 2
   icon: mdi:speedometer
   filters:
-  - lambda: |-
-      static float last_dist = NAN;
-      static uint32_t last_ms = 0;
-      if (isnan(x)) { last_dist = NAN; return {}; }  // invalid frame: reset the baseline
-      const float d = x * 1000.0f;  // the published state is meters -> mm
-      if (isnan(last_dist)) { last_dist = d; last_ms = millis(); return {}; }
-      const float dt_ms = (float) (millis() - last_ms);
-      if (dt_ms <= 0.0f) return {};
-      const float v = (d - last_dist) / dt_ms;  // mm/ms == m/s (as the pololu component did)
-      last_dist = d;
-      last_ms = millis();
-      return v;
   - delta: ${trashcan_speed_min_delta}
   on_value:
     then:
